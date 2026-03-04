@@ -567,6 +567,10 @@ const Calculator = () => {
                 <span className="font-medium text-foreground text-sm">
                   {objectives.find((o) => o.id === form.objetivo)?.label}
                 </span>
+                <span className="text-muted-foreground text-sm">Esporte(s):</span>
+                <span className="font-medium text-foreground text-sm">
+                  {form.esportes.map((e) => esportesDisponiveis.find((ed) => ed.id === e)?.label).join(", ")}
+                </span>
                 <span className="text-muted-foreground text-sm">Refeições/dia:</span>
                 <span className="font-medium text-foreground text-sm">
                   {mealsOptions.find((m) => m.id === form.refeicoesPorDia)?.label}
