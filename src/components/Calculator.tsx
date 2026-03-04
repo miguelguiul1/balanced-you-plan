@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, ArrowLeft, Zap, Flame, Dumbbell, Leaf, Target } from "lucide-react";
+import { ArrowRight, ArrowLeft, Zap, Flame, Dumbbell, Leaf, Target, Plus, X, UtensilsCrossed } from "lucide-react";
 
 type FormData = {
   peso: string;
@@ -9,6 +9,8 @@ type FormData = {
   sexo: string;
   atividade: string;
   objetivo: string;
+  refeicoesPorDia: string;
+  alimentosAtuais: string[];
 };
 
 type Results = {
@@ -19,6 +21,10 @@ type Results = {
   carboidrato: number;
   gordura: number;
   objetivo: string;
+  analiseAlimentar: {
+    pontuacao: number;
+    dicas: string[];
+  };
 };
 
 const activityMultipliers: Record<string, number> = {
@@ -45,6 +51,22 @@ const activityLevels = [
   { id: "muito_intenso", label: "Extremamente ativo", desc: "Treino intenso + trabalho físico" },
 ];
 
+const alimentosSugeridos = [
+  { categoria: "Proteínas", items: ["Frango", "Ovo", "Carne vermelha", "Peixe", "Whey", "Tofu", "Feijão"] },
+  { categoria: "Carboidratos", items: ["Arroz", "Pão", "Macarrão", "Batata", "Aveia", "Tapioca", "Mandioca"] },
+  { categoria: "Gorduras", items: ["Azeite", "Castanhas", "Abacate", "Manteiga", "Queijo", "Amendoim"] },
+  { categoria: "Outros", items: ["Salada", "Frutas", "Legumes", "Iogurte", "Leite", "Suco", "Café", "Refrigerante", "Fast food", "Doces", "Salgadinho"] },
+];
+
+const mealsOptions = [
+  { id: "1-2", label: "1 a 2 refeições", desc: "Poucas refeições por dia" },
+  { id: "3", label: "3 refeições", desc: "Café, almoço e janta" },
+  { id: "4-5", label: "4 a 5 refeições", desc: "Inclui lanches entre refeições" },
+  { id: "6+", label: "6 ou mais", desc: "Refeições fracionadas ao longo do dia" },
+];
+
+const TOTAL_STEPS = 5;
+
 const Calculator = () => {
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<FormData>({
@@ -54,8 +76,91 @@ const Calculator = () => {
     sexo: "",
     atividade: "",
     objetivo: "",
+    refeicoesPorDia: "",
+    alimentosAtuais: [],
   });
+  const [novoAlimento, setNovoAlimento] = useState("");
   const [results, setResults] = useState<Results | null>(null);
+
+  const toggleAlimento = (alimento: string) => {
+    setForm((prev) => ({
+      ...prev,
+      alimentosAtuais: prev.alimentosAtuais.includes(alimento)
+        ? prev.alimentosAtuais.filter((a) => a !== alimento)
+        : [...prev.alimentosAtuais, alimento],
+    }));
+  };
+
+  const addCustomAlimento = () => {
+    const trimmed = novoAlimento.trim();
+    if (trimmed && !form.alimentosAtuais.includes(trimmed)) {
+      setForm((prev) => ({
+        ...prev,
+        alimentosAtuais: [...prev.alimentosAtuais, trimmed],
+      }));
+      setNovoAlimento("");
+    }
+  };
+
+  const analisarAlimentacao = (): { pontuacao: number; dicas: string[] } => {
+    const alimentos = form.alimentosAtuais.map((a) => a.toLowerCase());
+    const dicas: string[] = [];
+    let pontuacao = 50;
+
+    // Check protein
+    const temProteina = ["frango", "ovo", "carne vermelha", "peixe", "whey", "tofu", "feijão"].some((p) =>
+      alimentos.some((a) => a.includes(p.toLowerCase()))
+    );
+    if (temProteina) pontuacao += 10;
+    else dicas.push("Inclua mais fontes de proteína como frango, ovo ou feijão.");
+
+    // Check veggies
+    const temVegetais = ["salada", "legumes", "frutas"].some((v) =>
+      alimentos.some((a) => a.includes(v.toLowerCase()))
+    );
+    if (temVegetais) pontuacao += 15;
+    else dicas.push("Adicione mais vegetais, frutas e saladas ao seu dia.");
+
+    // Check ultraprocessed
+    const temUltraprocessado = ["fast food", "refrigerante", "salgadinho", "doces"].some((u) =>
+      alimentos.some((a) => a.includes(u.toLowerCase()))
+    );
+    if (temUltraprocessado) {
+      pontuacao -= 15;
+      dicas.push("Reduza o consumo de ultraprocessados como fast food e refrigerante.");
+    }
+
+    // Check carbs
+    const temCarb = ["arroz", "pão", "batata", "aveia", "macarrão"].some((c) =>
+      alimentos.some((a) => a.includes(c.toLowerCase()))
+    );
+    if (temCarb) pontuacao += 5;
+
+    // Check healthy fats
+    const temGorduraBoa = ["azeite", "castanhas", "abacate", "amendoim"].some((g) =>
+      alimentos.some((a) => a.includes(g.toLowerCase()))
+    );
+    if (temGorduraBoa) pontuacao += 10;
+    else dicas.push("Inclua gorduras saudáveis como azeite, castanhas ou abacate.");
+
+    // Meals feedback
+    if (form.refeicoesPorDia === "1-2") {
+      pontuacao -= 10;
+      dicas.push("Tente fazer ao menos 3 refeições por dia para manter o metabolismo ativo.");
+    } else if (form.refeicoesPorDia === "4-5" || form.refeicoesPorDia === "6+") {
+      pontuacao += 10;
+    }
+
+    // Variety
+    if (form.alimentosAtuais.length >= 8) {
+      pontuacao += 10;
+      dicas.push("Boa variedade alimentar! Continue assim.");
+    } else if (form.alimentosAtuais.length < 4) {
+      dicas.push("Tente diversificar mais seus alimentos para garantir todos os nutrientes.");
+    }
+
+    return { pontuacao: Math.max(0, Math.min(100, pontuacao)), dicas };
+  };
 
   const calculate = () => {
     const peso = parseFloat(form.peso);
@@ -63,7 +168,6 @@ const Calculator = () => {
     const idade = parseFloat(form.idade);
     const mult = activityMultipliers[form.atividade] || 1.55;
 
-    // Mifflin-St Jeor (default neutral if no sex selected)
     let tmb: number;
     if (form.sexo === "masculino") {
       tmb = 10 * peso + 6.25 * altura - 5 * idade + 5;
@@ -91,6 +195,8 @@ const Calculator = () => {
     const gordura = (calorias * 0.25) / 9;
     const carboidrato = (calorias - proteina * 4 - gordura * 9) / 4;
 
+    const analise = analisarAlimentacao();
+
     setResults({
       tmb: Math.round(tmb),
       tdee: Math.round(tdee),
@@ -99,8 +205,9 @@ const Calculator = () => {
       carboidrato: Math.round(carboidrato),
       gordura: Math.round(gordura),
       objetivo: objectives.find((o) => o.id === form.objetivo)?.label || "",
+      analiseAlimentar: analise,
     });
-    setStep(4);
+    setStep(TOTAL_STEPS);
   };
 
   const canProceed = () => {
@@ -112,6 +219,8 @@ const Calculator = () => {
       case 2:
         return form.atividade !== "";
       case 3:
+        return form.refeicoesPorDia !== "" && form.alimentosAtuais.length > 0;
+      case 4:
         return true;
       default:
         return false;
@@ -119,7 +228,7 @@ const Calculator = () => {
   };
 
   const nextStep = () => {
-    if (step === 3) {
+    if (step === 4) {
       calculate();
     } else {
       setStep((s) => s + 1);
@@ -129,7 +238,7 @@ const Calculator = () => {
   return (
     <section id="calculator" className="py-24 px-6">
       <div className="container mx-auto max-w-2xl">
-        {step < 4 && (
+        {step < TOTAL_STEPS && (
           <div className="text-center mb-12">
             <h2 className="font-display text-3xl sm:text-4xl font-bold text-foreground">
               Monte seu plano
@@ -139,7 +248,7 @@ const Calculator = () => {
             </p>
             {/* Progress */}
             <div className="mt-8 flex gap-2 justify-center">
-              {[0, 1, 2, 3].map((i) => (
+              {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
                 <div
                   key={i}
                   className={`h-1.5 rounded-full transition-all duration-300 ${
@@ -271,8 +380,118 @@ const Calculator = () => {
             </div>
           )}
 
-          {/* Step 3: Confirm */}
+          {/* Step 3: Food intake */}
           {step === 3 && (
+            <div className="space-y-6 animate-fade-in">
+              <h3 className="font-display text-xl font-semibold text-foreground mb-2">
+                <UtensilsCrossed className="w-5 h-5 inline-block mr-2 text-primary" />
+                Sua alimentação atual
+              </h3>
+              <p className="text-sm text-muted-foreground -mt-4">
+                Nos conte o que você costuma comer no dia a dia
+              </p>
+
+              {/* Meals per day */}
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground mb-3">
+                  Quantas refeições você faz por dia?
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  {mealsOptions.map((opt) => (
+                    <button
+                      key={opt.id}
+                      onClick={() => setForm({ ...form, refeicoesPorDia: opt.id })}
+                      className={`p-3 rounded-xl border-2 transition-all text-left ${
+                        form.refeicoesPorDia === opt.id
+                          ? "border-primary bg-primary/5"
+                          : "border-border hover:border-primary/30"
+                      }`}
+                    >
+                      <p className="font-display font-semibold text-foreground text-sm">{opt.label}</p>
+                      <p className="text-xs text-muted-foreground">{opt.desc}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Food selection */}
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground mb-3">
+                  O que você costuma comer? <span className="text-xs">(selecione ou adicione)</span>
+                </label>
+
+                {/* Selected foods */}
+                {form.alimentosAtuais.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {form.alimentosAtuais.map((alimento) => (
+                      <span
+                        key={alimento}
+                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium"
+                      >
+                        {alimento}
+                        <button
+                          onClick={() => toggleAlimento(alimento)}
+                          className="ml-1 hover:text-destructive transition-colors"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* Custom food input */}
+                <div className="flex gap-2 mb-4">
+                  <input
+                    type="text"
+                    placeholder="Adicionar outro alimento..."
+                    value={novoAlimento}
+                    onChange={(e) => setNovoAlimento(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && addCustomAlimento()}
+                    className="flex-1 h-10 px-4 rounded-xl border-2 border-border bg-background text-foreground text-sm focus:border-primary focus:outline-none transition-colors"
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={addCustomAlimento}
+                    disabled={!novoAlimento.trim()}
+                    className="h-10 px-3"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </div>
+
+                {/* Suggested foods by category */}
+                <div className="space-y-4 max-h-60 overflow-y-auto pr-1">
+                  {alimentosSugeridos.map((cat) => (
+                    <div key={cat.categoria}>
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                        {cat.categoria}
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {cat.items.map((item) => (
+                          <button
+                            key={item}
+                            onClick={() => toggleAlimento(item)}
+                            className={`px-3 py-1.5 rounded-full text-sm transition-all ${
+                              form.alimentosAtuais.includes(item)
+                                ? "bg-primary text-primary-foreground"
+                                : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                            }`}
+                          >
+                            {item}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Step 4: Confirm */}
+          {step === 4 && (
             <div className="space-y-6 animate-fade-in text-center">
               <h3 className="font-display text-xl font-semibold text-foreground">
                 Tudo pronto!
@@ -291,12 +510,20 @@ const Calculator = () => {
                 <span className="font-medium text-foreground text-sm">
                   {objectives.find((o) => o.id === form.objetivo)?.label}
                 </span>
+                <span className="text-muted-foreground text-sm">Refeições/dia:</span>
+                <span className="font-medium text-foreground text-sm">
+                  {mealsOptions.find((m) => m.id === form.refeicoesPorDia)?.label}
+                </span>
+                <span className="text-muted-foreground text-sm">Alimentos:</span>
+                <span className="font-medium text-foreground text-sm">
+                  {form.alimentosAtuais.length} selecionados
+                </span>
               </div>
             </div>
           )}
 
-          {/* Step 4: Results */}
-          {step === 4 && results && (
+          {/* Step 5: Results */}
+          {step === TOTAL_STEPS && results && (
             <div className="animate-fade-in">
               <div className="text-center mb-8">
                 <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary font-display text-sm font-medium mb-4">
@@ -324,10 +551,67 @@ const Calculator = () => {
                 </p>
               </div>
 
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-3 gap-3 mb-6">
                 <MacroCard label="Proteína" value={results.proteina} unit="g" color="bg-primary" />
                 <MacroCard label="Carboidrato" value={results.carboidrato} unit="g" color="bg-accent" />
                 <MacroCard label="Gordura" value={results.gordura} unit="g" color="bg-secondary" />
+              </div>
+
+              {/* Dietary analysis */}
+              <div className="bg-secondary/50 rounded-xl p-6 mb-6">
+                <h4 className="font-display font-semibold text-foreground mb-3 flex items-center gap-2">
+                  <UtensilsCrossed className="w-4 h-4 text-primary" />
+                  Análise da sua alimentação
+                </h4>
+                
+                {/* Score bar */}
+                <div className="mb-4">
+                  <div className="flex justify-between text-sm mb-1">
+                    <span className="text-muted-foreground">Pontuação alimentar</span>
+                    <span className={`font-display font-bold ${
+                      results.analiseAlimentar.pontuacao >= 70 ? "text-primary" :
+                      results.analiseAlimentar.pontuacao >= 40 ? "text-accent-foreground" : "text-destructive"
+                    }`}>
+                      {results.analiseAlimentar.pontuacao}/100
+                    </span>
+                  </div>
+                  <div className="h-2 rounded-full bg-border overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-700 ${
+                        results.analiseAlimentar.pontuacao >= 70 ? "bg-primary" :
+                        results.analiseAlimentar.pontuacao >= 40 ? "bg-accent" : "bg-destructive"
+                      }`}
+                      style={{ width: `${results.analiseAlimentar.pontuacao}%` }}
+                    />
+                  </div>
+                </div>
+
+                {/* Tips */}
+                <div className="space-y-2">
+                  {results.analiseAlimentar.dicas.map((dica, i) => (
+                    <div key={i} className="flex items-start gap-2 text-sm">
+                      <span className="text-primary mt-0.5">•</span>
+                      <span className="text-muted-foreground">{dica}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* What they eat summary */}
+              <div className="bg-secondary/50 rounded-xl p-6 mb-6">
+                <h4 className="font-display font-semibold text-foreground mb-3">
+                  Seus alimentos atuais
+                </h4>
+                <div className="flex flex-wrap gap-2">
+                  {form.alimentosAtuais.map((a) => (
+                    <span key={a} className="px-3 py-1 rounded-full bg-primary/10 text-primary text-sm">
+                      {a}
+                    </span>
+                  ))}
+                </div>
+                <p className="text-xs text-muted-foreground mt-3">
+                  {mealsOptions.find((m) => m.id === form.refeicoesPorDia)?.label} por dia
+                </p>
               </div>
 
               <div className="mt-8 text-center">
@@ -337,7 +621,7 @@ const Calculator = () => {
                   onClick={() => {
                     setStep(0);
                     setResults(null);
-                    setForm({ peso: "", altura: "", idade: "", sexo: "", atividade: "", objetivo: "" });
+                    setForm({ peso: "", altura: "", idade: "", sexo: "", atividade: "", objetivo: "", refeicoesPorDia: "", alimentosAtuais: [] });
                   }}
                 >
                   Recalcular
@@ -347,7 +631,7 @@ const Calculator = () => {
           )}
 
           {/* Navigation */}
-          {step < 4 && (
+          {step < TOTAL_STEPS && (
             <div className="flex justify-between mt-8 pt-6 border-t border-border">
               <Button
                 variant="ghost"
@@ -363,7 +647,7 @@ const Calculator = () => {
                 disabled={!canProceed()}
                 className="gap-2"
               >
-                {step === 3 ? "Ver resultado" : "Próximo"} <ArrowRight className="w-4 h-4" />
+                {step === 4 ? "Ver resultado" : "Próximo"} <ArrowRight className="w-4 h-4" />
               </Button>
             </div>
           )}
