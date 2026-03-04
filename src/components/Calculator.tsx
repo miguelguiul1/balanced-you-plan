@@ -682,7 +682,7 @@ const Calculator = () => {
                   onClick={() => {
                     setStep(0);
                     setResults(null);
-                    setForm({ peso: "", altura: "", idade: "", sexo: "", atividade: "", objetivo: "", refeicoesPorDia: "", alimentosAtuais: [] });
+                    setForm({ peso: "", altura: "", idade: "", sexo: "", atividade: "", objetivo: "", esportes: [], refeicoesPorDia: "", alimentosAtuais: [] });
                   }}
                 >
                   Recalcular
