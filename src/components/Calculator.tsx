@@ -493,8 +493,14 @@ const Calculator = () => {
                         key={alimento}
                         className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium"
                       >
-                        {alimento}
+                        {alimento} {alimentosComCalorias[alimento] && <span className="opacity-70 text-xs">({alimentosComCalorias[alimento]}cal)</span>}
                         <button
+                          onClick={() => toggleAlimento(alimento)}
+                          className="ml-1 hover:text-destructive transition-colors"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </span>
                           onClick={() => toggleAlimento(alimento)}
                           className="ml-1 hover:text-destructive transition-colors"
                         >
