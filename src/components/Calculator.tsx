@@ -100,6 +100,21 @@ const Calculator = () => {
   const [novoAlimento, setNovoAlimento] = useState("");
   const [results, setResults] = useState<Results | null>(null);
 
+  const toggleEsporte = (esporte: string) => {
+    setForm((prev) => {
+      if (esporte === "nenhum") {
+        return { ...prev, esportes: prev.esportes.includes("nenhum") ? [] : ["nenhum"] };
+      }
+      const withoutNenhum = prev.esportes.filter((e) => e !== "nenhum");
+      return {
+        ...prev,
+        esportes: withoutNenhum.includes(esporte)
+          ? withoutNenhum.filter((e) => e !== esporte)
+          : [...withoutNenhum, esporte],
+      };
+    });
+  };
+
   const toggleAlimento = (alimento: string) => {
     setForm((prev) => ({
       ...prev,
