@@ -544,7 +544,7 @@ const Calculator = () => {
                                 : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
                             }`}
                           >
-                            {item}
+                            {item} <span className="opacity-70 text-xs">({alimentosComCalorias[item]}cal)</span>
                           </button>
                         ))}
                       </div>
