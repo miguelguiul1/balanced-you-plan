@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, ArrowLeft, Zap, Flame, Dumbbell, Leaf, Target, Plus, X, UtensilsCrossed } from "lucide-react";
+import { ArrowRight, ArrowLeft, Zap, Flame, Dumbbell, Leaf, Target, Plus, X, UtensilsCrossed, Trophy } from "lucide-react";
 
 type FormData = {
   peso: string;
@@ -9,6 +9,7 @@ type FormData = {
   sexo: string;
   atividade: string;
   objetivo: string;
+  esportes: string[];
   refeicoesPorDia: string;
   alimentosAtuais: string[];
 };
@@ -58,6 +59,22 @@ const alimentosSugeridos = [
   { categoria: "Outros", items: ["Salada", "Frutas", "Legumes", "Iogurte", "Leite", "Suco", "Café", "Refrigerante", "Fast food", "Doces", "Salgadinho"] },
 ];
 
+const esportesDisponiveis = [
+  { id: "musculacao", label: "Musculação", icon: "🏋️" },
+  { id: "corrida", label: "Corrida", icon: "🏃" },
+  { id: "natacao", label: "Natação", icon: "🏊" },
+  { id: "futebol", label: "Futebol", icon: "⚽" },
+  { id: "ciclismo", label: "Ciclismo", icon: "🚴" },
+  { id: "luta", label: "Luta / MMA", icon: "🥊" },
+  { id: "crossfit", label: "CrossFit", icon: "💪" },
+  { id: "yoga", label: "Yoga / Pilates", icon: "🧘" },
+  { id: "danca", label: "Dança", icon: "💃" },
+  { id: "caminhada", label: "Caminhada", icon: "🚶" },
+  { id: "basquete", label: "Basquete", icon: "🏀" },
+  { id: "tenis", label: "Tênis", icon: "🎾" },
+  { id: "nenhum", label: "Nenhum no momento", icon: "❌" },
+];
+
 const mealsOptions = [
   { id: "1-2", label: "1 a 2 refeições", desc: "Poucas refeições por dia" },
   { id: "3", label: "3 refeições", desc: "Café, almoço e janta" },
@@ -76,11 +93,27 @@ const Calculator = () => {
     sexo: "",
     atividade: "",
     objetivo: "",
+    esportes: [],
     refeicoesPorDia: "",
     alimentosAtuais: [],
   });
   const [novoAlimento, setNovoAlimento] = useState("");
   const [results, setResults] = useState<Results | null>(null);
+
+  const toggleEsporte = (esporte: string) => {
+    setForm((prev) => {
+      if (esporte === "nenhum") {
+        return { ...prev, esportes: prev.esportes.includes("nenhum") ? [] : ["nenhum"] };
+      }
+      const withoutNenhum = prev.esportes.filter((e) => e !== "nenhum");
+      return {
+        ...prev,
+        esportes: withoutNenhum.includes(esporte)
+          ? withoutNenhum.filter((e) => e !== esporte)
+          : [...withoutNenhum, esporte],
+      };
+    });
+  };
 
   const toggleAlimento = (alimento: string) => {
     setForm((prev) => ({
@@ -217,7 +250,7 @@ const Calculator = () => {
       case 1:
         return form.peso !== "" && form.altura !== "" && form.idade !== "";
       case 2:
-        return form.atividade !== "";
+        return form.atividade !== "" && form.esportes.length > 0;
       case 3:
         return form.refeicoesPorDia !== "" && form.alimentosAtuais.length > 0;
       case 4:
@@ -355,9 +388,9 @@ const Calculator = () => {
             </div>
           )}
 
-          {/* Step 2: Activity */}
+          {/* Step 2: Activity + Sports */}
           {step === 2 && (
-            <div className="space-y-4 animate-fade-in">
+            <div className="space-y-6 animate-fade-in">
               <h3 className="font-display text-xl font-semibold text-foreground mb-6">
                 Nível de atividade física
               </h3>
@@ -376,6 +409,30 @@ const Calculator = () => {
                     <p className="text-sm text-muted-foreground">{level.desc}</p>
                   </button>
                 ))}
+              </div>
+
+              {/* Sports selection */}
+              <div>
+                <label className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-3">
+                  <Trophy className="w-4 h-4 text-primary" />
+                  Qual esporte você pratica? <span className="text-xs">(pode selecionar vários)</span>
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {esportesDisponiveis.map((esporte) => (
+                    <button
+                      key={esporte.id}
+                      onClick={() => toggleEsporte(esporte.id)}
+                      className={`flex items-center gap-2 p-3 rounded-xl border-2 transition-all text-left text-sm ${
+                        form.esportes.includes(esporte.id)
+                          ? "border-primary bg-primary/5"
+                          : "border-border hover:border-primary/30"
+                      }`}
+                    >
+                      <span className="text-lg">{esporte.icon}</span>
+                      <span className="font-medium text-foreground">{esporte.label}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           )}
@@ -510,6 +567,10 @@ const Calculator = () => {
                 <span className="font-medium text-foreground text-sm">
                   {objectives.find((o) => o.id === form.objetivo)?.label}
                 </span>
+                <span className="text-muted-foreground text-sm">Esporte(s):</span>
+                <span className="font-medium text-foreground text-sm">
+                  {form.esportes.map((e) => esportesDisponiveis.find((ed) => ed.id === e)?.label).join(", ")}
+                </span>
                 <span className="text-muted-foreground text-sm">Refeições/dia:</span>
                 <span className="font-medium text-foreground text-sm">
                   {mealsOptions.find((m) => m.id === form.refeicoesPorDia)?.label}
@@ -621,7 +682,7 @@ const Calculator = () => {
                   onClick={() => {
                     setStep(0);
                     setResults(null);
-                    setForm({ peso: "", altura: "", idade: "", sexo: "", atividade: "", objetivo: "", refeicoesPorDia: "", alimentosAtuais: [] });
+                    setForm({ peso: "", altura: "", idade: "", sexo: "", atividade: "", objetivo: "", esportes: [], refeicoesPorDia: "", alimentosAtuais: [] });
                   }}
                 >
                   Recalcular
