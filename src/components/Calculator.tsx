@@ -250,7 +250,7 @@ const Calculator = () => {
       case 1:
         return form.peso !== "" && form.altura !== "" && form.idade !== "";
       case 2:
-        return form.atividade !== "";
+        return form.atividade !== "" && form.esportes.length > 0;
       case 3:
         return form.refeicoesPorDia !== "" && form.alimentosAtuais.length > 0;
       case 4:
