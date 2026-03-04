@@ -52,6 +52,14 @@ const activityLevels = [
   { id: "muito_intenso", label: "Extremamente ativo", desc: "Treino intenso + trabalho físico" },
 ];
 
+const alimentosComCalorias: Record<string, number> = {
+  "Frango": 165, "Ovo": 155, "Carne vermelha": 250, "Peixe": 120, "Whey": 120, "Tofu": 76, "Feijão": 77,
+  "Arroz": 130, "Pão": 265, "Macarrão": 131, "Batata": 77, "Aveia": 68, "Tapioca": 130, "Mandioca": 125,
+  "Azeite": 884, "Castanhas": 607, "Abacate": 160, "Manteiga": 717, "Queijo": 350, "Amendoim": 567,
+  "Salada": 20, "Frutas": 50, "Legumes": 35, "Iogurte": 59, "Leite": 42, "Suco": 45, "Café": 2,
+  "Refrigerante": 140, "Fast food": 550, "Doces": 400, "Salgadinho": 536,
+};
+
 const alimentosSugeridos = [
   { categoria: "Proteínas", items: ["Frango", "Ovo", "Carne vermelha", "Peixe", "Whey", "Tofu", "Feijão"] },
   { categoria: "Carboidratos", items: ["Arroz", "Pão", "Macarrão", "Batata", "Aveia", "Tapioca", "Mandioca"] },
