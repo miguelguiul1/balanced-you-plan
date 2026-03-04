@@ -93,6 +93,7 @@ const Calculator = () => {
     sexo: "",
     atividade: "",
     objetivo: "",
+    esportes: [],
     refeicoesPorDia: "",
     alimentosAtuais: [],
   });
