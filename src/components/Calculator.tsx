@@ -59,6 +59,22 @@ const alimentosSugeridos = [
   { categoria: "Outros", items: ["Salada", "Frutas", "Legumes", "Iogurte", "Leite", "Suco", "Café", "Refrigerante", "Fast food", "Doces", "Salgadinho"] },
 ];
 
+const esportesDisponiveis = [
+  { id: "musculacao", label: "Musculação", icon: "🏋️" },
+  { id: "corrida", label: "Corrida", icon: "🏃" },
+  { id: "natacao", label: "Natação", icon: "🏊" },
+  { id: "futebol", label: "Futebol", icon: "⚽" },
+  { id: "ciclismo", label: "Ciclismo", icon: "🚴" },
+  { id: "luta", label: "Luta / MMA", icon: "🥊" },
+  { id: "crossfit", label: "CrossFit", icon: "💪" },
+  { id: "yoga", label: "Yoga / Pilates", icon: "🧘" },
+  { id: "danca", label: "Dança", icon: "💃" },
+  { id: "caminhada", label: "Caminhada", icon: "🚶" },
+  { id: "basquete", label: "Basquete", icon: "🏀" },
+  { id: "tenis", label: "Tênis", icon: "🎾" },
+  { id: "nenhum", label: "Nenhum no momento", icon: "❌" },
+];
+
 const mealsOptions = [
   { id: "1-2", label: "1 a 2 refeições", desc: "Poucas refeições por dia" },
   { id: "3", label: "3 refeições", desc: "Café, almoço e janta" },
