@@ -388,9 +388,9 @@ const Calculator = () => {
             </div>
           )}
 
-          {/* Step 2: Activity */}
+          {/* Step 2: Activity + Sports */}
           {step === 2 && (
-            <div className="space-y-4 animate-fade-in">
+            <div className="space-y-6 animate-fade-in">
               <h3 className="font-display text-xl font-semibold text-foreground mb-6">
                 Nível de atividade física
               </h3>
@@ -409,6 +409,30 @@ const Calculator = () => {
                     <p className="text-sm text-muted-foreground">{level.desc}</p>
                   </button>
                 ))}
+              </div>
+
+              {/* Sports selection */}
+              <div>
+                <label className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-3">
+                  <Trophy className="w-4 h-4 text-primary" />
+                  Qual esporte você pratica? <span className="text-xs">(pode selecionar vários)</span>
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {esportesDisponiveis.map((esporte) => (
+                    <button
+                      key={esporte.id}
+                      onClick={() => toggleEsporte(esporte.id)}
+                      className={`flex items-center gap-2 p-3 rounded-xl border-2 transition-all text-left text-sm ${
+                        form.esportes.includes(esporte.id)
+                          ? "border-primary bg-primary/5"
+                          : "border-border hover:border-primary/30"
+                      }`}
+                    >
+                      <span className="text-lg">{esporte.icon}</span>
+                      <span className="font-medium text-foreground">{esporte.label}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           )}
