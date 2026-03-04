@@ -674,7 +674,7 @@ const Calculator = () => {
                 <div className="flex flex-wrap gap-2">
                   {form.alimentosAtuais.map((a) => (
                     <span key={a} className="px-3 py-1 rounded-full bg-primary/10 text-primary text-sm">
-                      {a}
+                      {a} {alimentosComCalorias[a] ? <span className="opacity-70 text-xs">({alimentosComCalorias[a]}cal/100g)</span> : null}
                     </span>
                   ))}
                 </div>
