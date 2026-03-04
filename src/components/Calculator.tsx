@@ -9,6 +9,7 @@ type FormData = {
   sexo: string;
   atividade: string;
   objetivo: string;
+  esportes: string[];
   refeicoesPorDia: string;
   alimentosAtuais: string[];
 };
