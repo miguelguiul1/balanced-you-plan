@@ -15,6 +15,7 @@ import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import Historico from "./pages/Historico";
 import PlanoSemanal from "./pages/PlanoSemanal";
+import DiarioAlimentar from "./pages/DiarioAlimentar";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -38,6 +39,7 @@ const App = () => (
             <Route path="/biblioteca" element={<Biblioteca />} />
             <Route path="/historico" element={<Historico />} />
             <Route path="/plano-semanal" element={<PlanoSemanal />} />
+            <Route path="/diario" element={<DiarioAlimentar />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
