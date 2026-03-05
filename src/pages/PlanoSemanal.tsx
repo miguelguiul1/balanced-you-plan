@@ -64,7 +64,7 @@ const PlanoSemanal = () => {
       }
 
       const { data, error } = await supabase.functions.invoke("meal-plan", {
-        body: { preferences },
+        body: { preferences, goal: goal.trim() || undefined },
       });
 
       if (error) throw error;
