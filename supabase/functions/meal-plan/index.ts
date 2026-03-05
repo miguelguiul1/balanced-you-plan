@@ -9,7 +9,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { preferences } = await req.json();
+    const { preferences, goal } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
@@ -21,6 +21,9 @@ serve(async (req) => {
       if (preferences.disliked_foods?.length) parts.push(`NÃO usar: ${preferences.disliked_foods.join(", ")}`);
       if (preferences.liked_foods?.length) parts.push(`Preferidos: ${preferences.liked_foods.join(", ")}`);
       if (parts.length) preferencesContext = `\n\nPERFIL DO USUÁRIO:\n${parts.join("\n")}`;
+    }
+    if (goal) {
+      preferencesContext += `\n\nOBJETIVO DESCRITO PELO USUÁRIO: "${goal}"\nAdapte todo o plano para atender este objetivo específico.`;
     }
 
     const systemPrompt = `Você é um nutricionista brasileiro. Crie um plano semanal de refeições (segunda a domingo) com café da manhã, almoço, lanche e jantar. Retorne APENAS JSON válido (sem markdown, sem backticks):
