@@ -2,58 +2,38 @@ import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Camera, Upload, Zap, Apple, Flame, Lightbulb, RefreshCw } from "lucide-react";
 import MotivationalQuote from "@/components/MotivationalQuote";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
-// Simulated AI response for demo
-const mockAnalysis = {
-  alimentos: [
-    { nome: "Ovos", quantidade: "~6 unidades", calorias: 155 },
-    { nome: "Tomate", quantidade: "~3 unidades", calorias: 18 },
-    { nome: "Queijo", quantidade: "~200g", calorias: 350 },
-    { nome: "Leite", quantidade: "~1 litro", calorias: 42 },
-    { nome: "Alface", quantidade: "~1 maço", calorias: 15 },
-    { nome: "Cenoura", quantidade: "~3 unidades", calorias: 41 },
-  ],
-  receitas: [
-    {
-      nome: "Omelete nutritiva",
-      ingredientes: ["Ovos", "Tomate", "Queijo"],
-      tempo: "10 min",
-      calorias: 320,
-      proteina: 24,
-      carb: 8,
-      gordura: 22,
-    },
-    {
-      nome: "Salada completa",
-      ingredientes: ["Alface", "Tomate", "Cenoura", "Ovos"],
-      tempo: "8 min",
-      calorias: 180,
-      proteina: 12,
-      carb: 15,
-      gordura: 8,
-    },
-    {
-      nome: "Sanduíche natural",
-      ingredientes: ["Queijo", "Tomate", "Alface"],
-      tempo: "5 min",
-      calorias: 250,
-      proteina: 14,
-      carb: 28,
-      gordura: 10,
-    },
-  ],
-  dicas: [
-    "Sua geladeira tem boas fontes de proteína com os ovos e queijo",
-    "Adicione mais frutas para aumentar a ingestão de vitaminas",
-    "Combine a salada com uma fonte de carboidrato como arroz integral",
-  ],
-};
+interface Alimento {
+  nome: string;
+  quantidade: string;
+  calorias: number;
+}
+
+interface Receita {
+  nome: string;
+  ingredientes: string[];
+  tempo: string;
+  calorias: number;
+  proteina: number;
+  carb: number;
+  gordura: number;
+  preparo?: string;
+}
+
+interface AnalysisResult {
+  alimentos: Alimento[];
+  receitas: Receita[];
+  dicas: string[];
+}
 
 const Scanner = () => {
   const [image, setImage] = useState<string | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
-  const [result, setResult] = useState<typeof mockAnalysis | null>(null);
+  const [result, setResult] = useState<AnalysisResult | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
 
   const handleImage = (file: File) => {
     const reader = new FileReader();
@@ -64,13 +44,28 @@ const Scanner = () => {
     reader.readAsDataURL(file);
   };
 
-  const analyze = () => {
+  const analyze = async () => {
+    if (!image) return;
     setAnalyzing(true);
-    // Simulate AI processing
-    setTimeout(() => {
-      setResult(mockAnalysis);
+    try {
+      const { data, error } = await supabase.functions.invoke("analyze-fridge", {
+        body: { imageBase64: image },
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      setResult(data as AnalysisResult);
+    } catch (e: any) {
+      console.error("Erro na análise:", e);
+      toast({
+        title: "Erro na análise",
+        description: e.message || "Não foi possível analisar a imagem. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
       setAnalyzing(false);
-    }, 2500);
+    }
   };
 
   const reset = () => {
@@ -269,8 +264,7 @@ const Scanner = () => {
 
             <div className="bg-primary/5 border border-primary/10 rounded-2xl p-6 text-center">
               <p className="text-sm text-muted-foreground">
-                🚀 <strong>Em breve:</strong> ativando a IA real para reconhecimento de alimentos por foto.
-                Por enquanto, os resultados são demonstrativos.
+                🤖 <strong>IA ativa!</strong> Os resultados são gerados em tempo real pela inteligência artificial analisando sua foto.
               </p>
             </div>
           </div>
