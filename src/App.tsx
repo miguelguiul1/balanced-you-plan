@@ -13,6 +13,8 @@ import Educacao from "./pages/Educacao";
 import Biblioteca from "./pages/Biblioteca";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
+import Historico from "./pages/Historico";
+import PlanoSemanal from "./pages/PlanoSemanal";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +36,8 @@ const App = () => (
             <Route path="/receitas" element={<Receitas />} />
             <Route path="/educacao" element={<Educacao />} />
             <Route path="/biblioteca" element={<Biblioteca />} />
+            <Route path="/historico" element={<Historico />} />
+            <Route path="/plano-semanal" element={<PlanoSemanal />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

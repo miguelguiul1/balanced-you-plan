@@ -50,8 +50,26 @@ const Scanner = () => {
     if (!image) return;
     setAnalyzing(true);
     try {
+      // Load preferences if logged in
+      let preferences = null;
+      if (user) {
+        const { data: prefs } = await supabase
+          .from("user_preferences")
+          .select("*")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        if (prefs) {
+          preferences = {
+            objective: prefs.objective,
+            restrictions: prefs.restrictions,
+            liked_foods: prefs.liked_foods,
+            disliked_foods: prefs.disliked_foods,
+          };
+        }
+      }
+
       const { data, error } = await supabase.functions.invoke("analyze-fridge", {
-        body: { imageBase64: image },
+        body: { imageBase64: image, preferences },
       });
 
       if (error) throw error;
