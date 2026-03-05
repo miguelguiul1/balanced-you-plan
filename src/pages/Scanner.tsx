@@ -57,7 +57,16 @@ const Scanner = () => {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
 
-      setResult(data as AnalysisResult);
+      const analysisResult = data as AnalysisResult;
+      setResult(analysisResult);
+
+      // Save to history if logged in
+      if (user) {
+        await supabase.from("scan_history").insert({
+          user_id: user.id,
+          result: data,
+        });
+      }
     } catch (e: any) {
       console.error("Erro na análise:", e);
       toast({
