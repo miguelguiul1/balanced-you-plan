@@ -15,6 +15,7 @@ import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import Historico from "./pages/Historico";
 import PlanoSemanal from "./pages/PlanoSemanal";
+import DiarioAlimentar from "./pages/DiarioAlimentar";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
