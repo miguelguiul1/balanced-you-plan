@@ -102,16 +102,42 @@ const PlanoSemanal = () => {
         </div>
 
         {!plano && (
-          <div className="bg-card rounded-2xl shadow-soft p-8 text-center">
-            <Calendar className="w-12 h-12 text-primary mx-auto mb-4" />
-            <p className="font-display font-semibold text-foreground mb-2">
+          <div className="bg-card rounded-2xl shadow-soft p-8 text-center space-y-5">
+            <Calendar className="w-12 h-12 text-primary mx-auto" />
+            <p className="font-display font-semibold text-foreground">
               Gere seu plano semanal
             </p>
-            <p className="text-sm text-muted-foreground mb-6">
+            <p className="text-sm text-muted-foreground">
               {user
                 ? "A IA vai considerar suas preferências e restrições alimentares"
                 : "Faça login para um plano personalizado com suas preferências"}
             </p>
+
+            <div className="text-left max-w-md mx-auto">
+              <label className="block text-sm font-medium text-foreground mb-1.5">
+                🎯 Qual seu objetivo com a alimentação?
+              </label>
+              <textarea
+                value={goal}
+                onChange={(e) => setGoal(e.target.value)}
+                placeholder="Ex: Quero ganhar massa muscular gastando pouco, com refeições práticas para levar ao trabalho..."
+                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-[80px] resize-none"
+                maxLength={500}
+              />
+              <div className="flex flex-wrap gap-2 mt-2">
+                {["Ganhar massa", "Emagrecer", "Comer saudável", "Economizar", "Praticidade"].map((tag) => (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() => setGoal((prev) => prev ? `${prev}, ${tag.toLowerCase()}` : tag.toLowerCase())}
+                    className="px-3 py-1 rounded-full text-xs font-medium bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors"
+                  >
+                    {tag}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <Button variant="hero" size="lg" onClick={generatePlan} disabled={generating} className="gap-2">
               {generating ? (
                 <><RefreshCw className="w-5 h-5 animate-spin" /> Gerando plano...</>
@@ -120,7 +146,7 @@ const PlanoSemanal = () => {
               )}
             </Button>
             {generating && (
-              <div className="mt-6">
+              <div>
                 <div className="h-2 rounded-full bg-border overflow-hidden">
                   <div className="h-full bg-primary rounded-full animate-pulse" style={{ width: "70%" }} />
                 </div>
