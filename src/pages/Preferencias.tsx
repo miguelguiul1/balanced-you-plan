@@ -1,9 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Heart, ThumbsDown, AlertTriangle, Target, Check, X, Camera } from "lucide-react";
+import { Heart, ThumbsDown, AlertTriangle, Target, Check, X } from "lucide-react";
 import MotivationalQuote from "@/components/MotivationalQuote";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
-const allFoods = {
+const allFoods: Record<string, string[]> = {
   "Proteínas": ["Frango", "Ovo", "Carne vermelha", "Peixe", "Atum", "Sardinha", "Tofu", "Feijão", "Lentilha", "Grão-de-bico", "Whey"],
   "Carboidratos": ["Arroz", "Arroz integral", "Pão", "Pão integral", "Macarrão", "Batata", "Batata-doce", "Aveia", "Tapioca", "Mandioca", "Milho", "Quinoa"],
   "Gorduras": ["Azeite", "Castanhas", "Abacate", "Manteiga", "Queijo", "Amendoim", "Linhaça", "Chia", "Coco"],
@@ -31,7 +35,29 @@ const Preferencias = () => {
   const [disliked, setDisliked] = useState<string[]>([]);
   const [selectedRestrictions, setSelectedRestrictions] = useState<string[]>([]);
   const [selectedObjective, setSelectedObjective] = useState("");
-  const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+
+  // Load preferences from DB
+  useEffect(() => {
+    if (!user) return;
+    const load = async () => {
+      const { data } = await supabase
+        .from("user_preferences")
+        .select("*")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (data) {
+        setSelectedObjective(data.objective || "");
+        setLiked(data.liked_foods || []);
+        setDisliked(data.disliked_foods || []);
+        setSelectedRestrictions(data.restrictions || []);
+      }
+    };
+    load();
+  }, [user]);
 
   const toggleLiked = (food: string) => {
     setDisliked((prev) => prev.filter((f) => f !== food));
@@ -47,9 +73,31 @@ const Preferencias = () => {
     setSelectedRestrictions((prev) => prev.includes(r) ? prev.filter((x) => x !== r) : [...prev, r]);
   };
 
-  const handleSave = () => {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+  const handleSave = async () => {
+    if (!user) {
+      toast({ title: "Faça login para salvar", description: "Crie uma conta para salvar suas preferências.", variant: "destructive" });
+      navigate("/auth");
+      return;
+    }
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from("user_preferences")
+        .upsert({
+          user_id: user.id,
+          objective: selectedObjective,
+          liked_foods: liked,
+          disliked_foods: disliked,
+          restrictions: selectedRestrictions,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: "user_id" });
+      if (error) throw error;
+      toast({ title: "✓ Preferências salvas!" });
+    } catch (e: any) {
+      toast({ title: "Erro ao salvar", description: e.message, variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -188,12 +236,14 @@ const Preferencias = () => {
               <p className="font-medium text-destructive">{disliked.length} marcados</p>
             </div>
           </div>
-          <Button variant="hero" size="lg" className="w-full mt-6" onClick={handleSave}>
-            {saved ? "✓ Perfil salvo!" : "Salvar preferências"}
+          <Button variant="hero" size="lg" className="w-full mt-6" onClick={handleSave} disabled={saving}>
+            {saving ? "Salvando..." : "Salvar preferências"}
           </Button>
-          <p className="text-xs text-muted-foreground text-center mt-3">
-            Em breve: a IA usará seu perfil para gerar receitas e planos personalizados
-          </p>
+          {!user && (
+            <p className="text-xs text-muted-foreground text-center mt-3">
+              Faça <button onClick={() => navigate("/auth")} className="text-primary font-semibold underline">login</button> para salvar suas preferências
+            </p>
+          )}
         </div>
       </div>
     </div>
