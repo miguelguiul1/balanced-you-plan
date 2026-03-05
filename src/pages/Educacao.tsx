@@ -147,6 +147,7 @@ const Educacao = () => {
             <h2 className="font-display text-xl font-semibold text-foreground mb-4">
               🔬 Mitos e Verdades da Nutrição
             </h2>
+            <MythChecker />
             {mitos.map((m, i) => (
               <div key={i} className="bg-card rounded-xl shadow-soft border border-border/50 overflow-hidden">
                 <button

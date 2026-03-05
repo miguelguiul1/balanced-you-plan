@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.nutrition-tracker]
 verify_jwt = false
+
+[functions.myth-checker]
+verify_jwt = false
