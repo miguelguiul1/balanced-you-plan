@@ -43,12 +43,10 @@ serve(async (req) => {
 }
 
 Regras:
-- Receitas práticas (até 15 min), econômicas e saudáveis
-- Varie os pratos ao longo da semana
-- Inclua lista de compras completa
-- Estime o custo semanal em reais
-- 3 dicas personalizadas
-- SOMENTE JSON${preferencesContext}`;
+- Receitas práticas (até 15 min), econômicas e saudáveis. Varie os pratos.
+- Inclua lista de compras, custo semanal em reais, 3 dicas personalizadas
+- Use nomes curtos para receitas e preparo resumido (1 frase)
+- SOMENTE JSON, sem texto extra${preferencesContext}`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
