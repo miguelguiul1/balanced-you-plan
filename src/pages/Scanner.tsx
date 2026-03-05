@@ -1,0 +1,287 @@
+import { useState, useRef } from "react";
+import { Button } from "@/components/ui/button";
+import { Camera, Upload, Zap, Apple, Flame, Lightbulb, RefreshCw } from "lucide-react";
+import MotivationalQuote from "@/components/MotivationalQuote";
+
+// Simulated AI response for demo
+const mockAnalysis = {
+  alimentos: [
+    { nome: "Ovos", quantidade: "~6 unidades", calorias: 155 },
+    { nome: "Tomate", quantidade: "~3 unidades", calorias: 18 },
+    { nome: "Queijo", quantidade: "~200g", calorias: 350 },
+    { nome: "Leite", quantidade: "~1 litro", calorias: 42 },
+    { nome: "Alface", quantidade: "~1 maço", calorias: 15 },
+    { nome: "Cenoura", quantidade: "~3 unidades", calorias: 41 },
+  ],
+  receitas: [
+    {
+      nome: "Omelete nutritiva",
+      ingredientes: ["Ovos", "Tomate", "Queijo"],
+      tempo: "10 min",
+      calorias: 320,
+      proteina: 24,
+      carb: 8,
+      gordura: 22,
+    },
+    {
+      nome: "Salada completa",
+      ingredientes: ["Alface", "Tomate", "Cenoura", "Ovos"],
+      tempo: "8 min",
+      calorias: 180,
+      proteina: 12,
+      carb: 15,
+      gordura: 8,
+    },
+    {
+      nome: "Sanduíche natural",
+      ingredientes: ["Queijo", "Tomate", "Alface"],
+      tempo: "5 min",
+      calorias: 250,
+      proteina: 14,
+      carb: 28,
+      gordura: 10,
+    },
+  ],
+  dicas: [
+    "Sua geladeira tem boas fontes de proteína com os ovos e queijo",
+    "Adicione mais frutas para aumentar a ingestão de vitaminas",
+    "Combine a salada com uma fonte de carboidrato como arroz integral",
+  ],
+};
+
+const Scanner = () => {
+  const [image, setImage] = useState<string | null>(null);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [result, setResult] = useState<typeof mockAnalysis | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const handleImage = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setImage(e.target?.result as string);
+      setResult(null);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const analyze = () => {
+    setAnalyzing(true);
+    // Simulate AI processing
+    setTimeout(() => {
+      setResult(mockAnalysis);
+      setAnalyzing(false);
+    }, 2500);
+  };
+
+  const reset = () => {
+    setImage(null);
+    setResult(null);
+  };
+
+  return (
+    <div className="min-h-screen bg-background pt-20 pb-16">
+      <div className="container mx-auto px-6 max-w-3xl">
+        <div className="text-center mb-10">
+          <span className="inline-block mb-4 px-4 py-1.5 rounded-full bg-primary/10 text-primary font-display text-sm font-medium">
+            🔬 Função principal
+          </span>
+          <h1 className="font-display text-3xl sm:text-4xl font-bold text-foreground">
+            Scanner de <span className="text-primary">Geladeira</span>
+          </h1>
+          <p className="mt-3 text-muted-foreground max-w-lg mx-auto">
+            Tire uma foto da sua geladeira e a IA vai identificar os alimentos e sugerir receitas práticas, saudáveis e econômicas
+          </p>
+        </div>
+
+        {/* Upload area */}
+        {!image && (
+          <div className="bg-card rounded-2xl shadow-soft p-8 text-center">
+            <div className="border-2 border-dashed border-border rounded-xl p-12 hover:border-primary/50 transition-colors">
+              <Camera className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <p className="font-display font-semibold text-foreground mb-2">
+                Fotografe sua geladeira
+              </p>
+              <p className="text-sm text-muted-foreground mb-6">
+                Tire uma foto ou envie uma imagem
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Button
+                  variant="hero"
+                  size="lg"
+                  onClick={() => fileRef.current?.click()}
+                  className="gap-2"
+                >
+                  <Camera className="w-5 h-5" /> Tirar foto
+                </Button>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={() => fileRef.current?.click()}
+                  className="gap-2"
+                >
+                  <Upload className="w-5 h-5" /> Enviar imagem
+                </Button>
+              </div>
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="hidden"
+                onChange={(e) => e.target.files?.[0] && handleImage(e.target.files[0])}
+              />
+            </div>
+
+            <div className="mt-8 grid grid-cols-3 gap-4 text-center">
+              <div className="p-4">
+                <Zap className="w-6 h-6 text-primary mx-auto mb-2" />
+                <p className="text-xs text-muted-foreground">Receitas instantâneas</p>
+              </div>
+              <div className="p-4">
+                <Flame className="w-6 h-6 text-accent mx-auto mb-2" />
+                <p className="text-xs text-muted-foreground">Calorias estimadas</p>
+              </div>
+              <div className="p-4">
+                <Apple className="w-6 h-6 text-primary mx-auto mb-2" />
+                <p className="text-xs text-muted-foreground">Info nutricional</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Image preview */}
+        {image && !result && (
+          <div className="bg-card rounded-2xl shadow-soft p-6 text-center">
+            <img src={image} alt="Sua geladeira" className="w-full max-h-80 object-cover rounded-xl mb-6" />
+            <div className="flex gap-3 justify-center">
+              <Button variant="hero" size="lg" onClick={analyze} disabled={analyzing} className="gap-2">
+                {analyzing ? (
+                  <>
+                    <RefreshCw className="w-5 h-5 animate-spin" /> Analisando...
+                  </>
+                ) : (
+                  <>
+                    <Zap className="w-5 h-5" /> Analisar com IA
+                  </>
+                )}
+              </Button>
+              <Button variant="outline" size="lg" onClick={reset}>
+                Nova foto
+              </Button>
+            </div>
+            {analyzing && (
+              <div className="mt-6">
+                <div className="h-2 rounded-full bg-border overflow-hidden">
+                  <div className="h-full bg-primary rounded-full animate-pulse" style={{ width: "60%" }} />
+                </div>
+                <p className="text-sm text-muted-foreground mt-2">Identificando alimentos e gerando receitas...</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Results */}
+        {result && (
+          <div className="space-y-6 animate-fade-in">
+            {/* Image */}
+            <div className="bg-card rounded-2xl shadow-soft p-4">
+              <img src={image!} alt="Sua geladeira" className="w-full max-h-48 object-cover rounded-xl" />
+            </div>
+
+            {/* Identified foods */}
+            <div className="bg-card rounded-2xl shadow-soft p-6">
+              <h2 className="font-display text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                <Apple className="w-5 h-5 text-primary" /> Alimentos identificados
+              </h2>
+              <div className="grid grid-cols-2 gap-3">
+                {result.alimentos.map((a) => (
+                  <div key={a.nome} className="flex items-center justify-between p-3 rounded-xl bg-secondary/50">
+                    <div>
+                      <p className="font-medium text-foreground text-sm">{a.nome}</p>
+                      <p className="text-xs text-muted-foreground">{a.quantidade}</p>
+                    </div>
+                    <span className="text-xs font-display font-semibold text-primary">{a.calorias} cal</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Recipes */}
+            <div className="bg-card rounded-2xl shadow-soft p-6">
+              <h2 className="font-display text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                <Flame className="w-5 h-5 text-accent" /> Receitas sugeridas
+              </h2>
+              <div className="space-y-4">
+                {result.receitas.map((r) => (
+                  <div key={r.nome} className="border-2 border-border rounded-xl p-4 hover:border-primary/30 transition-colors">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="font-display font-semibold text-foreground">{r.nome}</h3>
+                      <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full font-medium">⏱ {r.tempo}</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Ingredientes: {r.ingredientes.join(", ")}
+                    </p>
+                    <div className="grid grid-cols-4 gap-2 text-center">
+                      <div className="bg-secondary/50 rounded-lg p-2">
+                        <p className="font-display font-bold text-foreground text-sm">{r.calorias}</p>
+                        <p className="text-xs text-muted-foreground">kcal</p>
+                      </div>
+                      <div className="bg-secondary/50 rounded-lg p-2">
+                        <p className="font-display font-bold text-primary text-sm">{r.proteina}g</p>
+                        <p className="text-xs text-muted-foreground">prot</p>
+                      </div>
+                      <div className="bg-secondary/50 rounded-lg p-2">
+                        <p className="font-display font-bold text-accent text-sm">{r.carb}g</p>
+                        <p className="text-xs text-muted-foreground">carb</p>
+                      </div>
+                      <div className="bg-secondary/50 rounded-lg p-2">
+                        <p className="font-display font-bold text-foreground text-sm">{r.gordura}g</p>
+                        <p className="text-xs text-muted-foreground">gord</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Tips */}
+            <div className="bg-card rounded-2xl shadow-soft p-6">
+              <h2 className="font-display text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                <Lightbulb className="w-5 h-5 text-accent" /> Dicas personalizadas
+              </h2>
+              <div className="space-y-3">
+                {result.dicas.map((d, i) => (
+                  <div key={i} className="flex items-start gap-3 text-sm">
+                    <span className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center flex-shrink-0 font-display font-bold text-xs">
+                      {i + 1}
+                    </span>
+                    <p className="text-muted-foreground">{d}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="text-center">
+              <Button variant="outline" size="lg" onClick={reset} className="gap-2">
+                <Camera className="w-5 h-5" /> Escanear novamente
+              </Button>
+            </div>
+
+            <div className="bg-primary/5 border border-primary/10 rounded-2xl p-6 text-center">
+              <p className="text-sm text-muted-foreground">
+                🚀 <strong>Em breve:</strong> ativando a IA real para reconhecimento de alimentos por foto.
+                Por enquanto, os resultados são demonstrativos.
+              </p>
+            </div>
+          </div>
+        )}
+
+        <div className="mt-10">
+          <MotivationalQuote />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Scanner;
