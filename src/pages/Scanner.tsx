@@ -35,6 +35,7 @@ const Scanner = () => {
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const handleImage = (file: File) => {
     const reader = new FileReader();
