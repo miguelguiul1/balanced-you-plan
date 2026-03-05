@@ -43,12 +43,10 @@ serve(async (req) => {
 }
 
 Regras:
-- Receitas práticas (até 15 min), econômicas e saudáveis
-- Varie os pratos ao longo da semana
-- Inclua lista de compras completa
-- Estime o custo semanal em reais
-- 3 dicas personalizadas
-- SOMENTE JSON${preferencesContext}`;
+- Receitas práticas (até 15 min), econômicas e saudáveis. Varie os pratos.
+- Inclua lista de compras, custo semanal em reais, 3 dicas personalizadas
+- Use nomes curtos para receitas e preparo resumido (1 frase)
+- SOMENTE JSON, sem texto extra${preferencesContext}`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -58,6 +56,7 @@ Regras:
       },
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
+        max_tokens: 16000,
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: "Gere um plano semanal de refeições completo, personalizado e econômico. Retorne o JSON." },
@@ -88,11 +87,32 @@ Regras:
 
     let parsed;
     try {
-      const cleanContent = content.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
-      parsed = JSON.parse(cleanContent);
-    } catch {
-      console.error("Failed to parse meal plan:", content);
-      return new Response(JSON.stringify({ error: "Erro ao interpretar o plano" }), {
+      let cleaned = content.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim();
+      
+      // Find JSON boundaries
+      const jsonStart = cleaned.search(/[\{\[]/);
+      const jsonEnd = cleaned[jsonStart] === '[' 
+        ? cleaned.lastIndexOf(']') 
+        : cleaned.lastIndexOf('}');
+      
+      if (jsonStart === -1 || jsonEnd === -1) throw new Error("No JSON found");
+      cleaned = cleaned.substring(jsonStart, jsonEnd + 1);
+      
+      // Fix common issues
+      cleaned = cleaned
+        .replace(/,\s*}/g, "}")
+        .replace(/,\s*]/g, "]")
+        .replace(/[\x00-\x1F\x7F]/g, " ");
+      
+      parsed = JSON.parse(cleaned);
+      
+      // If AI returned array instead of object, wrap it
+      if (Array.isArray(parsed)) {
+        parsed = { plano: parsed, resumo: { calorias_media: 0, proteina_media: 0, carb_media: 0, gordura_media: 0 }, lista_compras: [], custo_estimado: "Não calculado", dicas: [] };
+      }
+    } catch (e) {
+      console.error("Failed to parse meal plan:", content.substring(0, 500), "...", e);
+      return new Response(JSON.stringify({ error: "Erro ao interpretar o plano. Tente novamente." }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
