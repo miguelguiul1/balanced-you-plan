@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { BookOpen, FlaskConical, Tag, Scale, ChevronDown, ChevronUp, ExternalLink } from "lucide-react";
 import MotivationalQuote from "@/components/MotivationalQuote";
+import MythChecker from "@/components/MythChecker";
 
 type Mito = {
   pergunta: string;
