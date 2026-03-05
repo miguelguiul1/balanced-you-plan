@@ -264,8 +264,7 @@ const Scanner = () => {
 
             <div className="bg-primary/5 border border-primary/10 rounded-2xl p-6 text-center">
               <p className="text-sm text-muted-foreground">
-                🚀 <strong>Em breve:</strong> ativando a IA real para reconhecimento de alimentos por foto.
-                Por enquanto, os resultados são demonstrativos.
+                🤖 <strong>IA ativa!</strong> Os resultados são gerados em tempo real pela inteligência artificial analisando sua foto.
               </p>
             </div>
           </div>
