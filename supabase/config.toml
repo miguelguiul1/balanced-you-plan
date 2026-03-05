@@ -1,1 +1,4 @@
 project_id = "icmyqmvcwzdfleuxyiux"
+
+[functions.analyze-fridge]
+verify_jwt = false
