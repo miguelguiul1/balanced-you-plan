@@ -9,34 +9,46 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { imageBase64, preferences } = await req.json();
+    const { preferences } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
     let preferencesContext = "";
     if (preferences) {
       const parts: string[] = [];
-      if (preferences.objective) parts.push(`Objetivo do usuário: ${preferences.objective}`);
-      if (preferences.restrictions?.length) parts.push(`Restrições alimentares: ${preferences.restrictions.join(", ")}`);
-      if (preferences.disliked_foods?.length) parts.push(`Alimentos que NÃO gosta (NUNCA use nas receitas): ${preferences.disliked_foods.join(", ")}`);
-      if (preferences.liked_foods?.length) parts.push(`Alimentos preferidos (priorize nas receitas): ${preferences.liked_foods.join(", ")}`);
+      if (preferences.objective) parts.push(`Objetivo: ${preferences.objective}`);
+      if (preferences.restrictions?.length) parts.push(`Restrições: ${preferences.restrictions.join(", ")}`);
+      if (preferences.disliked_foods?.length) parts.push(`NÃO usar: ${preferences.disliked_foods.join(", ")}`);
+      if (preferences.liked_foods?.length) parts.push(`Preferidos: ${preferences.liked_foods.join(", ")}`);
       if (parts.length) preferencesContext = `\n\nPERFIL DO USUÁRIO:\n${parts.join("\n")}`;
     }
 
-    const systemPrompt = `Você é um nutricionista brasileiro especialista. Analise a foto da geladeira e retorne APENAS um JSON válido (sem markdown, sem backticks) com esta estrutura:
+    const systemPrompt = `Você é um nutricionista brasileiro. Crie um plano semanal de refeições (segunda a domingo) com café da manhã, almoço, lanche e jantar. Retorne APENAS JSON válido (sem markdown, sem backticks):
 {
-  "alimentos": [{"nome": "string", "quantidade": "string", "calorias": number}],
-  "receitas": [{"nome": "string", "ingredientes": ["string"], "tempo": "string", "calorias": number, "proteina": number, "carb": number, "gordura": number, "preparo": "string"}],
+  "plano": [
+    {
+      "dia": "Segunda",
+      "refeicoes": [
+        {"tipo": "Café da manhã", "nome": "string", "calorias": number, "proteina": number, "carb": number, "gordura": number, "ingredientes": ["string"], "preparo": "string resumido"},
+        {"tipo": "Almoço", ...},
+        {"tipo": "Lanche", ...},
+        {"tipo": "Jantar", ...}
+      ]
+    }
+  ],
+  "resumo": {"calorias_media": number, "proteina_media": number, "carb_media": number, "gordura_media": number},
+  "lista_compras": ["string"],
+  "custo_estimado": "string",
   "dicas": ["string"]
 }
 
 Regras:
-- Identifique TODOS os alimentos visíveis na foto
-- Sugira 3-4 receitas práticas (até 15 min) usando esses alimentos
-- Priorize receitas econômicas e saudáveis
-- Dê 3 dicas personalizadas sobre nutrição baseadas nos alimentos encontrados
-- Calorias são por porção/100g
-- Responda SOMENTE com o JSON, sem texto adicional${preferencesContext}`;
+- Receitas práticas (até 15 min), econômicas e saudáveis
+- Varie os pratos ao longo da semana
+- Inclua lista de compras completa
+- Estime o custo semanal em reais
+- 3 dicas personalizadas
+- SOMENTE JSON${preferencesContext}`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -48,31 +60,25 @@ Regras:
         model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: systemPrompt },
-          {
-            role: "user",
-            content: [
-              { type: "text", text: "Analise esta foto da geladeira e identifique os alimentos. Retorne o JSON com alimentos, receitas e dicas." },
-              { type: "image_url", image_url: { url: imageBase64 } },
-            ],
-          },
+          { role: "user", content: "Gere um plano semanal de refeições completo, personalizado e econômico. Retorne o JSON." },
         ],
       }),
     });
 
     if (!response.ok) {
       if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Limite de requisições excedido. Tente novamente em alguns segundos." }), {
+        return new Response(JSON.stringify({ error: "Limite de requisições excedido. Tente novamente." }), {
           status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
       if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "Créditos de IA esgotados. Adicione créditos ao workspace." }), {
+        return new Response(JSON.stringify({ error: "Créditos de IA esgotados." }), {
           status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
       const t = await response.text();
       console.error("AI gateway error:", response.status, t);
-      return new Response(JSON.stringify({ error: "Erro ao processar a imagem" }), {
+      return new Response(JSON.stringify({ error: "Erro ao gerar plano" }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -85,8 +91,8 @@ Regras:
       const cleanContent = content.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
       parsed = JSON.parse(cleanContent);
     } catch {
-      console.error("Failed to parse AI response:", content);
-      return new Response(JSON.stringify({ error: "Erro ao interpretar a resposta da IA" }), {
+      console.error("Failed to parse meal plan:", content);
+      return new Response(JSON.stringify({ error: "Erro ao interpretar o plano" }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -95,7 +101,7 @@ Regras:
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
-    console.error("analyze-fridge error:", e);
+    console.error("meal-plan error:", e);
     return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Erro desconhecido" }), {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
