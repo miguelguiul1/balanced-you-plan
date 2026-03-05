@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Menu, X, LogIn, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 
 const navLinks = [
   { path: "/", label: "Início" },
@@ -15,6 +16,13 @@ const navLinks = [
 const Navbar = () => {
   const [open, setOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/");
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50">
@@ -38,6 +46,24 @@ const Navbar = () => {
               {link.label}
             </Link>
           ))}
+
+          {user ? (
+            <div className="flex items-center gap-2 ml-3">
+              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                <User className="w-3 h-3" />
+                {user.user_metadata?.full_name || user.email?.split("@")[0]}
+              </span>
+              <Button variant="ghost" size="sm" onClick={handleSignOut} className="gap-1 text-muted-foreground">
+                <LogOut className="w-4 h-4" /> Sair
+              </Button>
+            </div>
+          ) : (
+            <Link to="/auth" className="ml-3">
+              <Button variant="hero" size="sm" className="gap-1">
+                <LogIn className="w-4 h-4" /> Entrar
+              </Button>
+            </Link>
+          )}
         </div>
 
         {/* Mobile toggle */}
@@ -64,6 +90,23 @@ const Navbar = () => {
                 {link.label}
               </Link>
             ))}
+
+            {user ? (
+              <button
+                onClick={() => { handleSignOut(); setOpen(false); }}
+                className="px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary flex items-center gap-2"
+              >
+                <LogOut className="w-4 h-4" /> Sair ({user.email?.split("@")[0]})
+              </button>
+            ) : (
+              <Link
+                to="/auth"
+                onClick={() => setOpen(false)}
+                className="px-4 py-3 rounded-lg text-sm font-medium bg-primary/10 text-primary flex items-center gap-2"
+              >
+                <LogIn className="w-4 h-4" /> Entrar / Cadastrar
+              </Link>
+            )}
           </div>
         </div>
       )}

@@ -4,6 +4,7 @@ import { Camera, Upload, Zap, Apple, Flame, Lightbulb, RefreshCw } from "lucide-
 import MotivationalQuote from "@/components/MotivationalQuote";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Alimento {
   nome: string;
@@ -34,6 +35,7 @@ const Scanner = () => {
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const handleImage = (file: File) => {
     const reader = new FileReader();
@@ -55,7 +57,16 @@ const Scanner = () => {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
 
-      setResult(data as AnalysisResult);
+      const analysisResult = data as AnalysisResult;
+      setResult(analysisResult);
+
+      // Save to history if logged in
+      if (user) {
+        await supabase.from("scan_history").insert({
+          user_id: user.id,
+          result: data,
+        });
+      }
     } catch (e: any) {
       console.error("Erro na análise:", e);
       toast({
