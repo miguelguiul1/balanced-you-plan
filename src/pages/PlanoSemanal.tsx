@@ -37,6 +37,7 @@ const PlanoSemanal = () => {
   const [expandedDay, setExpandedDay] = useState<string | null>(null);
   const [expandedMeal, setExpandedMeal] = useState<string | null>(null);
   const [showList, setShowList] = useState(false);
+  const [goal, setGoal] = useState("");
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
