@@ -2,3 +2,6 @@ project_id = "icmyqmvcwzdfleuxyiux"
 
 [functions.analyze-fridge]
 verify_jwt = false
+
+[functions.meal-plan]
+verify_jwt = false

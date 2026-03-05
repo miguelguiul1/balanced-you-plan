@@ -6,9 +6,11 @@ import { useAuth } from "@/contexts/AuthContext";
 
 const navLinks = [
   { path: "/", label: "Início" },
-  { path: "/preferencias", label: "Meu Perfil" },
   { path: "/scanner", label: "Scanner" },
+  { path: "/plano-semanal", label: "Plano Semanal" },
   { path: "/receitas", label: "Receitas" },
+  { path: "/preferencias", label: "Meu Perfil" },
+  { path: "/historico", label: "Histórico" },
   { path: "/educacao", label: "Educação" },
   { path: "/biblioteca", label: "Alimentos" },
 ];
