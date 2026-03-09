@@ -17,6 +17,7 @@ import Historico from "./pages/Historico";
 import PlanoSemanal from "./pages/PlanoSemanal";
 import DiarioAlimentar from "./pages/DiarioAlimentar";
 import NotFound from "./pages/NotFound";
+import Vendas from "./pages/Vendas";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
