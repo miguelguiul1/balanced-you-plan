@@ -17,8 +17,13 @@ import Historico from "./pages/Historico";
 import PlanoSemanal from "./pages/PlanoSemanal";
 import DiarioAlimentar from "./pages/DiarioAlimentar";
 import NotFound from "./pages/NotFound";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
+
+const P = ({ children }: { children: React.ReactNode }) => (
+  <ProtectedRoute>{children}</ProtectedRoute>
+);
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -29,17 +34,17 @@ const App = () => (
         <BrowserRouter>
           <Navbar />
           <Routes>
-            <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/preferencias" element={<Preferencias />} />
-            <Route path="/scanner" element={<Scanner />} />
-            <Route path="/receitas" element={<Receitas />} />
-            <Route path="/educacao" element={<Educacao />} />
-            <Route path="/biblioteca" element={<Biblioteca />} />
-            <Route path="/historico" element={<Historico />} />
-            <Route path="/plano-semanal" element={<PlanoSemanal />} />
-            <Route path="/diario" element={<DiarioAlimentar />} />
+            <Route path="/" element={<P><Index /></P>} />
+            <Route path="/preferencias" element={<P><Preferencias /></P>} />
+            <Route path="/scanner" element={<P><Scanner /></P>} />
+            <Route path="/receitas" element={<P><Receitas /></P>} />
+            <Route path="/educacao" element={<P><Educacao /></P>} />
+            <Route path="/biblioteca" element={<P><Biblioteca /></P>} />
+            <Route path="/historico" element={<P><Historico /></P>} />
+            <Route path="/plano-semanal" element={<P><PlanoSemanal /></P>} />
+            <Route path="/diario" element={<P><DiarioAlimentar /></P>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
