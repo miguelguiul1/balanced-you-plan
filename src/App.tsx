@@ -17,6 +17,7 @@ import Historico from "./pages/Historico";
 import PlanoSemanal from "./pages/PlanoSemanal";
 import DiarioAlimentar from "./pages/DiarioAlimentar";
 import NotFound from "./pages/NotFound";
+import Vendas from "./pages/Vendas";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -34,6 +35,7 @@ const App = () => (
         <BrowserRouter>
           <Navbar />
           <Routes>
+            <Route path="/vendas" element={<Vendas />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/" element={<P><Index /></P>} />
