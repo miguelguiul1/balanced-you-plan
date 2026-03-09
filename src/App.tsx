@@ -35,6 +35,7 @@ const App = () => (
         <BrowserRouter>
           <Navbar />
           <Routes>
+            <Route path="/vendas" element={<Vendas />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/" element={<P><Index /></P>} />
