@@ -44,11 +44,11 @@ const PhoneMockup = ({
           <div className="text-xs font-display font-bold text-foreground leading-tight">
             Bowl de quinoa<br />& frango grelhado
           </div>
-          <div className="h-20 rounded-lg overflow-hidden bg-secondary/50 relative">
+          <div className="h-20 relative flex items-center justify-center">
             <img
               src={heroBowl}
               alt=""
-              className="w-full h-full object-cover"
+              className="max-h-full w-auto object-contain drop-shadow-md"
               loading="lazy"
             />
           </div>
@@ -175,6 +175,30 @@ const HeroSection = () => {
         className="hidden md:block absolute top-[52%] left-[2%] w-8 h-8 text-primary/15 animate-float"
         style={{ animationDelay: "2s" }}
       />
+      <Leaf
+        className="absolute top-[6%] left-[42%] w-9 h-9 text-primary/20 animate-float-slow"
+        style={{ transform: `translateY(${scrollY * -0.18}px) rotate(75deg)`, animationDelay: "0.9s" }}
+      />
+      <Leaf
+        className="absolute top-[38%] right-[2%] w-11 h-11 text-primary/25 animate-float"
+        style={{ transform: `translateY(${scrollY * -0.14}px) rotate(-45deg)`, animationDelay: "1.6s" }}
+      />
+      <Leaf
+        className="absolute top-[62%] right-[38%] w-8 h-8 text-accent/35 animate-float-slow"
+        style={{ transform: `translateY(${scrollY * -0.09}px) rotate(200deg)`, animationDelay: "0.3s" }}
+      />
+      <Leaf
+        className="hidden md:block absolute bottom-[4%] left-[38%] w-10 h-10 text-primary/20 animate-float"
+        style={{ transform: `translateY(${scrollY * -0.11}px) rotate(160deg)`, animationDelay: "2.4s" }}
+      />
+      <Leaf
+        className="absolute top-[30%] left-[24%] w-6 h-6 text-primary/15 animate-float-slow"
+        style={{ animationDelay: "1.4s" }}
+      />
+      <Leaf
+        className="hidden md:block absolute bottom-[30%] right-[26%] w-7 h-7 text-primary/20 animate-float"
+        style={{ animationDelay: "0.7s" }}
+      />
 
       {/* Particles */}
       {particles.map((p, i) => (
@@ -243,6 +267,18 @@ const HeroSection = () => {
         aria-hidden
       >
         <PhoneMockup variant="meal" className="animate-float-slow" />
+      </div>
+
+      {/* Second phone mockup — right side, showing shopping list */}
+      <div
+        className="hidden xl:block absolute right-[3%] bottom-[8%] animate-fade-up"
+        style={{
+          transform: `translateY(${scrollY * -0.07}px) rotate(7deg)`,
+          animationDelay: "1.1s",
+        }}
+        aria-hidden
+      >
+        <PhoneMockup variant="list" className="animate-float" />
       </div>
 
       {/* Content */}
