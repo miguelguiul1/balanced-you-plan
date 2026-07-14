@@ -257,20 +257,6 @@ const HeroSection = () => {
           Planejamento personalizado, lista de compras inteligente e foco em alimentação acessível. Sem fórmulas genéricas.
         </p>
 
-        {/* Plated meal — centered and aligned with text flow */}
-        <div
-          className="relative mx-auto mt-8 mb-2 w-48 sm:w-56 md:w-64 lg:w-72 animate-fade-up pointer-events-none"
-          style={{ animationDelay: "0.25s" }}
-          aria-hidden
-        >
-          <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-[75%] h-8 bg-primary/25 blur-2xl rounded-full" />
-          <img
-            src={heroBowl}
-            alt="Prato saudável com frango grelhado, batata-doce, brócolis, arroz e tomate"
-            className="relative w-full h-auto object-contain drop-shadow-2xl"
-            loading="lazy"
-          />
-        </div>
 
         <div
           className="mt-8 flex flex-col sm:flex-row gap-4 justify-center animate-fade-up"
