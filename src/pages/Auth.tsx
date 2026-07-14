@@ -8,15 +8,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Mail, Lock, User, ArrowRight, Eye, EyeOff, Sparkles, Leaf, Heart } from "lucide-react";
 
 const Auth = () => {
-  const [showWelcome, setShowWelcome] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return sessionStorage.getItem("evolua_welcomed") !== "1";
-  });
-  const [isLogin, setIsLogin] = useState(() => {
-    if (typeof window === "undefined") return true;
-    // If first visit, default to signup after welcome
-    return sessionStorage.getItem("evolua_welcomed") === "1";
-  });
+  const [showWelcome, setShowWelcome] = useState(true);
+  const [isLogin, setIsLogin] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
@@ -26,7 +19,6 @@ const Auth = () => {
   const { toast } = useToast();
 
   const dismissWelcome = () => {
-    sessionStorage.setItem("evolua_welcomed", "1");
     setIsLogin(false); // go straight to sign up
     setShowWelcome(false);
   };
@@ -131,7 +123,6 @@ const Auth = () => {
 
           <button
             onClick={() => {
-              sessionStorage.setItem("evolua_welcomed", "1");
               setIsLogin(true);
               setShowWelcome(false);
             }}
