@@ -1,22 +1,210 @@
 import { Button } from "@/components/ui/button";
 import { ArrowDown } from "lucide-react";
-import heroBg from "@/assets/hero-bg.jpg";
+import { useEffect, useState } from "react";
+
+// Decorative organic leaf
+const Leaf = ({ className = "", style }: { className?: string; style?: React.CSSProperties }) => (
+  <svg viewBox="0 0 64 64" className={className} style={style} fill="none" aria-hidden="true">
+    <path
+      d="M32 4 C 12 14, 6 34, 14 54 C 34 52, 54 40, 60 20 C 50 12, 42 8, 32 4 Z"
+      fill="currentColor"
+    />
+    <path
+      d="M16 50 C 26 38, 40 26, 56 18"
+      stroke="hsl(152 45% 25%)"
+      strokeOpacity="0.35"
+      strokeWidth="1.2"
+      strokeLinecap="round"
+    />
+  </svg>
+);
+
+// Small phone mockup showing a meal card
+const PhoneMockup = ({
+  className = "",
+  style,
+  variant = "meal",
+}: {
+  className?: string;
+  style?: React.CSSProperties;
+  variant?: "meal" | "list";
+}) => (
+  <div
+    className={`relative rounded-[2.2rem] border border-border/60 bg-card shadow-2xl shadow-primary/10 p-2 ${className}`}
+    style={style}
+  >
+    <div className="absolute top-2 left-1/2 -translate-x-1/2 w-20 h-4 rounded-full bg-foreground/80 z-10" />
+    <div className="rounded-[1.8rem] overflow-hidden bg-background aspect-[9/19] w-[190px] flex flex-col">
+      <div className="h-14 bg-gradient-to-br from-primary/15 to-primary/5" />
+      {variant === "meal" ? (
+        <div className="p-3 flex-1 flex flex-col gap-2.5">
+          <div className="text-[10px] font-display font-semibold text-muted-foreground">HOJE</div>
+          <div className="text-xs font-display font-bold text-foreground leading-tight">
+            Bowl de quinoa<br />& frango grelhado
+          </div>
+          <div className="h-16 rounded-lg bg-gradient-to-br from-primary/30 via-accent/20 to-primary/10 relative overflow-hidden">
+            <div className="absolute inset-0 flex items-center justify-center text-2xl">🥗</div>
+          </div>
+          <div className="flex gap-1.5">
+            <div className="flex-1 rounded-md bg-primary/10 p-1.5">
+              <div className="text-[8px] text-muted-foreground">Kcal</div>
+              <div className="text-[10px] font-bold text-foreground">420</div>
+            </div>
+            <div className="flex-1 rounded-md bg-accent/15 p-1.5">
+              <div className="text-[8px] text-muted-foreground">Prot</div>
+              <div className="text-[10px] font-bold text-foreground">38g</div>
+            </div>
+            <div className="flex-1 rounded-md bg-secondary p-1.5">
+              <div className="text-[8px] text-muted-foreground">Carb</div>
+              <div className="text-[10px] font-bold text-foreground">42g</div>
+            </div>
+          </div>
+          <div className="mt-1 h-6 rounded-md bg-primary text-primary-foreground text-[9px] font-display font-semibold flex items-center justify-center">
+            Ver receita
+          </div>
+        </div>
+      ) : (
+        <div className="p-3 flex-1 flex flex-col gap-2">
+          <div className="text-[10px] font-display font-semibold text-muted-foreground">LISTA</div>
+          <div className="text-xs font-display font-bold text-foreground leading-tight">
+            Compras da semana
+          </div>
+          {["Quinoa 500g", "Frango 1kg", "Abacate x2", "Espinafre", "Grão-de-bico", "Azeite"].map(
+            (item, i) => (
+              <div key={item} className="flex items-center gap-1.5 text-[10px] text-foreground">
+                <div className={`w-2.5 h-2.5 rounded-sm border border-primary/50 ${i < 3 ? "bg-primary" : ""}`} />
+                <span className={i < 3 ? "line-through text-muted-foreground" : ""}>{item}</span>
+              </div>
+            ),
+          )}
+        </div>
+      )}
+    </div>
+  </div>
+);
 
 const HeroSection = () => {
+  const [scrollY, setScrollY] = useState(0);
+
+  useEffect(() => {
+    const onScroll = () => setScrollY(window.scrollY);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   const scrollToCalculator = () => {
     document.getElementById("calculator")?.scrollIntoView({ behavior: "smooth" });
   };
 
+  // Particle positions (fixed to avoid rerenders)
+  const particles = [
+    { top: "12%", left: "8%", size: 8, delay: "0s", color: "bg-primary/40" },
+    { top: "22%", left: "88%", size: 6, delay: "1.2s", color: "bg-accent/50" },
+    { top: "68%", left: "6%", size: 10, delay: "0.6s", color: "bg-primary/30" },
+    { top: "78%", left: "92%", size: 7, delay: "2s", color: "bg-primary/40" },
+    { top: "40%", left: "14%", size: 5, delay: "1.8s", color: "bg-accent/40" },
+    { top: "55%", left: "82%", size: 9, delay: "0.4s", color: "bg-primary/30" },
+    { top: "18%", left: "48%", size: 4, delay: "2.5s", color: "bg-primary/40" },
+    { top: "82%", left: "42%", size: 5, delay: "1s", color: "bg-accent/40" },
+  ];
+
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Background image */}
-      <div className="absolute inset-0">
-        <img
-          src={heroBg}
-          alt=""
-          className="w-full h-full object-cover opacity-30"
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden hero-radial">
+      {/* Soft orbs */}
+      <div
+        className="absolute -top-32 -left-32 w-[36rem] h-[36rem] rounded-full bg-primary/20 blur-3xl animate-float-slow"
+        aria-hidden
+      />
+      <div
+        className="absolute -bottom-40 -right-40 w-[40rem] h-[40rem] rounded-full bg-accent/15 blur-3xl animate-float"
+        aria-hidden
+      />
+
+      {/* Grain */}
+      <div className="absolute inset-0 grain opacity-[0.35] mix-blend-multiply pointer-events-none" aria-hidden />
+
+      {/* Organic wavy lines */}
+      <svg
+        className="absolute inset-x-0 top-0 w-full h-40 text-primary/15"
+        viewBox="0 0 1440 160"
+        preserveAspectRatio="none"
+        aria-hidden
+      >
+        <path
+          d="M0,80 C240,20 480,140 720,80 C960,20 1200,140 1440,80 L1440,0 L0,0 Z"
+          fill="currentColor"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/80 to-background" />
+      </svg>
+      <svg
+        className="absolute inset-x-0 bottom-0 w-full h-32 text-primary/10"
+        viewBox="0 0 1440 160"
+        preserveAspectRatio="none"
+        aria-hidden
+      >
+        <path
+          d="M0,80 C360,140 720,20 1080,80 C1260,110 1350,90 1440,80 L1440,160 L0,160 Z"
+          fill="currentColor"
+        />
+      </svg>
+
+      {/* Floating leaves */}
+      <Leaf
+        className="absolute top-[10%] left-[4%] w-16 h-16 text-primary/25 animate-float"
+        style={{ transform: `translateY(${scrollY * -0.15}px) rotate(-20deg)` }}
+      />
+      <Leaf
+        className="absolute top-[20%] right-[6%] w-12 h-12 text-primary/20 animate-float-slow"
+        style={{ transform: `translateY(${scrollY * -0.1}px) rotate(35deg)` }}
+      />
+      <Leaf
+        className="absolute bottom-[14%] left-[10%] w-10 h-10 text-accent/40 animate-float"
+        style={{ transform: `translateY(${scrollY * -0.2}px) rotate(120deg)`, animationDelay: "1.2s" }}
+      />
+      <Leaf
+        className="absolute bottom-[22%] right-[12%] w-14 h-14 text-primary/20 animate-float-slow"
+        style={{ transform: `translateY(${scrollY * -0.12}px) rotate(-60deg)`, animationDelay: "0.6s" }}
+      />
+      <Leaf
+        className="hidden md:block absolute top-[52%] left-[2%] w-8 h-8 text-primary/15 animate-float"
+        style={{ animationDelay: "2s" }}
+      />
+
+      {/* Particles */}
+      {particles.map((p, i) => (
+        <div
+          key={i}
+          className={`absolute rounded-full ${p.color} animate-drift pointer-events-none`}
+          style={{
+            top: p.top,
+            left: p.left,
+            width: `${p.size}px`,
+            height: `${p.size}px`,
+            animationDelay: p.delay,
+          }}
+          aria-hidden
+        />
+      ))}
+
+      {/* Phone mockups — hidden on small screens */}
+      <div
+        className="hidden lg:block absolute left-[4%] top-1/2 -translate-y-1/2 animate-fade-up"
+        style={{
+          transform: `translateY(calc(-50% + ${scrollY * -0.08}px)) rotate(-8deg)`,
+          animationDelay: "0.4s",
+        }}
+        aria-hidden
+      >
+        <PhoneMockup variant="meal" className="animate-float-slow" />
+      </div>
+      <div
+        className="hidden lg:block absolute right-[4%] top-1/2 -translate-y-1/2 animate-fade-up"
+        style={{
+          transform: `translateY(calc(-50% + ${scrollY * -0.12}px)) rotate(6deg)`,
+          animationDelay: "0.6s",
+        }}
+        aria-hidden
+      >
+        <PhoneMockup variant="list" className="animate-float" />
       </div>
 
       {/* Content */}
