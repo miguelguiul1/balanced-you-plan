@@ -44,11 +44,11 @@ const PhoneMockup = ({
           <div className="text-xs font-display font-bold text-foreground leading-tight">
             Bowl de quinoa<br />& frango grelhado
           </div>
-          <div className="h-20 rounded-lg overflow-hidden bg-secondary/50 relative">
+          <div className="h-20 relative flex items-center justify-center">
             <img
               src={heroBowl}
               alt=""
-              className="w-full h-full object-cover"
+              className="max-h-full w-auto object-contain drop-shadow-md"
               loading="lazy"
             />
           </div>
