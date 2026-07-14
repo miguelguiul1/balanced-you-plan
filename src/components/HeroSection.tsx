@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ArrowDown } from "lucide-react";
 import { useEffect, useState } from "react";
-import heroBowl from "@/assets/hero-bowl.png";
+
 
 // Decorative organic leaf
 const Leaf = ({ className = "", style }: { className?: string; style?: React.CSSProperties }) => (
