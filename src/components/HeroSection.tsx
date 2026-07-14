@@ -215,28 +215,6 @@ const HeroSection = () => {
         />
       ))}
 
-      {/* Realistic plated meal photo — right side, presented as a rounded photo card */}
-      <div
-        className="hidden md:block absolute right-[3%] lg:right-[6%] top-1/2 -translate-y-1/2 animate-fade-up pointer-events-none"
-        style={{
-          transform: `translateY(calc(-50% + ${scrollY * -0.12}px)) rotate(4deg)`,
-          animationDelay: "0.5s",
-        }}
-        aria-hidden
-      >
-        <div className="relative animate-float-slow">
-          <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-[80%] h-10 bg-primary/25 blur-2xl rounded-full" />
-          <div className="relative w-56 lg:w-72 xl:w-80 drop-shadow-2xl">
-            <img
-              src={heroBowl}
-              alt="Prato saudável com frango grelhado, batata-doce, brócolis, arroz e tomate"
-              className="w-full h-full object-contain"
-              loading="lazy"
-            />
-          </div>
-        </div>
-      </div>
-
       {/* Phone mockup — bottom left, overlapping the plate area */}
       <div
         className="hidden md:block absolute left-[4%] bottom-[6%] animate-fade-up"
@@ -287,8 +265,23 @@ const HeroSection = () => {
           Planejamento personalizado, lista de compras inteligente e foco em alimentação acessível. Sem fórmulas genéricas.
         </p>
 
+        {/* Plated meal — centered and aligned with text flow */}
         <div
-          className="mt-10 flex flex-col sm:flex-row gap-4 justify-center animate-fade-up"
+          className="relative mx-auto mt-8 mb-2 w-48 sm:w-56 md:w-64 lg:w-72 animate-fade-up pointer-events-none"
+          style={{ animationDelay: "0.25s" }}
+          aria-hidden
+        >
+          <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-[75%] h-8 bg-primary/25 blur-2xl rounded-full" />
+          <img
+            src={heroBowl}
+            alt="Prato saudável com frango grelhado, batata-doce, brócolis, arroz e tomate"
+            className="relative w-full h-auto object-contain drop-shadow-2xl"
+            loading="lazy"
+          />
+        </div>
+
+        <div
+          className="mt-8 flex flex-col sm:flex-row gap-4 justify-center animate-fade-up"
           style={{ animationDelay: "0.3s" }}
         >
           <Button variant="hero" size="xl" onClick={scrollToCalculator}>
