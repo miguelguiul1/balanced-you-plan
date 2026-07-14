@@ -259,7 +259,7 @@ const HeroSection = () => {
 
       {/* Phone mockup — bottom left, overlapping the plate area */}
       <div
-        className="hidden lg:block absolute left-[6%] bottom-[6%] animate-fade-up"
+        className="hidden md:block absolute left-[4%] bottom-[6%] animate-fade-up"
         style={{
           transform: `translateY(${scrollY * -0.05}px) rotate(-6deg)`,
           animationDelay: "0.9s",
@@ -271,7 +271,7 @@ const HeroSection = () => {
 
       {/* Second phone mockup — right side, showing shopping list */}
       <div
-        className="hidden xl:block absolute right-[3%] bottom-[8%] animate-fade-up"
+        className="hidden lg:block absolute right-[3%] bottom-[8%] animate-fade-up"
         style={{
           transform: `translateY(${scrollY * -0.07}px) rotate(7deg)`,
           animationDelay: "1.1s",
