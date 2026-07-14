@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ArrowDown } from "lucide-react";
 import { useEffect, useState } from "react";
-import heroBowl from "@/assets/hero-bowl.jpg";
+import heroBowl from "@/assets/hero-bowl.png";
 
 // Decorative organic leaf
 const Leaf = ({ className = "", style }: { className?: string; style?: React.CSSProperties }) => (
@@ -226,11 +226,11 @@ const HeroSection = () => {
       >
         <div className="relative animate-float-slow">
           <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-[80%] h-10 bg-primary/25 blur-2xl rounded-full" />
-          <div className="relative w-56 lg:w-72 xl:w-80 rounded-3xl overflow-hidden ring-1 ring-border/50 shadow-2xl shadow-primary/20 bg-card">
+          <div className="relative w-56 lg:w-72 xl:w-80 drop-shadow-2xl">
             <img
               src={heroBowl}
               alt="Prato saudável com frango grelhado, batata-doce, brócolis, arroz e tomate"
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain"
               loading="lazy"
             />
           </div>
