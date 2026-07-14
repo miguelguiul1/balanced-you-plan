@@ -215,28 +215,6 @@ const HeroSection = () => {
         />
       ))}
 
-      {/* Realistic plated meal photo — right side, presented as a rounded photo card */}
-      <div
-        className="hidden md:block absolute right-[3%] lg:right-[6%] top-1/2 -translate-y-1/2 animate-fade-up pointer-events-none"
-        style={{
-          transform: `translateY(calc(-50% + ${scrollY * -0.12}px)) rotate(4deg)`,
-          animationDelay: "0.5s",
-        }}
-        aria-hidden
-      >
-        <div className="relative animate-float-slow">
-          <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-[80%] h-10 bg-primary/25 blur-2xl rounded-full" />
-          <div className="relative w-56 lg:w-72 xl:w-80 drop-shadow-2xl">
-            <img
-              src={heroBowl}
-              alt="Prato saudável com frango grelhado, batata-doce, brócolis, arroz e tomate"
-              className="w-full h-full object-contain"
-              loading="lazy"
-            />
-          </div>
-        </div>
-      </div>
-
       {/* Phone mockup — bottom left, overlapping the plate area */}
       <div
         className="hidden md:block absolute left-[4%] bottom-[6%] animate-fade-up"
