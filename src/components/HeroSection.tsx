@@ -43,14 +43,6 @@ const PhoneMockup = ({
           <div className="text-xs font-display font-bold text-foreground leading-tight">
             Bowl de quinoa<br />& frango grelhado
           </div>
-          <div className="h-20 relative flex items-center justify-center">
-            <img
-              src={heroBowl}
-              alt=""
-              className="max-h-full w-auto object-contain drop-shadow-md"
-              loading="lazy"
-            />
-          </div>
           <div className="flex gap-1.5">
             <div className="flex-1 rounded-md bg-primary/10 p-1.5">
               <div className="text-[8px] text-muted-foreground">Kcal</div>
