@@ -23,13 +23,6 @@ const Auth = () => {
     setShowWelcome(false);
   };
 
-  // Auto-dismiss welcome after 3.8s
-  useEffect(() => {
-    if (!showWelcome) return;
-    const t = setTimeout(dismissWelcome, 3800);
-    return () => clearTimeout(t);
-  }, [showWelcome]);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
