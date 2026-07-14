@@ -1,6 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { ArrowDown } from "lucide-react";
 import { useEffect, useState } from "react";
+import heroBowl from "@/assets/hero-bowl.png";
+import heroPlate from "@/assets/hero-plate.png";
 
 // Decorative organic leaf
 const Leaf = ({ className = "", style }: { className?: string; style?: React.CSSProperties }) => (
@@ -42,8 +44,13 @@ const PhoneMockup = ({
           <div className="text-xs font-display font-bold text-foreground leading-tight">
             Bowl de quinoa<br />& frango grelhado
           </div>
-          <div className="h-16 rounded-lg bg-gradient-to-br from-primary/30 via-accent/20 to-primary/10 relative overflow-hidden">
-            <div className="absolute inset-0 flex items-center justify-center text-2xl">🥗</div>
+          <div className="h-20 rounded-lg overflow-hidden bg-secondary/50 relative">
+            <img
+              src={heroBowl}
+              alt=""
+              className="w-full h-full object-cover"
+              loading="lazy"
+            />
           </div>
           <div className="flex gap-1.5">
             <div className="flex-1 rounded-md bg-primary/10 p-1.5">
