@@ -192,26 +192,57 @@ const HeroSection = () => {
         />
       ))}
 
-      {/* Phone mockups — hidden on small screens */}
+      {/* Realistic food bowl — right side */}
       <div
-        className="hidden lg:block absolute left-[4%] top-1/2 -translate-y-1/2 animate-fade-up"
+        className="hidden md:block absolute right-[2%] lg:right-[5%] top-1/2 -translate-y-1/2 animate-fade-up pointer-events-none"
         style={{
-          transform: `translateY(calc(-50% + ${scrollY * -0.08}px)) rotate(-8deg)`,
-          animationDelay: "0.4s",
+          transform: `translateY(calc(-50% + ${scrollY * -0.12}px))`,
+          animationDelay: "0.5s",
+        }}
+        aria-hidden
+      >
+        <div className="relative animate-float-slow">
+          {/* soft ground shadow */}
+          <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-[70%] h-8 bg-primary/25 blur-2xl rounded-full" />
+          <img
+            src={heroBowl}
+            alt="Bowl saudável de quinoa, frango e vegetais"
+            className="relative w-56 lg:w-80 xl:w-96 drop-shadow-2xl"
+            style={{ filter: "drop-shadow(0 30px 40px hsl(152 45% 25% / 0.25))" }}
+          />
+        </div>
+      </div>
+
+      {/* Small realistic plate — top left */}
+      <div
+        className="hidden lg:block absolute left-[4%] top-[14%] animate-fade-up pointer-events-none"
+        style={{
+          transform: `translateY(${scrollY * -0.08}px)`,
+          animationDelay: "0.7s",
+        }}
+        aria-hidden
+      >
+        <div className="relative animate-float">
+          <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-[70%] h-6 bg-primary/20 blur-2xl rounded-full" />
+          <img
+            src={heroPlate}
+            alt=""
+            className="relative w-40 xl:w-52"
+            style={{ filter: "drop-shadow(0 20px 30px hsl(152 45% 25% / 0.22))" }}
+          />
+        </div>
+      </div>
+
+      {/* Phone mockup — bottom left, overlapping the plate area */}
+      <div
+        className="hidden lg:block absolute left-[6%] bottom-[6%] animate-fade-up"
+        style={{
+          transform: `translateY(${scrollY * -0.05}px) rotate(-6deg)`,
+          animationDelay: "0.9s",
         }}
         aria-hidden
       >
         <PhoneMockup variant="meal" className="animate-float-slow" />
-      </div>
-      <div
-        className="hidden lg:block absolute right-[4%] top-1/2 -translate-y-1/2 animate-fade-up"
-        style={{
-          transform: `translateY(calc(-50% + ${scrollY * -0.12}px)) rotate(6deg)`,
-          animationDelay: "0.6s",
-        }}
-        aria-hidden
-      >
-        <PhoneMockup variant="list" className="animate-float" />
       </div>
 
       {/* Content */}
