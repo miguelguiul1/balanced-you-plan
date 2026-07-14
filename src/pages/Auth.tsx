@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -22,13 +22,6 @@ const Auth = () => {
     setIsLogin(false); // go straight to sign up
     setShowWelcome(false);
   };
-
-  // Auto-dismiss welcome after 3.8s
-  useEffect(() => {
-    if (!showWelcome) return;
-    const t = setTimeout(dismissWelcome, 3800);
-    return () => clearTimeout(t);
-  }, [showWelcome]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
