@@ -1,8 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ArrowDown } from "lucide-react";
 import { useEffect, useState } from "react";
-import heroBowl from "@/assets/hero-bowl.png";
-import heroPlate from "@/assets/hero-plate.png";
+import heroBowl from "@/assets/hero-bowl.jpg";
 
 // Decorative organic leaf
 const Leaf = ({ className = "", style }: { className?: string; style?: React.CSSProperties }) => (
@@ -216,44 +215,25 @@ const HeroSection = () => {
         />
       ))}
 
-      {/* Realistic food bowl — right side */}
+      {/* Realistic plated meal photo — right side, presented as a rounded photo card */}
       <div
-        className="hidden md:block absolute right-[2%] lg:right-[5%] top-1/2 -translate-y-1/2 animate-fade-up pointer-events-none"
+        className="hidden md:block absolute right-[3%] lg:right-[6%] top-1/2 -translate-y-1/2 animate-fade-up pointer-events-none"
         style={{
-          transform: `translateY(calc(-50% + ${scrollY * -0.12}px))`,
+          transform: `translateY(calc(-50% + ${scrollY * -0.12}px)) rotate(4deg)`,
           animationDelay: "0.5s",
         }}
         aria-hidden
       >
         <div className="relative animate-float-slow">
-          {/* soft ground shadow */}
-          <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-[70%] h-8 bg-primary/25 blur-2xl rounded-full" />
-          <img
-            src={heroBowl}
-            alt="Bowl saudável de quinoa, frango e vegetais"
-            className="relative w-56 lg:w-80 xl:w-96 drop-shadow-2xl"
-            style={{ filter: "drop-shadow(0 30px 40px hsl(152 45% 25% / 0.25))" }}
-          />
-        </div>
-      </div>
-
-      {/* Small realistic plate — top left */}
-      <div
-        className="hidden lg:block absolute left-[4%] top-[14%] animate-fade-up pointer-events-none"
-        style={{
-          transform: `translateY(${scrollY * -0.08}px)`,
-          animationDelay: "0.7s",
-        }}
-        aria-hidden
-      >
-        <div className="relative animate-float">
-          <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-[70%] h-6 bg-primary/20 blur-2xl rounded-full" />
-          <img
-            src={heroPlate}
-            alt=""
-            className="relative w-40 xl:w-52"
-            style={{ filter: "drop-shadow(0 20px 30px hsl(152 45% 25% / 0.22))" }}
-          />
+          <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-[80%] h-10 bg-primary/25 blur-2xl rounded-full" />
+          <div className="relative w-56 lg:w-72 xl:w-80 rounded-3xl overflow-hidden ring-1 ring-border/50 shadow-2xl shadow-primary/20 bg-card">
+            <img
+              src={heroBowl}
+              alt="Prato saudável com frango grelhado, batata-doce, brócolis, arroz e tomate"
+              className="w-full h-full object-cover"
+              loading="lazy"
+            />
+          </div>
         </div>
       </div>
 
