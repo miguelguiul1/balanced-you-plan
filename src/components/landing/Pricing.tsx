@@ -1,0 +1,125 @@
+import { Check, X, Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
+
+const plans = [
+  {
+    name: "Gratuito",
+    price: "R$0",
+    period: "para sempre",
+    desc: "Comece agora e conheça o Balanced You.",
+    cta: "Criar conta grátis",
+    href: "/auth",
+    highlight: false,
+    badge: null as string | null,
+    features: [
+      { text: "Calculadora nutricional completa", on: true },
+      { text: "Diário alimentar básico", on: true },
+      { text: "Biblioteca de alimentos", on: true },
+      { text: "Plano semanal por IA", on: false },
+      { text: "Scanner de geladeira", on: false },
+      { text: "Assistente IA 24h", on: false },
+    ],
+  },
+  {
+    name: "Plus Mensal",
+    price: "R$29,90",
+    period: "por mês",
+    desc: "Acesso completo, cobrança mensal.",
+    cta: "Assinar Plus",
+    href: "/vendas",
+    highlight: false,
+    badge: null as string | null,
+    features: [
+      { text: "Tudo do Gratuito", on: true },
+      { text: "Plano alimentar semanal por IA", on: true },
+      { text: "Lista de compras inteligente", on: true },
+      { text: "Scanner de geladeira e porção", on: true },
+      { text: "Assistente IA 24h", on: true },
+      { text: "Evolução com gráficos", on: true },
+    ],
+  },
+  {
+    name: "Plus Anual",
+    price: "R$249,90",
+    period: "por ano",
+    desc: "Economize 30% no plano mais escolhido.",
+    cta: "Assinar anual",
+    href: "/vendas",
+    highlight: true,
+    badge: "Mais escolhido" as string | null,
+    features: [
+      { text: "Tudo do Plus Mensal", on: true },
+      { text: "Economia de R$108/ano", on: true },
+      { text: "Guias educacionais exclusivos", on: true },
+      { text: "Suporte prioritário", on: true },
+      { text: "Novos recursos em primeira mão", on: true },
+      { text: "Cancelamento a qualquer momento", on: true },
+    ],
+  },
+];
+
+const Pricing = () => (
+  <section id="planos" className="py-24 px-6 bg-background">
+    <div className="container mx-auto max-w-6xl">
+      <div className="text-center max-w-2xl mx-auto mb-12">
+        <span className="inline-block mb-3 px-3 py-1 rounded-full bg-primary/10 text-primary font-display text-xs font-semibold tracking-wide uppercase">
+          Planos
+        </span>
+        <h2 className="font-display text-3xl sm:text-4xl font-bold text-foreground">
+          Escolha o plano ideal para <span className="text-gradient-primary">sua evolução</span>
+        </h2>
+        <p className="mt-3 text-muted-foreground">
+          Comece grátis. Faça upgrade quando quiser. Cancele quando quiser.
+        </p>
+      </div>
+
+      <div className="grid md:grid-cols-3 gap-6 items-stretch">
+        {plans.map((p) => (
+          <div
+            key={p.name}
+            className={`relative rounded-3xl p-7 border transition-all flex flex-col ${
+              p.highlight
+                ? "bg-card border-primary shadow-2xl shadow-primary/20 md:-translate-y-2"
+                : "bg-card border-border/60 hover:border-primary/30"
+            }`}
+          >
+            {p.badge && (
+              <span className="absolute -top-3 left-1/2 -translate-x-1/2 inline-flex items-center gap-1 rounded-full bg-primary text-primary-foreground text-xs font-display font-semibold px-3 py-1">
+                <Sparkles className="w-3 h-3" /> {p.badge}
+              </span>
+            )}
+            <h3 className="font-display text-xl font-bold text-foreground">{p.name}</h3>
+            <p className="text-sm text-muted-foreground mt-1 min-h-[2.5rem]">{p.desc}</p>
+            <div className="mt-5 mb-6">
+              <span className="font-display text-4xl font-bold text-foreground">{p.price}</span>
+              <span className="text-sm text-muted-foreground ml-1">{p.period}</span>
+            </div>
+            <ul className="space-y-2.5 flex-1">
+              {p.features.map((f) => (
+                <li key={f.text} className="flex items-start gap-2 text-sm">
+                  {f.on ? (
+                    <Check className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                  ) : (
+                    <X className="w-4 h-4 text-muted-foreground/50 flex-shrink-0 mt-0.5" />
+                  )}
+                  <span className={f.on ? "text-foreground" : "text-muted-foreground/70"}>
+                    {f.text}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <Button asChild variant={p.highlight ? "hero" : "outline"} size="lg" className="mt-6 w-full">
+              <Link to={p.href}>{p.cta}</Link>
+            </Button>
+          </div>
+        ))}
+      </div>
+      <p className="text-center text-xs text-muted-foreground mt-6">
+        Também disponível: plano semestral R$129,90. Preparando: Família, Nutricionista, Personal Trainer.
+      </p>
+    </div>
+  </section>
+);
+
+export default Pricing;

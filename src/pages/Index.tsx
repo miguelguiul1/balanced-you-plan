@@ -1,23 +1,23 @@
 import HeroSection from "@/components/HeroSection";
 import Calculator from "@/components/Calculator";
+import HowItWorks from "@/components/landing/HowItWorks";
+import Benefits from "@/components/landing/Benefits";
+import SocialProof from "@/components/landing/SocialProof";
+import LandingFAQ from "@/components/landing/LandingFAQ";
+import Pricing from "@/components/landing/Pricing";
+import SiteFooter from "@/components/landing/SiteFooter";
 
 const Index = () => {
   return (
     <div className="min-h-screen bg-background">
-      {/* Navbar is now global in App.tsx */}
-
       <HeroSection />
+      <HowItWorks />
+      <Benefits />
       <Calculator />
-
-      {/* Footer */}
-      <footer className="py-12 px-6 border-t border-border">
-        <div className="container mx-auto text-center text-sm text-muted-foreground">
-          <p className="font-display font-medium text-foreground mb-1">
-            Evolua<span className="text-primary">+</span>
-          </p>
-          <p>Planejamento nutricional inteligente e acessível.</p>
-        </div>
-      </footer>
+      <SocialProof />
+      <Pricing />
+      <LandingFAQ />
+      <SiteFooter />
     </div>
   );
 };
