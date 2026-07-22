@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      chat_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          role: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       food_log: {
         Row: {
           calories: number | null
@@ -64,19 +88,49 @@ export type Database = {
           created_at: string
           full_name: string | null
           id: string
+          is_premium: boolean
           updated_at: string
         }
         Insert: {
           created_at?: string
           full_name?: string | null
           id: string
+          is_premium?: boolean
           updated_at?: string
         }
         Update: {
           created_at?: string
           full_name?: string | null
           id?: string
+          is_premium?: boolean
           updated_at?: string
+        }
+        Relationships: []
+      }
+      progress_photos: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          photo_type: string
+          photo_url: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          photo_type?: string
+          photo_url: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          photo_type?: string
+          photo_url?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -191,6 +245,45 @@ export type Database = {
           id?: string
           logged_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      weight_log: {
+        Row: {
+          arm_cm: number | null
+          created_at: string
+          hip_cm: number | null
+          id: string
+          logged_at: string
+          notes: string | null
+          thigh_cm: number | null
+          user_id: string
+          waist_cm: number | null
+          weight_kg: number
+        }
+        Insert: {
+          arm_cm?: number | null
+          created_at?: string
+          hip_cm?: number | null
+          id?: string
+          logged_at?: string
+          notes?: string | null
+          thigh_cm?: number | null
+          user_id: string
+          waist_cm?: number | null
+          weight_kg: number
+        }
+        Update: {
+          arm_cm?: number | null
+          created_at?: string
+          hip_cm?: number | null
+          id?: string
+          logged_at?: string
+          notes?: string | null
+          thigh_cm?: number | null
+          user_id?: string
+          waist_cm?: number | null
+          weight_kg?: number
         }
         Relationships: []
       }
