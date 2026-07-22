@@ -321,68 +321,58 @@ const Vendas = () => {
 
       {/* Pricing CTA */}
       <section className="py-16 sm:py-24 bg-card/50">
-        <div className="container mx-auto px-6 max-w-lg text-center">
-          <Card className="border-primary/20 bg-background shadow-lg overflow-hidden">
-            <div className="bg-primary/5 px-6 py-4">
-              <span className="text-sm font-display font-semibold text-primary">
-                {t.pricingBadge}
-              </span>
-            </div>
-            <CardContent className="p-8">
-              <h3 className="font-display text-2xl font-bold text-foreground mb-2">
-                {t.pricingTitle}
-              </h3>
-              <p className="text-muted-foreground text-sm mb-6">
-                {t.pricingSub}
-              </p>
-
-              <div className="mb-6">
-                <span className="text-sm text-muted-foreground line-through">
-                  {t.pricingOld}
-                </span>
-                <div className="flex items-baseline justify-center gap-1 mt-1">
-                  <span className="text-sm text-foreground font-medium">
-                    {lang === "pt" ? "R$" : "$"}
-                  </span>
-                  <span className="font-display text-5xl font-bold text-foreground">
-                    {lang === "pt" ? "29" : "5"}
-                  </span>
-                  <span className="text-sm text-foreground font-medium">
-                    {lang === "pt" ? ",90" : ".90"}
-                  </span>
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {t.pricingNote}
-                </p>
-              </div>
-
-              <ul className="text-left space-y-3 mb-8">
-                {t.pricingItems.map((item) => (
-                  <li key={item} className="flex items-start gap-2.5 text-sm text-foreground">
-                    <Check className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-
-              <a
-                href={KIRVANO_CHECKOUT_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block"
-              >
-                <Button variant="hero" size="xl" className="w-full group">
-                  {t.pricingCta}
-                  <ArrowRight className="w-5 h-5 ml-1 transition-transform group-hover:translate-x-1" />
-                </Button>
-              </a>
-
-              <p className="mt-4 text-xs text-muted-foreground flex items-center justify-center gap-1.5">
-                <ShieldCheck className="w-3.5 h-3.5 text-primary" />
-                {t.pricingGuarantee}
-              </p>
-            </CardContent>
-          </Card>
+        <div className="container mx-auto px-6 max-w-5xl">
+          <div className="text-center mb-10">
+            <span className="text-sm font-display font-semibold text-primary">
+              {t.pricingBadge}
+            </span>
+            <h2 className="font-display text-3xl sm:text-4xl font-bold text-foreground mt-2">
+              {t.pricingTitle}
+            </h2>
+            <p className="text-muted-foreground text-sm mt-2">{t.pricingSub}</p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              { key: "mensal", label: lang === "pt" ? "Mensal" : "Monthly", price: lang === "pt" ? "29,90" : "5.90", period: lang === "pt" ? "/mês" : "/month", highlight: false, badge: null },
+              { key: "semestral", label: lang === "pt" ? "Semestral" : "6 months", price: lang === "pt" ? "129,90" : "24.90", period: lang === "pt" ? "/6 meses" : "/6 months", highlight: true, badge: lang === "pt" ? "Mais popular" : "Best value" },
+              { key: "anual", label: lang === "pt" ? "Anual" : "Annual", price: lang === "pt" ? "249,90" : "49.90", period: lang === "pt" ? "/ano" : "/year", highlight: false, badge: lang === "pt" ? "Economize 30%" : "Save 30%" },
+            ].map((p) => (
+              <Card key={p.key} className={`relative border ${p.highlight ? "border-primary shadow-lg scale-105" : "border-border/60"} bg-background overflow-hidden`}>
+                {p.badge && (
+                  <div className={`absolute top-0 left-0 right-0 py-1.5 text-center text-xs font-semibold ${p.highlight ? "bg-primary text-primary-foreground" : "bg-accent/20 text-accent-foreground"}`}>
+                    {p.badge}
+                  </div>
+                )}
+                <CardContent className={`p-6 text-center ${p.badge ? "pt-10" : ""}`}>
+                  <h3 className="font-display font-semibold text-lg text-foreground">{p.label}</h3>
+                  <div className="flex items-baseline justify-center gap-1 mt-4">
+                    <span className="text-sm text-foreground font-medium">{lang === "pt" ? "R$" : "$"}</span>
+                    <span className="font-display text-4xl font-bold text-foreground">{p.price.split(lang === "pt" ? "," : ".")[0]}</span>
+                    <span className="text-sm text-foreground font-medium">{lang === "pt" ? "," : "."}{p.price.split(lang === "pt" ? "," : ".")[1]}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">{p.period}</p>
+                  <ul className="text-left space-y-2.5 my-6">
+                    {t.pricingItems.map((item) => (
+                      <li key={item} className="flex items-start gap-2 text-sm text-foreground">
+                        <Check className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                  <a href={KIRVANO_CHECKOUT_URL} target="_blank" rel="noopener noreferrer" className="block">
+                    <Button variant={p.highlight ? "hero" : "outline"} size="lg" className="w-full group">
+                      {t.pricingCta}
+                      <ArrowRight className="w-4 h-4 ml-1 transition-transform group-hover:translate-x-1" />
+                    </Button>
+                  </a>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          <p className="mt-6 text-center text-xs text-muted-foreground flex items-center justify-center gap-1.5">
+            <ShieldCheck className="w-3.5 h-3.5 text-primary" />
+            {t.pricingGuarantee}
+          </p>
         </div>
       </section>
 
