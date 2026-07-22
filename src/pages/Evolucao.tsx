@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Camera, Plus, TrendingDown, Trash2, LineChart as LineIcon } from "lucide-react";
+import { Plus, TrendingDown, Trash2, LineChart as LineIcon } from "lucide-react";
 import { toast } from "sonner";
 import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
@@ -23,31 +23,19 @@ type WeightRow = {
   logged_at: string;
 };
 
-type Photo = { id: string; photo_url: string; photo_type: string; created_at: string; notes: string | null };
-
 const Evolucao = () => {
   const { user } = useAuth();
   const [logs, setLogs] = useState<WeightRow[]>([]);
-  const [photos, setPhotos] = useState<Photo[]>([]);
   const [form, setForm] = useState({ weight_kg: "", waist_cm: "", hip_cm: "", arm_cm: "", thigh_cm: "", notes: "" });
-  const [uploading, setUploading] = useState(false);
-  const [photoType, setPhotoType] = useState<"antes" | "depois">("antes");
 
   const load = async () => {
     if (!user) return;
-    const [{ data: w }, { data: p }] = await Promise.all([
-      supabase.from("weight_log").select("*").eq("user_id", user.id).order("logged_at", { ascending: true }),
-      supabase.from("progress_photos").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
-    ]);
+    const { data: w } = await supabase
+      .from("weight_log")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("logged_at", { ascending: true });
     setLogs((w ?? []) as WeightRow[]);
-    // Sign URLs for private bucket photos
-    const rows = (p ?? []) as Photo[];
-    const signed = await Promise.all(rows.map(async (row) => {
-      const path = row.photo_url;
-      const { data } = await supabase.storage.from("progress").createSignedUrl(path, 3600);
-      return { ...row, photo_url: data?.signedUrl ?? "" };
-    }));
-    setPhotos(signed);
   };
 
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [user]);
@@ -71,33 +59,6 @@ const Evolucao = () => {
 
   const delLog = async (id: string) => {
     await supabase.from("weight_log").delete().eq("id", id);
-    load();
-  };
-
-  const uploadPhoto = async (file: File) => {
-    if (!user) return;
-    setUploading(true);
-    try {
-      const path = `${user.id}/${Date.now()}-${file.name}`;
-      const { error } = await supabase.storage.from("progress").upload(path, file);
-      if (error) throw error;
-      await supabase.from("progress_photos").insert({
-        user_id: user.id,
-        photo_url: path,
-        photo_type: photoType,
-      });
-      toast.success("Foto adicionada");
-      load();
-    } catch (e: any) {
-      toast.error("Erro no upload", { description: e.message });
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  const delPhoto = async (p: Photo) => {
-    await supabase.from("progress_photos").delete().eq("id", p.id);
-    // Extract original storage path — we lost it; parse from signed URL is tricky. Skip storage delete gracefully.
     load();
   };
 
@@ -156,7 +117,7 @@ const Evolucao = () => {
           </Card>
         )}
 
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid gap-6">
           <Card className="border-border/60">
             <CardContent className="p-5">
               <h2 className="font-display font-semibold mb-4">Novo registro</h2>
@@ -189,56 +150,6 @@ const Evolucao = () => {
               <Button onClick={addLog} className="w-full mt-4 gap-2">
                 <Plus className="w-4 h-4" /> Registrar
               </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="border-border/60">
-            <CardContent className="p-5">
-              <h2 className="font-display font-semibold mb-4">Fotos antes/depois</h2>
-              <div className="flex gap-2 mb-3">
-                {(["antes", "depois"] as const).map((t) => (
-                  <button
-                    key={t}
-                    onClick={() => setPhotoType(t)}
-                    className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      photoType === t ? "bg-primary text-primary-foreground" : "bg-secondary"
-                    }`}
-                  >
-                    {t.charAt(0).toUpperCase() + t.slice(1)}
-                  </button>
-                ))}
-              </div>
-              <label className="block border-2 border-dashed border-border rounded-lg p-6 text-center cursor-pointer hover:border-primary transition-colors">
-                <Camera className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">
-                  {uploading ? "Enviando…" : "Clique para enviar foto"}
-                </span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  disabled={uploading}
-                  onChange={(e) => e.target.files?.[0] && uploadPhoto(e.target.files[0])}
-                />
-              </label>
-              {photos.length > 0 && (
-                <div className="grid grid-cols-3 gap-2 mt-4">
-                  {photos.map((p) => (
-                    <div key={p.id} className="relative group">
-                      <img src={p.photo_url} alt={p.photo_type} className="w-full h-24 object-cover rounded-lg" />
-                      <span className="absolute top-1 left-1 bg-background/80 text-xs px-1.5 py-0.5 rounded">
-                        {p.photo_type}
-                      </span>
-                      <button
-                        onClick={() => delPhoto(p)}
-                        className="absolute top-1 right-1 bg-background/80 rounded p-1 opacity-0 group-hover:opacity-100 transition"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
             </CardContent>
           </Card>
         </div>
