@@ -1,6 +1,8 @@
 import { Button } from "@/components/ui/button";
-import { ArrowDown } from "lucide-react";
+import { ArrowRight, Sparkles, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import DashboardMockup from "./landing/DashboardMockup";
 
 
 // Decorative organic leaf
@@ -90,9 +92,8 @@ const HeroSection = () => {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const scrollToCalculator = () => {
-    document.getElementById("calculator")?.scrollIntoView({ behavior: "smooth" });
-  };
+  const scrollTo = (id: string) => () =>
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
 
   // Particle positions (fixed to avoid rerenders)
   const particles = [
@@ -107,7 +108,7 @@ const HeroSection = () => {
   ];
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden hero-radial">
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden hero-radial pt-24 pb-16">
       {/* Soft orbs */}
       <div
         className="absolute -top-32 -left-32 w-[36rem] h-[36rem] rounded-full bg-primary/20 blur-3xl animate-float-slow"
@@ -162,34 +163,6 @@ const HeroSection = () => {
         className="absolute bottom-[22%] right-[12%] w-14 h-14 text-primary/20 animate-float-slow"
         style={{ transform: `translateY(${scrollY * -0.12}px) rotate(-60deg)`, animationDelay: "0.6s" }}
       />
-      <Leaf
-        className="hidden md:block absolute top-[52%] left-[2%] w-8 h-8 text-primary/15 animate-float"
-        style={{ animationDelay: "2s" }}
-      />
-      <Leaf
-        className="absolute top-[6%] left-[42%] w-9 h-9 text-primary/20 animate-float-slow"
-        style={{ transform: `translateY(${scrollY * -0.18}px) rotate(75deg)`, animationDelay: "0.9s" }}
-      />
-      <Leaf
-        className="absolute top-[38%] right-[2%] w-11 h-11 text-primary/25 animate-float"
-        style={{ transform: `translateY(${scrollY * -0.14}px) rotate(-45deg)`, animationDelay: "1.6s" }}
-      />
-      <Leaf
-        className="absolute top-[62%] right-[38%] w-8 h-8 text-accent/35 animate-float-slow"
-        style={{ transform: `translateY(${scrollY * -0.09}px) rotate(200deg)`, animationDelay: "0.3s" }}
-      />
-      <Leaf
-        className="hidden md:block absolute bottom-[4%] left-[38%] w-10 h-10 text-primary/20 animate-float"
-        style={{ transform: `translateY(${scrollY * -0.11}px) rotate(160deg)`, animationDelay: "2.4s" }}
-      />
-      <Leaf
-        className="absolute top-[30%] left-[24%] w-6 h-6 text-primary/15 animate-float-slow"
-        style={{ animationDelay: "1.4s" }}
-      />
-      <Leaf
-        className="hidden md:block absolute bottom-[30%] right-[26%] w-7 h-7 text-primary/20 animate-float"
-        style={{ animationDelay: "0.7s" }}
-      />
 
       {/* Particles */}
       {particles.map((p, i) => (
@@ -207,73 +180,72 @@ const HeroSection = () => {
         />
       ))}
 
-      {/* Phone mockup — bottom left, overlapping the plate area */}
-      <div
-        className="hidden md:block absolute left-[4%] bottom-[6%] animate-fade-up"
-        style={{
-          transform: `translateY(${scrollY * -0.05}px) rotate(-6deg)`,
-          animationDelay: "0.9s",
-        }}
-        aria-hidden
-      >
-        <PhoneMockup variant="meal" className="animate-float-slow" />
-      </div>
+      {/* Content: two-column hero */}
+      <div className="relative z-10 container mx-auto px-6 grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
+        <div className="text-center lg:text-left max-w-2xl mx-auto lg:mx-0">
+          <div className="animate-fade-up">
+            <span className="inline-flex items-center gap-2 mb-6 px-4 py-1.5 rounded-full bg-primary/10 text-primary font-display text-sm font-medium tracking-wide">
+              <Sparkles className="w-3.5 h-3.5" />
+              Seu nutricionista inteligente 24h
+            </span>
+          </div>
 
-      {/* Second phone mockup — right side, showing shopping list */}
-      <div
-        className="hidden lg:block absolute right-[3%] bottom-[8%] animate-fade-up"
-        style={{
-          transform: `translateY(${scrollY * -0.07}px) rotate(7deg)`,
-          animationDelay: "1.1s",
-        }}
-        aria-hidden
-      >
-        <PhoneMockup variant="list" className="animate-float" />
-      </div>
+          <h1
+            className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.05] tracking-tight text-foreground animate-fade-up"
+            style={{ animationDelay: "0.1s" }}
+          >
+            Receba seu plano alimentar{" "}
+            <span className="text-gradient-primary">personalizado</span> em menos de 2 minutos
+          </h1>
 
-      {/* Content */}
-      <div className="relative z-10 container mx-auto px-6 text-center max-w-3xl">
-        <div className="animate-fade-up">
-          <span className="inline-block mb-6 px-4 py-1.5 rounded-full bg-primary/10 text-primary font-display text-sm font-medium tracking-wide">
-            Nutrição inteligente e acessível
-          </span>
+          <p
+            className="mt-6 text-lg text-muted-foreground max-w-xl mx-auto lg:mx-0 font-body animate-fade-up"
+            style={{ animationDelay: "0.2s" }}
+          >
+            IA que entende seus objetivos, restrições e preferências. Emagrecimento, hipertrofia,
+            energia e saúde — com refeições reais, lista de compras e evolução acompanhada.
+          </p>
+
+          <div
+            className="mt-8 flex flex-col sm:flex-row gap-3 justify-center lg:justify-start animate-fade-up"
+            style={{ animationDelay: "0.3s" }}
+          >
+            <Button asChild variant="hero" size="xl">
+              <Link to="/auth">
+                Criar meu plano grátis <ArrowRight className="w-4 h-4 ml-1" />
+              </Link>
+            </Button>
+            <Button variant="outline" size="xl" onClick={scrollTo("como-funciona")}>
+              Ver como funciona
+            </Button>
+          </div>
+
+          <div
+            className="mt-6 flex items-center gap-4 text-xs text-muted-foreground justify-center lg:justify-start animate-fade-up"
+            style={{ animationDelay: "0.4s" }}
+          >
+            <span className="flex items-center gap-1.5">
+              <ShieldCheck className="w-3.5 h-3.5 text-primary" /> Sem cartão de crédito
+            </span>
+            <span>•</span>
+            <span>Cancele quando quiser</span>
+          </div>
         </div>
 
-        <h1
-          className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight tracking-tight text-foreground animate-fade-up"
-          style={{ animationDelay: "0.1s" }}
-        >
-          Descubra o que você
-          <br />
-          <span className="text-gradient-primary">realmente precisa</span>
-          <br />
-          para evoluir
-        </h1>
-
-        <p
-          className="mt-6 text-lg sm:text-xl text-muted-foreground max-w-xl mx-auto font-body animate-fade-up"
-          style={{ animationDelay: "0.2s" }}
-        >
-          Planejamento personalizado, lista de compras inteligente e foco em alimentação acessível. Sem fórmulas genéricas.
-        </p>
-
-
+        {/* Right column: dashboard mockup */}
         <div
-          className="mt-8 flex flex-col sm:flex-row gap-4 justify-center animate-fade-up"
-          style={{ animationDelay: "0.3s" }}
+          className="relative max-w-md mx-auto lg:max-w-none w-full animate-fade-up"
+          style={{ animationDelay: "0.5s", transform: `translateY(${scrollY * -0.04}px)` }}
         >
-          <Button variant="hero" size="xl" onClick={scrollToCalculator}>
-            Calcular meu plano
-          </Button>
+          <DashboardMockup className="lg:rotate-1 hover:rotate-0 transition-transform duration-500" />
+          {/* Floating chip */}
+          <div className="hidden md:flex absolute -left-6 top-16 items-center gap-2 rounded-full bg-card border border-border/60 shadow-lg px-3 py-1.5 text-xs font-display font-semibold text-foreground animate-float-slow">
+            <span className="w-2 h-2 rounded-full bg-primary" /> Plano ativo
+          </div>
+          <div className="hidden md:flex absolute -right-4 bottom-24 items-center gap-2 rounded-full bg-card border border-border/60 shadow-lg px-3 py-1.5 text-xs font-display font-semibold text-foreground animate-float">
+            <Sparkles className="w-3 h-3 text-accent" /> IA em ação
+          </div>
         </div>
-
-        <button
-          onClick={scrollToCalculator}
-          className="mt-16 animate-bounce text-muted-foreground hover:text-primary transition-colors"
-          aria-label="Rolar para calculadora"
-        >
-          <ArrowDown className="w-6 h-6 mx-auto" />
-        </button>
       </div>
     </section>
   );
