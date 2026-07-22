@@ -34,6 +34,7 @@ const Preferencias = () => {
   const [liked, setLiked] = useState<string[]>([]);
   const [disliked, setDisliked] = useState<string[]>([]);
   const [selectedRestrictions, setSelectedRestrictions] = useState<string[]>([]);
+  const [otherRestriction, setOtherRestriction] = useState("");
   const [selectedObjective, setSelectedObjective] = useState("");
   const [saving, setSaving] = useState(false);
   const { user } = useAuth();
@@ -53,7 +54,11 @@ const Preferencias = () => {
         setSelectedObjective(data.objective || "");
         setLiked(data.liked_foods || []);
         setDisliked(data.disliked_foods || []);
-        setSelectedRestrictions(data.restrictions || []);
+        const all = data.restrictions || [];
+        const known = restrictions;
+        setSelectedRestrictions(all.filter((r: string) => known.includes(r)));
+        const other = all.find((r: string) => !known.includes(r));
+        if (other) setOtherRestriction(other);
       }
     };
     load();
@@ -81,6 +86,7 @@ const Preferencias = () => {
     }
     setSaving(true);
     try {
+      const allRestrictions = [...selectedRestrictions, otherRestriction.trim()].filter(Boolean);
       const { error } = await supabase
         .from("user_preferences")
         .upsert({
@@ -88,7 +94,7 @@ const Preferencias = () => {
           objective: selectedObjective,
           liked_foods: liked,
           disliked_foods: disliked,
-          restrictions: selectedRestrictions,
+          restrictions: allRestrictions,
           updated_at: new Date().toISOString(),
         }, { onConflict: "user_id" });
       if (error) throw error;
@@ -158,6 +164,14 @@ const Preferencias = () => {
               </button>
             ))}
           </div>
+          <input
+            type="text"
+            value={otherRestriction}
+            onChange={(e) => setOtherRestriction(e.target.value)}
+            placeholder="Outra restrição (ex: alergia a nozes, FODMAP...)"
+            maxLength={100}
+            className="mt-3 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          />
         </div>
 
         {/* Foods */}

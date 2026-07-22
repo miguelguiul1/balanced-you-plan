@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Navbar from "./components/Navbar";
 import Index from "./pages/Index";
+import Dashboard from "./pages/Dashboard";
 import Preferencias from "./pages/Preferencias";
 import Scanner from "./pages/Scanner";
 import Receitas from "./pages/Receitas";
@@ -39,6 +40,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/" element={<P><Index /></P>} />
+            <Route path="/dashboard" element={<P><Dashboard /></P>} />
             <Route path="/preferencias" element={<P><Preferencias /></P>} />
             <Route path="/scanner" element={<P><Scanner /></P>} />
             <Route path="/receitas" element={<P><Receitas /></P>} />
