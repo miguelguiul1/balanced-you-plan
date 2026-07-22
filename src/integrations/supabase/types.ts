@@ -104,6 +104,39 @@ export type Database = {
         }
         Relationships: []
       }
+      user_goals: {
+        Row: {
+          calories_goal: number
+          created_at: string
+          id: string
+          protein_goal: number
+          target_weight: number | null
+          updated_at: string
+          user_id: string
+          water_goal_ml: number
+        }
+        Insert: {
+          calories_goal?: number
+          created_at?: string
+          id?: string
+          protein_goal?: number
+          target_weight?: number | null
+          updated_at?: string
+          user_id: string
+          water_goal_ml?: number
+        }
+        Update: {
+          calories_goal?: number
+          created_at?: string
+          id?: string
+          protein_goal?: number
+          target_weight?: number | null
+          updated_at?: string
+          user_id?: string
+          water_goal_ml?: number
+        }
+        Relationships: []
+      }
       user_preferences: {
         Row: {
           created_at: string
@@ -133,6 +166,30 @@ export type Database = {
           objective?: string | null
           restrictions?: string[] | null
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      water_log: {
+        Row: {
+          amount_ml: number
+          created_at: string
+          id: string
+          logged_at: string
+          user_id: string
+        }
+        Insert: {
+          amount_ml: number
+          created_at?: string
+          id?: string
+          logged_at?: string
+          user_id: string
+        }
+        Update: {
+          amount_ml?: number
+          created_at?: string
+          id?: string
+          logged_at?: string
           user_id?: string
         }
         Relationships: []
