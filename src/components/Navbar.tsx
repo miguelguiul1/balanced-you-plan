@@ -11,9 +11,11 @@ const navLinks = [
   { path: "/diario", label: "Diário" },
   { path: "/plano-semanal", label: "Plano" },
   { path: "/receitas", label: "Receitas" },
+  { path: "/assistente", label: "IA" },
+  { path: "/evolucao", label: "Evolução" },
   { path: "/preferencias", label: "Perfil" },
   { path: "/historico", label: "Histórico" },
-  { path: "/educacao", label: "Educação" },
+  { path: "/guias", label: "Guias" },
   { path: "/biblioteca", label: "Alimentos" },
 ];
 

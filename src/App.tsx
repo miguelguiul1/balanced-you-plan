@@ -17,6 +17,9 @@ import ResetPassword from "./pages/ResetPassword";
 import Historico from "./pages/Historico";
 import PlanoSemanal from "./pages/PlanoSemanal";
 import DiarioAlimentar from "./pages/DiarioAlimentar";
+import AssistenteIA from "./pages/AssistenteIA";
+import Evolucao from "./pages/Evolucao";
+import Guias from "./pages/Guias";
 import NotFound from "./pages/NotFound";
 import Vendas from "./pages/Vendas";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -49,6 +52,9 @@ const App = () => (
             <Route path="/historico" element={<P><Historico /></P>} />
             <Route path="/plano-semanal" element={<P><PlanoSemanal /></P>} />
             <Route path="/diario" element={<P><DiarioAlimentar /></P>} />
+            <Route path="/assistente" element={<P><AssistenteIA /></P>} />
+            <Route path="/evolucao" element={<P><Evolucao /></P>} />
+            <Route path="/guias" element={<P><Guias /></P>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
