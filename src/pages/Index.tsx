@@ -1,4 +1,5 @@
 import HeroSection from "@/components/HeroSection";
+import Calculator from "@/components/Calculator";
 import HowItWorks from "@/components/landing/HowItWorks";
 import Benefits from "@/components/landing/Benefits";
 import Features from "@/components/landing/Features";
@@ -18,6 +19,7 @@ const Index = () => {
       <Benefits />
       <Features />
       <Demo />
+      <Calculator />
       <Diferenciais />
       <SocialProof />
       <Pricing />
