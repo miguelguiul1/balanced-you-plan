@@ -60,16 +60,17 @@ const plans = [
 ];
 
 const Pricing = () => (
-  <section id="planos" className="py-24 px-6 bg-background">
-    <div className="container mx-auto max-w-6xl">
+  <section id="planos" className="py-24 px-6 bg-secondary/40 relative overflow-hidden">
+    <div className="absolute inset-0 bg-mesh pointer-events-none" aria-hidden />
+    <div className="container mx-auto max-w-6xl relative">
       <div className="text-center max-w-2xl mx-auto mb-12">
         <span className="inline-block mb-3 px-3 py-1 rounded-full bg-primary/10 text-primary font-display text-xs font-semibold tracking-wide uppercase">
           Planos
         </span>
-        <h2 className="font-display text-3xl sm:text-4xl font-bold text-foreground">
+        <h2 className="font-display text-3xl sm:text-5xl font-bold text-foreground">
           Escolha o plano ideal para <span className="text-gradient-primary">sua evolução</span>
         </h2>
-        <p className="mt-3 text-muted-foreground">
+        <p className="mt-4 text-muted-foreground text-lg">
           Comece grátis. Faça upgrade quando quiser. Cancele quando quiser.
         </p>
       </div>

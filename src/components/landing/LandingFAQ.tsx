@@ -18,20 +18,23 @@ const faqs = [
 ];
 
 const LandingFAQ = () => (
-  <section id="faq" className="py-24 px-6 bg-secondary/30">
+  <section id="faq" className="py-24 px-6 bg-background">
     <div className="container mx-auto max-w-3xl">
-      <div className="text-center mb-10">
+      <div className="text-center mb-12">
         <span className="inline-block mb-3 px-3 py-1 rounded-full bg-primary/10 text-primary font-display text-xs font-semibold tracking-wide uppercase">
           Dúvidas frequentes
         </span>
-        <h2 className="font-display text-3xl sm:text-4xl font-bold text-foreground">
+        <h2 className="font-display text-3xl sm:text-5xl font-bold text-foreground">
           Tudo o que você precisa saber
         </h2>
+        <p className="mt-4 text-muted-foreground text-lg">
+          Ainda restou dúvida? Fale com a gente em <a href="mailto:contato@balancedyou.app" className="text-primary hover:underline">contato@balancedyou.app</a>.
+        </p>
       </div>
-      <Accordion type="single" collapsible className="bg-card rounded-2xl border border-border/60 divide-y divide-border/60 px-2">
+      <Accordion type="single" collapsible className="bg-card rounded-2xl border border-border/60 divide-y divide-border/60 px-2 shadow-soft">
         {faqs.map((f, i) => (
           <AccordionItem key={i} value={`i-${i}`} className="border-none px-4">
-            <AccordionTrigger className="font-display font-semibold text-left hover:no-underline">
+            <AccordionTrigger className="font-display font-semibold text-left hover:no-underline hover:text-primary transition-colors py-5">
               {f.q}
             </AccordionTrigger>
             <AccordionContent className="text-muted-foreground leading-relaxed">

@@ -14,8 +14,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ['Space Grotesk', 'sans-serif'],
-        body: ['DM Sans', 'sans-serif'],
+        display: ['Outfit', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        body: ['Figtree', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -70,6 +70,8 @@ export default {
       boxShadow: {
         soft: "var(--shadow-soft)",
         card: "var(--shadow-card)",
+        premium: "var(--shadow-premium)",
+        glow: "var(--shadow-glow)",
       },
       keyframes: {
         "accordion-down": {
@@ -101,6 +103,18 @@ export default {
           "50%": { transform: "translateY(-30px)", opacity: "0.7" },
           "100%": { transform: "translateY(0px)", opacity: "0.35" },
         },
+        shimmer: {
+          "0%": { backgroundPosition: "-200% 0" },
+          "100%": { backgroundPosition: "200% 0" },
+        },
+        "gradient-x": {
+          "0%, 100%": { backgroundPosition: "0% 50%" },
+          "50%": { backgroundPosition: "100% 50%" },
+        },
+        marquee: {
+          "0%": { transform: "translateX(0)" },
+          "100%": { transform: "translateX(-50%)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -110,6 +124,9 @@ export default {
         float: "float 7s ease-in-out infinite",
         "float-slow": "float-slow 11s ease-in-out infinite",
         drift: "drift 9s ease-in-out infinite",
+        shimmer: "shimmer 2.5s linear infinite",
+        "gradient-x": "gradient-x 6s ease infinite",
+        marquee: "marquee 40s linear infinite",
       },
     },
   },
