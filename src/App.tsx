@@ -22,6 +22,7 @@ import Evolucao from "./pages/Evolucao";
 import Guias from "./pages/Guias";
 import NotFound from "./pages/NotFound";
 import Vendas from "./pages/Vendas";
+import Checkout from "./pages/Checkout";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -40,6 +41,7 @@ const App = () => (
           <Navbar />
           <Routes>
             <Route path="/vendas" element={<Vendas />} />
+            <Route path="/checkout" element={<Checkout />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/" element={<Index />} />
