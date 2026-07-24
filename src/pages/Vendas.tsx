@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
-const KIRVANO_CHECKOUT_URL = "#"; // Substituir pelo link da Kirvano
+const CHECKOUT_URL = "/checkout";
 
 type Lang = "pt" | "en";
 
@@ -235,7 +235,7 @@ const Vendas = () => {
           </p>
 
           <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <a href={KIRVANO_CHECKOUT_URL} target="_blank" rel="noopener noreferrer">
+            <a href={CHECKOUT_URL}>
               <Button variant="hero" size="xl" className="group">
                 {t.ctaHero}
                 <ArrowRight className="w-5 h-5 ml-1 transition-transform group-hover:translate-x-1" />
@@ -359,7 +359,7 @@ const Vendas = () => {
                       </li>
                     ))}
                   </ul>
-                  <a href={KIRVANO_CHECKOUT_URL} target="_blank" rel="noopener noreferrer" className="block">
+                  <a href={`${CHECKOUT_URL}?plano=${p.key}`} className="block">
                     <Button variant={p.highlight ? "hero" : "outline"} size="lg" className="w-full group">
                       {t.pricingCta}
                       <ArrowRight className="w-4 h-4 ml-1 transition-transform group-hover:translate-x-1" />
@@ -399,7 +399,7 @@ const Vendas = () => {
           <p className="text-muted-foreground mb-8 max-w-md mx-auto">
             {t.finalSub}
           </p>
-          <a href={KIRVANO_CHECKOUT_URL} target="_blank" rel="noopener noreferrer">
+          <a href={CHECKOUT_URL}>
             <Button variant="hero" size="xl" className="group">
               {t.finalCta}
               <ArrowRight className="w-5 h-5 ml-1 transition-transform group-hover:translate-x-1" />
