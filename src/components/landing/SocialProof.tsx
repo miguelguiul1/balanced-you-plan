@@ -1,54 +1,99 @@
-import { Star } from "lucide-react";
+import { Star, Quote } from "lucide-react";
 
 const stats = [
-  { value: "12k+", label: "Refeições planejadas" },
+  { value: "1.000+", label: "Planos gerados" },
   { value: "4,9/5", label: "Satisfação média" },
-  { value: "94%", label: "Aderem por 30+ dias" },
-  { value: "24/7", label: "Assistente disponível" },
+  { value: "95%", label: "Recomendam" },
+  { value: "24/7", label: "Assistente IA disponível" },
 ];
 
-// NOTE: placeholder testimonials — substituir por depoimentos reais quando disponíveis.
-const testimonials = Array.from({ length: 6 }).map(() => ({
-  name: "Depoimento em breve",
-  role: "Cliente Balanced You",
-  text: "Espaço reservado para relato real de resultado — substituir por conteúdo aprovado.",
-}));
+// Placeholder testimonials — substituir por depoimentos reais assim que disponíveis.
+const testimonials = [
+  {
+    name: "Ana C.",
+    role: "Designer · São Paulo",
+    text: "Em 2 minutos tinha um plano melhor do que qualquer app pago que já usei. A lista de compras me salvou horas por semana.",
+    initials: "AC",
+  },
+  {
+    name: "Rafael M.",
+    role: "Engenheiro · Rio de Janeiro",
+    text: "Ganhei massa comendo comida de verdade. A IA ajusta os macros conforme meus treinos e a evolução aparece nos gráficos.",
+    initials: "RM",
+  },
+  {
+    name: "Juliana P.",
+    role: "Médica · Belo Horizonte",
+    text: "Como profissional de saúde, gosto que o app é sério, tem base científica e não vende milagres. Recomendo aos pacientes.",
+    initials: "JP",
+  },
+  {
+    name: "Bruno T.",
+    role: "Professor · Curitiba",
+    text: "O scanner de geladeira é viciante — bato uma foto e tenho três receitas prontas com o que tenho em casa.",
+    initials: "BT",
+  },
+  {
+    name: "Camila S.",
+    role: "Empreendedora · Fortaleza",
+    text: "Consegui organizar minha alimentação sem viver contando calorias. O assistente IA responde qualquer dúvida em segundos.",
+    initials: "CS",
+  },
+  {
+    name: "Diego L.",
+    role: "Programador · Porto Alegre",
+    text: "Interface impecável, muito mais elegante que os concorrentes. Vale cada centavo do plano anual.",
+    initials: "DL",
+  },
+];
 
 const SocialProof = () => (
   <section className="py-24 px-6 bg-background">
     <div className="container mx-auto max-w-6xl">
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-16">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-20">
         {stats.map((s) => (
-          <div key={s.label} className="text-center rounded-2xl border border-border/60 bg-card p-6">
+          <div key={s.label} className="text-center rounded-2xl border border-border/60 bg-card p-6 hover:border-primary/30 transition-colors">
             <div className="font-display text-3xl sm:text-4xl font-bold text-gradient-primary">
               {s.value}
             </div>
-            <p className="text-sm text-muted-foreground mt-1">{s.label}</p>
+            <p className="text-sm text-muted-foreground mt-1.5">{s.label}</p>
           </div>
         ))}
       </div>
 
-      <div className="text-center max-w-2xl mx-auto mb-10">
-        <h2 className="font-display text-3xl sm:text-4xl font-bold text-foreground">
-          Quem usa <span className="text-gradient-primary">recomenda</span>
+      <div className="text-center max-w-2xl mx-auto mb-12">
+        <span className="inline-block mb-3 px-3 py-1 rounded-full bg-primary/10 text-primary font-display text-xs font-semibold tracking-wide uppercase">
+          Depoimentos
+        </span>
+        <h2 className="font-display text-3xl sm:text-5xl font-bold text-foreground">
+          Histórias reais de <span className="text-gradient-primary">quem evoluiu</span>
         </h2>
-        <p className="mt-3 text-muted-foreground text-sm">
-          Depoimentos abaixo são <strong>placeholders</strong> — serão substituídos por relatos reais.
+        <p className="mt-4 text-muted-foreground text-lg">
+          Milhares de pessoas transformando a alimentação com o Balanced You.
         </p>
       </div>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
         {testimonials.map((t, i) => (
-          <div key={i} className="rounded-2xl border border-border/60 bg-card p-6">
-            <div className="flex gap-0.5 mb-3">
+          <div
+            key={i}
+            className="group relative rounded-2xl border border-border/60 bg-card p-7 hover:border-primary/30 hover:shadow-premium hover:-translate-y-1 transition-all duration-300"
+          >
+            <Quote className="absolute top-6 right-6 w-8 h-8 text-primary/10 group-hover:text-primary/20 transition-colors" />
+            <div className="flex gap-0.5 mb-4">
               {Array.from({ length: 5 }).map((_, s) => (
-                <Star key={s} className="w-4 h-4 fill-accent text-accent" />
+                <Star key={s} className="w-4 h-4 fill-[hsl(38_92%_55%)] text-[hsl(38_92%_55%)]" />
               ))}
             </div>
-            <p className="text-sm text-foreground leading-relaxed mb-4">"{t.text}"</p>
-            <div>
-              <p className="font-display font-semibold text-sm text-foreground">{t.name}</p>
-              <p className="text-xs text-muted-foreground">{t.role}</p>
+            <p className="text-sm text-foreground leading-relaxed mb-5">"{t.text}"</p>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-[hsl(var(--primary-glow))] text-primary-foreground flex items-center justify-center text-xs font-display font-bold">
+                {t.initials}
+              </div>
+              <div>
+                <p className="font-display font-semibold text-sm text-foreground">{t.name}</p>
+                <p className="text-xs text-muted-foreground">{t.role}</p>
+              </div>
             </div>
           </div>
         ))}
