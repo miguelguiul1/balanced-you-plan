@@ -5,6 +5,7 @@ import MotivationalQuote from "@/components/MotivationalQuote";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import FoodScanner from "@/components/FoodScanner";
 
 interface Alimento {
   nome: string;
@@ -36,6 +37,7 @@ const Scanner = () => {
   const fileRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const { user } = useAuth();
+  const [tab, setTab] = useState<"alimento" | "geladeira">("alimento");
 
   const handleImage = (file: File) => {
     const reader = new FileReader();
@@ -110,15 +112,35 @@ const Scanner = () => {
             🔬 Função principal
           </span>
           <h1 className="font-display text-3xl sm:text-4xl font-bold text-foreground">
-            Scanner de <span className="text-primary">Geladeira</span>
+            Scanner <span className="text-primary">Inteligente</span>
           </h1>
           <p className="mt-3 text-muted-foreground max-w-lg mx-auto">
-            Tire uma foto da sua geladeira e a IA vai identificar os alimentos e sugerir receitas práticas, saudáveis e econômicas
+            {tab === "alimento"
+              ? "Fotografe um alimento, bebida ou produto e receba uma análise nutricional completa"
+              : "Tire uma foto da sua geladeira e a IA vai sugerir receitas práticas, saudáveis e econômicas"}
           </p>
+          <div className="mt-6 inline-flex p-1 rounded-full bg-secondary">
+            {([
+              ["alimento", "Alimento"],
+              ["geladeira", "Geladeira"],
+            ] as const).map(([id, label]) => (
+              <button
+                key={id}
+                onClick={() => setTab(id)}
+                className={`px-5 py-2 rounded-full text-sm font-medium transition-colors ${
+                  tab === id ? "bg-card text-foreground shadow-soft" : "text-muted-foreground"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
 
+        {tab === "alimento" && <FoodScanner />}
+
         {/* Upload area */}
-        {!image && (
+        {tab === "geladeira" && !image && (
           <div className="bg-card rounded-2xl shadow-soft p-8 text-center">
             <div className="border-2 border-dashed border-border rounded-xl p-12 hover:border-primary/50 transition-colors">
               <Camera className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
@@ -174,7 +196,7 @@ const Scanner = () => {
         )}
 
         {/* Image preview */}
-        {image && !result && (
+        {tab === "geladeira" && image && !result && (
           <div className="bg-card rounded-2xl shadow-soft p-6 text-center">
             <img src={image} alt="Sua geladeira" className="w-full max-h-80 object-cover rounded-xl mb-6" />
             <div className="flex gap-3 justify-center">
@@ -205,7 +227,7 @@ const Scanner = () => {
         )}
 
         {/* Results */}
-        {result && (
+        {tab === "geladeira" && result && (
           <div className="space-y-6 animate-fade-in">
             {/* Image */}
             <div className="bg-card rounded-2xl shadow-soft p-4">
