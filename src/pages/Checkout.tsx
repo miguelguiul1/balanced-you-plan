@@ -106,7 +106,7 @@ const Checkout = () => {
             Finalize sua assinatura
           </span>
           <h1 className="font-display text-3xl sm:text-4xl font-bold text-foreground mt-3">
-            Você está a um passo do <span className="text-gradient-primary">Evolua+</span>
+            Você está a um passo do <span className="text-gradient-primary">Evolua Plus</span>
           </h1>
           <p className="text-muted-foreground mt-2 max-w-lg mx-auto">
             Escolha seu plano e comece hoje. Cancelamento simples a qualquer momento.
@@ -258,7 +258,7 @@ const Checkout = () => {
                 <div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">
-                      Evolua+ {plan.label}
+                      Evolua Plus {plan.label}
                     </span>
                     <span className="font-display font-semibold text-foreground">
                       R$ {plan.price}

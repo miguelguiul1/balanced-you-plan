@@ -6,7 +6,7 @@ import {
 } from "@/components/ui/accordion";
 
 const faqs = [
-  { q: "A IA substitui um nutricionista?", a: "Não. O Balanced You é um assistente que organiza sua alimentação com base em ciência nutricional. Para tratamento clínico, condições específicas ou acompanhamento médico, consulte um profissional." },
+  { q: "A IA substitui um nutricionista?", a: "Não. O Evolua Plus é um assistente que organiza sua alimentação com base em ciência nutricional. Para tratamento clínico, condições específicas ou acompanhamento médico, consulte um profissional." },
   { q: "Posso trocar alimentos do plano?", a: "Sim. Você pode informar preferências, aversões e alergias, e a IA sugere substituições equivalentes em macros e calorias." },
   { q: "Funciona para emagrecimento?", a: "Sim. Ao definir 'emagrecer' como objetivo, calculamos um déficit calórico seguro e montamos refeições que sustentam saciedade." },
   { q: "Funciona para hipertrofia (ganho de massa)?", a: "Sim. Com objetivo 'ganhar massa', ajustamos superávit calórico e prioridade proteica adaptada ao seu peso e treino." },
@@ -28,7 +28,7 @@ const LandingFAQ = () => (
           Tudo o que você precisa saber
         </h2>
         <p className="mt-4 text-muted-foreground text-lg">
-          Ainda restou dúvida? Fale com a gente em <a href="mailto:contato@balancedyou.app" className="text-primary hover:underline">contato@balancedyou.app</a>.
+          Ainda restou dúvida? Fale com a gente em <a href="mailto:contato@evoluaplus.app" className="text-primary hover:underline">contato@evoluaplus.app</a>.
         </p>
       </div>
       <Accordion type="single" collapsible className="bg-card rounded-2xl border border-border/60 divide-y divide-border/60 px-2 shadow-soft">

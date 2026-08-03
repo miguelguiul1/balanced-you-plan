@@ -14,7 +14,7 @@ type Msg = { role: "user" | "assistant"; content: string };
 const AssistenteIA = () => {
   const { user } = useAuth();
   const [messages, setMessages] = useState<Msg[]>([
-    { role: "assistant", content: "Olá! Sou a **Balanced You AI**, sua assistente de alimentação e hábitos saudáveis.\n\nPosso te ajudar com informações gerais sobre nutrição, receitas, rotina e uso da plataforma. Por onde quer começar?" },
+    { role: "assistant", content: "Olá! Sou a **Evolua Plus AI**, sua assistente de alimentação e hábitos saudáveis.\n\nPosso te ajudar com informações gerais sobre nutrição, receitas, rotina e uso da plataforma. Por onde quer começar?" },
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -95,7 +95,7 @@ const AssistenteIA = () => {
             <Sparkles className="w-3 h-3" /> Assistente inteligente
           </div>
           <h1 className="font-display text-3xl sm:text-4xl font-bold text-foreground">
-            Balanced You AI
+            Evolua Plus AI
           </h1>
           <p className="text-muted-foreground mt-2 text-sm">
             Respostas rápidas e objetivas sobre alimentação, hábitos e uso da plataforma.

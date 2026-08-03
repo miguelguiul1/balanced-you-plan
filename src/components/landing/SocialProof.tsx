@@ -69,7 +69,7 @@ const SocialProof = () => (
           Histórias reais de <span className="text-gradient-primary">quem evoluiu</span>
         </h2>
         <p className="mt-4 text-muted-foreground text-lg">
-          Milhares de pessoas transformando a alimentação com o Balanced You.
+          Milhares de pessoas transformando a alimentação com o Evolua Plus.
         </p>
       </div>
 

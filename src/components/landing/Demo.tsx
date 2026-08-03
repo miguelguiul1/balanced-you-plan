@@ -111,7 +111,7 @@ const MockShell = ({ children }: { children: React.ReactNode }) => (
       <div className="w-2.5 h-2.5 rounded-full bg-destructive/70" />
       <div className="w-2.5 h-2.5 rounded-full bg-[hsl(38_92%_55%)]" />
       <div className="w-2.5 h-2.5 rounded-full bg-primary/80" />
-      <div className="ml-3 text-[10px] font-display text-muted-foreground">balanced-you.app</div>
+      <div className="ml-3 text-[10px] font-display text-muted-foreground">evoluaplus.app</div>
     </div>
     {children}
   </div>
@@ -145,7 +145,7 @@ const Demo = () => {
             Demonstração
           </span>
           <h2 className="font-display text-3xl sm:text-5xl font-bold text-foreground">
-            Veja o Balanced You <span className="text-gradient-primary">em ação</span>
+            Veja o Evolua Plus <span className="text-gradient-primary">em ação</span>
           </h2>
           <p className="mt-4 text-muted-foreground text-lg">
             Um app pensado para tornar a nutrição saudável simples, visual e realmente sustentável.
