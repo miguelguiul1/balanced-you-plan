@@ -412,7 +412,7 @@ const Vendas = () => {
       <footer className="py-8 border-t border-border">
         <div className="container mx-auto px-6 text-center">
           <p className="text-xs text-muted-foreground">
-            © {new Date().getFullYear()} Evolua+ · {t.footerRights}
+            © {new Date().getFullYear()} Evolua Plus · {t.footerRights}
           </p>
           <p className="text-xs text-muted-foreground mt-1">
             {t.footerDisclaimer}

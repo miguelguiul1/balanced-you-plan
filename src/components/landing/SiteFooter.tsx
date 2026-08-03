@@ -10,7 +10,7 @@ const SiteFooter = () => (
           <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-[hsl(var(--primary-glow))] text-primary-foreground">
             <Sparkles className="h-4 w-4" />
           </span>
-          Balanced <span className="text-primary">You</span>
+          Evolua <span className="text-primary">Plus</span>
         </Link>
         <p className="mt-4 text-sm text-muted-foreground max-w-sm leading-relaxed">
           Seu nutricionista inteligente 24h. Planejamento alimentar personalizado por IA,
@@ -21,7 +21,7 @@ const SiteFooter = () => (
             { icon: Instagram, href: "https://instagram.com", label: "Instagram" },
             { icon: Linkedin, href: "https://linkedin.com", label: "LinkedIn" },
             { icon: Github, href: "https://github.com", label: "GitHub" },
-            { icon: Mail, href: "mailto:contato@balancedyou.app", label: "E-mail" },
+            { icon: Mail, href: "mailto:contato@evoluaplus.app", label: "E-mail" },
           ].map(({ icon: Icon, href, label }) => (
             <a
               key={label}
@@ -51,7 +51,7 @@ const SiteFooter = () => (
         <ul className="space-y-2 text-sm text-muted-foreground">
           <li><Link to="/auth" className="hover:text-primary transition-colors">Criar conta</Link></li>
           <li><Link to="/vendas" className="hover:text-primary transition-colors">Assinar Plus</Link></li>
-          <li><a href="mailto:contato@balancedyou.app" className="hover:text-primary transition-colors">Contato</a></li>
+          <li><a href="mailto:contato@evoluaplus.app" className="hover:text-primary transition-colors">Contato</a></li>
         </ul>
       </div>
 
@@ -67,7 +67,7 @@ const SiteFooter = () => (
 
     <div className="border-t border-border/60 relative">
       <div className="container mx-auto px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
-        <p>© {new Date().getFullYear()} Balanced You. Todos os direitos reservados.</p>
+        <p>© {new Date().getFullYear()} Evolua Plus. Todos os direitos reservados.</p>
         <p className="flex items-center gap-1.5">
           <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
           Feito com cuidado para sua evolução.

@@ -1,7 +1,7 @@
 import { Flame, Beef, Droplet, TrendingUp } from "lucide-react";
 
 /**
- * Pure HTML/CSS mockup of the Balanced You dashboard.
+ * Pure HTML/CSS mockup of the Evolua Plus dashboard.
  * Used in the hero to show the real product surface.
  */
 const DashboardMockup = ({ className = "" }: { className?: string }) => {
@@ -16,7 +16,7 @@ const DashboardMockup = ({ className = "" }: { className?: string }) => {
         <div className="w-2.5 h-2.5 rounded-full bg-accent/80" />
         <div className="w-2.5 h-2.5 rounded-full bg-primary/80" />
         <div className="ml-3 text-[10px] font-display text-muted-foreground">
-          balanced-you.app / dashboard
+          evoluaplus.app / dashboard
         </div>
       </div>
 

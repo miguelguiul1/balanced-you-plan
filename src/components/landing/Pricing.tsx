@@ -7,7 +7,7 @@ const plans = [
     name: "Gratuito",
     price: "R$0",
     period: "para sempre",
-    desc: "Comece agora e conheça o Balanced You.",
+    desc: "Comece agora e conheça o Evolua Plus.",
     cta: "Criar conta grátis",
     href: "/auth",
     highlight: false,

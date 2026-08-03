@@ -36,7 +36,7 @@ const Diferenciais = () => (
           Diferenciais
         </span>
         <h2 className="font-display text-3xl sm:text-5xl font-bold text-foreground">
-          Balanced You <span className="text-gradient-primary">vs métodos tradicionais</span>
+          Evolua Plus <span className="text-gradient-primary">vs métodos tradicionais</span>
         </h2>
         <p className="mt-4 text-muted-foreground text-lg">
           Por que trocar planilhas, apps genéricos e dietas manuais por uma plataforma inteligente.
@@ -48,7 +48,7 @@ const Diferenciais = () => (
           <div className="text-sm font-display font-semibold text-muted-foreground uppercase tracking-wider">Recurso</div>
           <div className="text-center">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary text-primary-foreground text-xs font-display font-bold">
-              Balanced You
+              Evolua Plus
             </div>
           </div>
           <div className="text-center text-sm font-display font-semibold text-muted-foreground">
