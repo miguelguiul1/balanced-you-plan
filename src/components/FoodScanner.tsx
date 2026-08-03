@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, Fragment } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -489,13 +489,13 @@ const FoodScanner = () => {
                   ["Gordura", "gorduras"],
                   ["Fibras", "fibras"],
                 ] as [string, keyof Macros][]).map(([label, key]) => (
-                  <>
-                    <span key={label} className="text-muted-foreground">{label}</span>
+                  <Fragment key={label}>
+                    <span className="text-muted-foreground">{label}</span>
                     <span className="text-foreground">{round(((selected.macros[key] as number) || 0) * factor)}</span>
                     <span className="text-foreground">
                       {round(((compareWith.macros[key] as number) || 0) * (portion / (compareWith.porcao_base_g || 100)))}
                     </span>
-                  </>
+                  </Fragment>
                 ))}
               </div>
             </div>
