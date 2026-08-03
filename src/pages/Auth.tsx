@@ -94,7 +94,7 @@ const Auth = () => {
             style={{ animationDelay: "0.5s" }}
           >
             <span className="text-foreground">Evolua</span>
-            <span className="text-gradient-primary">+</span>
+            <span className="text-gradient-primary"> Plus</span>
           </div>
 
           <p

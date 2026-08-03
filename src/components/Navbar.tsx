@@ -53,7 +53,7 @@ const Navbar = () => {
       <span className="relative inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-[hsl(var(--primary-glow))] text-primary-foreground shadow-soft transition-transform group-hover:scale-105">
         <Sparkles className="h-4 w-4" />
       </span>
-      Balanced <span className="text-primary">You</span>
+      Evolua <span className="text-primary">Plus</span>
     </Link>
   );
 

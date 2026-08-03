@@ -597,7 +597,7 @@ const Calculator = () => {
               <div className="text-center mb-8">
                 <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary font-display text-sm font-medium mb-4">
                   <Zap className="w-4 h-4" />
-                  Seu plano Evolua+
+                  Seu plano Evolua Plus
                 </div>
                 <h3 className="font-display text-2xl font-bold text-foreground">
                   Resultado personalizado
