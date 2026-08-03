@@ -179,3 +179,9 @@
     .reveal { animation: none !important; transform: none !important; opacity: 1 !important; }
   }
 }
+
+@keyframes scanline {
+  0% { top: 0%; }
+  50% { top: 96%; }
+  100% { top: 0%; }
+}
