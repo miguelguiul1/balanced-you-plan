@@ -87,6 +87,7 @@ export type Database = {
         Row: {
           created_at: string
           full_name: string | null
+          height_cm: number | null
           id: string
           is_premium: boolean
           updated_at: string
@@ -94,6 +95,7 @@ export type Database = {
         Insert: {
           created_at?: string
           full_name?: string | null
+          height_cm?: number | null
           id: string
           is_premium?: boolean
           updated_at?: string
@@ -101,6 +103,7 @@ export type Database = {
         Update: {
           created_at?: string
           full_name?: string | null
+          height_cm?: number | null
           id?: string
           is_premium?: boolean
           updated_at?: string
@@ -115,6 +118,7 @@ export type Database = {
           photo_type: string
           photo_url: string
           user_id: string
+          weight_log_id: string | null
         }
         Insert: {
           created_at?: string
@@ -123,6 +127,7 @@ export type Database = {
           photo_type?: string
           photo_url: string
           user_id: string
+          weight_log_id?: string | null
         }
         Update: {
           created_at?: string
@@ -131,8 +136,17 @@ export type Database = {
           photo_type?: string
           photo_url?: string
           user_id?: string
+          weight_log_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "progress_photos_weight_log_id_fkey"
+            columns: ["weight_log_id"]
+            isOneToOne: false
+            referencedRelation: "weight_log"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       scan_history: {
         Row: {
@@ -251,36 +265,51 @@ export type Database = {
       weight_log: {
         Row: {
           arm_cm: number | null
+          body_fat_pct: number | null
+          chest_cm: number | null
           created_at: string
+          height_cm: number | null
           hip_cm: number | null
           id: string
           logged_at: string
+          neck_cm: number | null
           notes: string | null
           thigh_cm: number | null
+          updated_at: string
           user_id: string
           waist_cm: number | null
           weight_kg: number
         }
         Insert: {
           arm_cm?: number | null
+          body_fat_pct?: number | null
+          chest_cm?: number | null
           created_at?: string
+          height_cm?: number | null
           hip_cm?: number | null
           id?: string
           logged_at?: string
+          neck_cm?: number | null
           notes?: string | null
           thigh_cm?: number | null
+          updated_at?: string
           user_id: string
           waist_cm?: number | null
           weight_kg: number
         }
         Update: {
           arm_cm?: number | null
+          body_fat_pct?: number | null
+          chest_cm?: number | null
           created_at?: string
+          height_cm?: number | null
           hip_cm?: number | null
           id?: string
           logged_at?: string
+          neck_cm?: number | null
           notes?: string | null
           thigh_cm?: number | null
+          updated_at?: string
           user_id?: string
           waist_cm?: number | null
           weight_kg?: number
