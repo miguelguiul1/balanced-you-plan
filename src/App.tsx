@@ -24,6 +24,7 @@ const DiarioAlimentar = lazy(() => import("./pages/DiarioAlimentar"));
 const AssistenteIA = lazy(() => import("./pages/AssistenteIA"));
 const Evolucao = lazy(() => import("./pages/Evolucao"));
 const Guias = lazy(() => import("./pages/Guias"));
+const Insights = lazy(() => import("./pages/Insights"));
 const Vendas = lazy(() => import("./pages/Vendas"));
 const Checkout = lazy(() => import("./pages/Checkout"));
 const DesignSystem = lazy(() => import("./pages/DesignSystem"));

@@ -9,6 +9,7 @@ const appLinks = [
   { path: "/dashboard", label: "Painel" },
   { path: "/scanner", label: "Scanner" },
   { path: "/diario", label: "Diário" },
+  { path: "/insights", label: "Insights" },
   { path: "/plano-semanal", label: "Plano" },
   { path: "/receitas", label: "Receitas" },
   { path: "/assistente", label: "IA" },
