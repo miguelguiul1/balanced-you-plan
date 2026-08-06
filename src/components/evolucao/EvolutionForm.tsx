@@ -4,7 +4,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Camera, Loader2, X } from "lucide-react";
 import { toast } from "sonner";
 import { PHOTO_TYPES, PhotoRow, WeightRow } from "./types";
@@ -22,7 +21,7 @@ type Props = {
 
 const empty = {
   weight_kg: "", height_cm: "", waist_cm: "", arm_cm: "", hip_cm: "",
-  thigh_cm: "", chest_cm: "", neck_cm: "", body_fat_pct: "", notes: "",
+  thigh_cm: "", chest_cm: "", neck_cm: "", body_fat_pct: "",
 };
 
 const num = (v: string) => (v.trim() ? parseFloat(v.replace(",", ".")) : null);
@@ -49,7 +48,6 @@ const EvolutionForm = ({
         chest_cm: str(editing.chest_cm),
         neck_cm: str(editing.neck_cm),
         body_fat_pct: str(editing.body_fat_pct),
-        notes: editing.notes ?? "",
       });
     } else {
       setForm({ ...empty, height_cm: defaultHeight });
@@ -94,7 +92,6 @@ const EvolutionForm = ({
         chest_cm: num(form.chest_cm),
         neck_cm: num(form.neck_cm),
         body_fat_pct: num(form.body_fat_pct),
-        notes: form.notes.trim() || null,
       };
 
       let logId = editing?.id;
@@ -157,11 +154,6 @@ const EvolutionForm = ({
                 <Input inputMode="decimal" type="number" step="0.1" value={form[f.k]} onChange={set(f.k)} />
               </div>
             ))}
-          </div>
-
-          <div>
-            <Label className="text-xs text-muted-foreground">Observações pessoais</Label>
-            <Textarea rows={2} value={form.notes} onChange={set("notes")} placeholder="Ex: comecei academia novamente." />
           </div>
 
           <div>
