@@ -34,6 +34,18 @@ const scales = [
 ];
 const steps = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950];
 
+const radiusDemo: Record<string, string> = {
+  xs: "rounded-xs", sm: "rounded-sm", md: "rounded-md", lg: "rounded-lg",
+  xl: "rounded-xl", "2xl": "rounded-2xl", full: "rounded-full",
+};
+const shadowDemo: Record<string, string> = {
+  xs: "shadow-xs", sm: "shadow-sm", md: "shadow-md", lg: "shadow-lg",
+  xl: "shadow-xl", floating: "shadow-floating", dropdown: "shadow-dropdown", modal: "shadow-modal",
+};
+const durationDemo: Record<string, string> = {
+  fast: "duration-fast", normal: "duration-normal", slow: "duration-slow", slower: "duration-slower",
+};
+
 const Section = ({ id, title, description, children }: {
   id: string; title: string; description?: string; children: React.ReactNode;
 }) => (
@@ -127,9 +139,9 @@ const DesignSystem = () => {
             ))}
           </div>
           <div className="mt-8 flex flex-wrap gap-4">
-            {["xs", "sm", "md", "lg", "xl", "2xl", "full"].map((r) => (
+            {Object.keys(radiusDemo).map((r) => (
               <div key={r} className="text-center">
-                <div className={`size-20 bg-surface border border-border rounded-${r}`} />
+                <div className={`size-20 bg-surface border border-border ${radiusDemo[r]}`} />
                 <span className="type-caption">{r}</span>
               </div>
             ))}
@@ -142,8 +154,8 @@ const DesignSystem = () => {
           description="xs/sm para cards em repouso, md/lg para hover, xl e floating para destaque, dropdown para menus e modal para diálogos."
         >
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
-            {["xs", "sm", "md", "lg", "xl", "floating", "dropdown", "modal"].map((s) => (
-              <div key={s} className={`h-24 rounded-lg bg-card border border-border flex items-center justify-center shadow-${s}`}>
+            {Object.keys(shadowDemo).map((s) => (
+              <div key={s} className={`h-24 rounded-lg bg-card border border-border flex items-center justify-center ${shadowDemo[s]}`}>
                 <span className="type-caption">shadow-{s}</span>
               </div>
             ))}
@@ -156,10 +168,10 @@ const DesignSystem = () => {
           description="fast (150ms) para hover e cores, normal (250ms) para cards e tabs, slow (400ms) para gráficos e progresso, slower (650ms) para reveals. Curvas: ease-out padrão, ease-spring para interações táteis."
         >
           <div className="flex flex-wrap gap-4">
-            {["fast", "normal", "slow", "slower"].map((d) => (
+            {Object.keys(durationDemo).map((d) => (
               <div
                 key={d}
-                className={`ds-surface p-6 transition-transform duration-${d} ease-out hover:-translate-y-2`}
+                className={`ds-surface p-6 transition-transform ease-out hover:-translate-y-2 ${durationDemo[d]}`}
               >
                 <span className="type-body-sm">duration-{d}</span>
               </div>
