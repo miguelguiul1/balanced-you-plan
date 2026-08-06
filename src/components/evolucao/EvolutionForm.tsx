@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Camera, Loader2, X } from "lucide-react";
 import { toast } from "sonner";
 import { PHOTO_TYPES, PhotoRow, WeightRow } from "./types";
+import { useSyncModules } from "@/hooks/useNutrition";
 
 type Props = {
   open: boolean;
@@ -30,6 +31,7 @@ const str = (v: number | null | undefined) => (v === null || v === undefined ? "
 const EvolutionForm = ({
   open, onOpenChange, userId, editing, editingPhotos, defaultHeight, signedUrls, onSaved,
 }: Props) => {
+  const sync = useSyncModules();
   const [form, setForm] = useState({ ...empty });
   const [files, setFiles] = useState<Record<string, File | null>>({});
   const [saving, setSaving] = useState(false);
@@ -111,6 +113,7 @@ const EvolutionForm = ({
       }
 
       toast.success(editing ? "Registro atualizado!" : "Evolução registrada com sucesso!");
+      sync(["weight"]);
       onOpenChange(false);
       onSaved();
     } catch (e) {
