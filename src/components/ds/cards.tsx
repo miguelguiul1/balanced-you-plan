@@ -30,7 +30,7 @@ export const DSCardHeader = ({
     <div className="flex items-center gap-3 min-w-0">
       {Icon && (
         <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-primary-soft text-primary" aria-hidden="true">
-          <Icon className="size-4.5 size-[18px]" strokeWidth={2} />
+          <Icon className="size-[18px]" strokeWidth={2} />
         </span>
       )}
       <div className="min-w-0">
