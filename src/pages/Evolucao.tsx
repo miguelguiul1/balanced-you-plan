@@ -473,7 +473,21 @@ const Evolucao = () => {
                               </div>
                             )}
                           </div>
-                          {l.notes && <p className="text-sm text-muted-foreground italic">“{l.notes}”</p>}
+                          {(() => {
+                            const idx = logs.findIndex((x) => x.id === l.id);
+                            const prev = idx > 0 ? logs[idx - 1] : null;
+                            if (!prev) return <p className="text-xs text-muted-foreground">Primeiro registro — base da sua jornada.</p>;
+                            const dw = Number(l.weight_kg) - Number(prev.weight_kg);
+                            const dwaist = l.waist_cm && prev.waist_cm ? Number(l.waist_cm) - Number(prev.waist_cm) : null;
+                            const gap = Math.round(daysBetween(prev.logged_at, l.logged_at));
+                            return (
+                              <p className="text-xs text-muted-foreground">
+                                Progresso automático: {dw >= 0 ? "+" : ""}{dw.toFixed(1)} kg
+                                {dwaist !== null ? ` · cintura ${dwaist >= 0 ? "+" : ""}${dwaist.toFixed(1)} cm` : ""}
+                                {" "}em {gap} dia(s) desde o registro anterior.
+                              </p>
+                            );
+                          })()}
                           {ps.length > 0 && (
                             <div className="grid grid-cols-3 gap-2 max-w-md">
                               {ps.map((p) => (

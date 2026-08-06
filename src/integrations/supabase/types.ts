@@ -38,6 +38,57 @@ export type Database = {
         }
         Relationships: []
       }
+      food_favorites: {
+        Row: {
+          calories: number
+          carbs: number
+          category: string | null
+          created_at: string
+          emoji: string | null
+          fat: number
+          fiber: number
+          food_name: string
+          id: string
+          portion_g: number
+          protein: number
+          sodium_mg: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          calories?: number
+          carbs?: number
+          category?: string | null
+          created_at?: string
+          emoji?: string | null
+          fat?: number
+          fiber?: number
+          food_name: string
+          id?: string
+          portion_g?: number
+          protein?: number
+          sodium_mg?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          calories?: number
+          carbs?: number
+          category?: string | null
+          created_at?: string
+          emoji?: string | null
+          fat?: number
+          fiber?: number
+          food_name?: string
+          id?: string
+          portion_g?: number
+          protein?: number
+          sodium_mg?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       food_log: {
         Row: {
           calories: number | null

@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { MEAL_TYPES, useSyncModules } from "@/hooks/useNutrition";
 
 interface Macros {
   calorias: number; proteina: number; carboidratos: number; gorduras: number; fibras: number; acucares?: number;
@@ -71,6 +72,7 @@ const FoodScanner = () => {
   const { toast } = useToast();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const sync = useSyncModules();
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [image, setImage] = useState<string | null>(null);
@@ -85,6 +87,9 @@ const FoodScanner = () => {
   const [customPortion, setCustomPortion] = useState("");
   const [compareWith, setCompareWith] = useState<ScannedFood | null>(null);
   const [saving, setSaving] = useState(false);
+  const [mealType, setMealType] = useState<string>("outro");
+  const [checked, setChecked] = useState<number[]>([]);
+  const [bulkSaving, setBulkSaving] = useState(false);
 
   useEffect(() => {
     if (!analyzing) return;
@@ -124,6 +129,7 @@ const FoodScanner = () => {
       }
       const list = data.alimentos as ScannedFood[];
       setFoods(list);
+      setChecked(list.map((_, i) => i));
       if (list.length === 1) openFood(list[0]);
       if (user) {
         await supabase.from("scan_history").insert({ user_id: user.id, result: data });
@@ -147,6 +153,7 @@ const FoodScanner = () => {
     setSelected(null);
     setErrorMsg(null);
     setCompareWith(null);
+    setChecked([]);
   };
 
   const factor = selected ? portion / (selected.porcao_base_g || 100) : 1;
@@ -163,7 +170,7 @@ const FoodScanner = () => {
       user_id: user.id,
       food_name: selected.nome,
       quantity: `${portion}g`,
-      meal_type: "outro",
+      meal_type: mealType,
       calories: scaled(selected.macros.calorias),
       protein: scaled(selected.macros.proteina),
       carbs: scaled(selected.macros.carboidratos),
@@ -175,7 +182,64 @@ const FoodScanner = () => {
       toast({ title: "Erro ao salvar", description: error.message, variant: "destructive" });
       return;
     }
-    toast({ title: "Adicionado ao diário!", description: `${selected.nome} · ${portion}g` });
+    sync(["food"]);
+    toast({ title: "Alimento adicionado ao diário.", description: `${selected.nome} · ${portion}g` });
+  };
+
+  const addSelectedToDiary = async () => {
+    if (!foods || !checked.length) return;
+    if (!user) return navigate("/auth");
+    setBulkSaving(true);
+    const rows = checked.map((i) => {
+      const f = foods[i];
+      const base = f.porcao_base_g || 100;
+      return {
+        user_id: user.id,
+        food_name: f.nome,
+        quantity: `${base}g`,
+        meal_type: mealType,
+        calories: round(f.macros.calorias),
+        protein: round(f.macros.proteina),
+        carbs: round(f.macros.carboidratos),
+        fat: round(f.macros.gorduras),
+        fiber: round(f.macros.fibras),
+      };
+    });
+    const { error } = await supabase.from("food_log").insert(rows);
+    setBulkSaving(false);
+    if (error) {
+      toast({ title: "Erro ao salvar", description: error.message, variant: "destructive" });
+      return;
+    }
+    sync(["food"]);
+    toast({ title: "Alimentos adicionados ao diário.", description: `${rows.length} itens registrados.` });
+  };
+
+  const saveFavorite = async () => {
+    if (!selected) return;
+    if (!user) return navigate("/auth");
+    const { error } = await supabase.from("food_favorites").upsert(
+      {
+        user_id: user.id,
+        food_name: selected.nome,
+        emoji: selected.emoji ?? null,
+        category: selected.categoria ?? null,
+        portion_g: portion,
+        calories: scaled(selected.macros.calorias),
+        protein: scaled(selected.macros.proteina),
+        carbs: scaled(selected.macros.carboidratos),
+        fat: scaled(selected.macros.gorduras),
+        fiber: scaled(selected.macros.fibras),
+        sodium_mg: scaled(selected.micros?.sodio_mg),
+      },
+      { onConflict: "user_id,food_name" }
+    );
+    if (error) {
+      toast({ title: "Erro ao favoritar", description: error.message, variant: "destructive" });
+      return;
+    }
+    sync(["favorites"]);
+    toast({ title: "Salvo nos favoritos", description: "Disponível na busca rápida do diário." });
   };
 
   const macroCards = selected
@@ -297,30 +361,70 @@ const FoodScanner = () => {
       {foods && !selected && (
         <div className="space-y-4 animate-fade-in">
           <p className="text-sm text-muted-foreground text-center">
-            Encontramos {foods.length} {foods.length === 1 ? "alimento" : "alimentos"}. Toque para ver os detalhes.
+            Encontramos {foods.length} {foods.length === 1 ? "alimento" : "alimentos"}. Selecione o que deseja registrar.
           </p>
           {foods.map((f, i) => (
-            <button
-              key={i}
-              onClick={() => openFood(f)}
-              className="w-full text-left bg-card rounded-2xl shadow-soft p-4 flex items-center gap-4 hover:shadow-premium transition-shadow"
-            >
-              {image && <img src={image} alt={f.nome} className="w-16 h-16 rounded-xl object-cover" />}
-              <div className="flex-1 min-w-0">
-                <p className="font-display font-semibold text-foreground truncate">
-                  {f.emoji} {f.nome}
-                </p>
-                <p className="text-xs text-muted-foreground">{f.categoria}{f.marca ? ` · ${f.marca}` : ""}</p>
-                <div className="mt-2 flex items-center gap-2">
-                  <div className="h-1.5 w-24 rounded-full bg-secondary overflow-hidden">
-                    <div className="h-full bg-primary rounded-full" style={{ width: `${f.confianca}%` }} />
+            <div key={i} className="bg-card rounded-2xl shadow-soft p-4">
+              <div className="flex items-start gap-4">
+                {foods.length > 1 && (
+                  <input
+                    type="checkbox"
+                    aria-label={`Selecionar ${f.nome}`}
+                    checked={checked.includes(i)}
+                    onChange={(e) =>
+                      setChecked((c) => (e.target.checked ? [...c, i] : c.filter((x) => x !== i)))
+                    }
+                    className="mt-1 w-4 h-4 accent-[hsl(var(--primary))]"
+                  />
+                )}
+                {image && <img src={image} alt={f.nome} className="w-16 h-16 rounded-xl object-cover" />}
+                <div className="flex-1 min-w-0">
+                  <p className="font-display font-semibold text-foreground truncate">
+                    {f.emoji} {f.nome}
+                  </p>
+                  <p className="text-xs text-muted-foreground">{f.categoria}{f.marca ? ` · ${f.marca}` : ""}</p>
+                  <div className="mt-2 flex items-center gap-2">
+                    <div className="h-1.5 w-24 rounded-full bg-secondary overflow-hidden">
+                      <div className="h-full bg-primary rounded-full" style={{ width: `${f.confianca}%` }} />
+                    </div>
+                    <span className="text-xs text-muted-foreground">{f.confianca}% de confiança</span>
                   </div>
-                  <span className="text-xs text-muted-foreground">{f.confianca}% de confiança</span>
                 </div>
               </div>
-              <ChevronRight className="w-5 h-5 text-muted-foreground flex-shrink-0" />
-            </button>
+              <Button variant="outline" size="sm" className="mt-3 w-full gap-2" onClick={() => openFood(f)}>
+                Ver análise nutricional <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
           ))}
+
+          {foods.length > 1 && (
+            <div className="bg-card rounded-2xl shadow-soft p-4 space-y-3">
+              <p className="text-sm font-medium text-foreground">Registrar em qual refeição?</p>
+              <div className="flex flex-wrap gap-2">
+                {MEAL_TYPES.map((m) => (
+                  <button
+                    key={m.id}
+                    onClick={() => setMealType(m.id)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                      mealType === m.id ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"
+                    }`}
+                  >
+                    {m.short}
+                  </button>
+                ))}
+              </div>
+              <Button
+                variant="hero"
+                className="w-full gap-2"
+                disabled={!checked.length || bulkSaving}
+                onClick={addSelectedToDiary}
+              >
+                {bulkSaving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                Adicionar {checked.length} ao diário
+              </Button>
+            </div>
+          )}
+
           <div className="text-center">
             <Button variant="outline" onClick={reset} className="gap-2">
               <Camera className="w-4 h-4" /> Escanear outro
@@ -501,22 +605,31 @@ const FoodScanner = () => {
             </div>
           )}
 
+          {/* Refeição */}
+          <div className="bg-card rounded-2xl shadow-soft p-5">
+            <p className="text-sm font-medium text-foreground mb-3">Refeição do diário</p>
+            <div className="flex flex-wrap gap-2">
+              {MEAL_TYPES.map((m) => (
+                <button
+                  key={m.id}
+                  onClick={() => setMealType(m.id)}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                    mealType === m.id ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:bg-secondary/70"
+                  }`}
+                >
+                  {m.short}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Ações */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Button variant="hero" size="lg" className="gap-2" onClick={addToDiary} disabled={saving}>
               {saving ? <RefreshCw className="w-5 h-5 animate-spin" /> : <Plus className="w-5 h-5" />} Adicionar ao Diário
             </Button>
-            <Button
-              variant="outline"
-              size="lg"
-              className="gap-2"
-              onClick={async () => {
-                if (!user) return navigate("/auth");
-                await supabase.from("scan_history").insert({ user_id: user.id, result: selected as any });
-                toast({ title: "Alimento salvo", description: "Disponível no seu histórico." });
-              }}
-            >
-              <Bookmark className="w-5 h-5" /> Salvar alimento
+            <Button variant="outline" size="lg" className="gap-2" onClick={saveFavorite}>
+              <Bookmark className="w-5 h-5" /> Salvar nos Favoritos
             </Button>
             <Button
               variant="outline"
@@ -531,7 +644,7 @@ const FoodScanner = () => {
               <GitCompare className="w-5 h-5" /> Comparar com outro
             </Button>
             <Button variant="outline" size="lg" className="gap-2" onClick={() => navigate("/diario")}>
-              <Check className="w-5 h-5" /> Criar refeição no diário
+              <Check className="w-5 h-5" /> Abrir o diário
             </Button>
           </div>
 

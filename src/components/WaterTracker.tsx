@@ -3,6 +3,7 @@ import { Droplet, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { useSyncModules } from "@/hooks/useNutrition";
 
 const INCREMENTS = [250, 500, 750, 1000];
 
@@ -18,6 +19,7 @@ type Props = { compact?: boolean };
 
 const WaterTracker = ({ compact = false }: Props) => {
   const { user } = useAuth();
+  const sync = useSyncModules();
   const [total, setTotal] = useState(0);
   const [goal, setGoal] = useState(2500);
   const [loading, setLoading] = useState(true);
@@ -42,6 +44,7 @@ const WaterTracker = ({ compact = false }: Props) => {
     setTotal(prev + ml);
     const { error } = await supabase.from("water_log").insert({ user_id: user.id, amount_ml: ml });
     if (error) { setTotal(prev); toast.error("Erro ao registrar"); return; }
+    sync(["water"]);
     const newPct = ((prev + ml) / goal) * 100;
     if (prev < goal && prev + ml >= goal) toast.success("🎉 Meta de hidratação atingida!");
     else if (newPct >= 75 && (prev / goal) * 100 < 75) toast("💧 Quase lá!");
@@ -55,6 +58,7 @@ const WaterTracker = ({ compact = false }: Props) => {
     if (!data) return;
     await supabase.from("water_log").delete().eq("id", data.id);
     setTotal((t) => Math.max(0, t - data.amount_ml));
+    sync(["water"]);
   };
 
   const pct = Math.min(100, Math.round((total / goal) * 100));
