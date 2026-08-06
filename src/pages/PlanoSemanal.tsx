@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import MotivationalQuote from "@/components/MotivationalQuote";
+import SmartShoppingList from "@/components/plano/SmartShoppingList";
 
 interface Refeicao {
   tipo: string;
@@ -265,30 +266,12 @@ const PlanoSemanal = () => {
               </div>
             ))}
 
-            {/* Shopping list */}
-            <div className="bg-card rounded-2xl shadow-soft overflow-hidden">
-              <button
-                onClick={() => setShowList(!showList)}
-                className="w-full p-5 flex items-center justify-between text-left"
-              >
-                <h2 className="font-display text-lg font-semibold text-foreground flex items-center gap-2">
-                  <ShoppingCart className="w-5 h-5 text-primary" /> Lista de compras
-                </h2>
-                {showList ? <ChevronUp className="w-5 h-5 text-muted-foreground" /> : <ChevronDown className="w-5 h-5 text-muted-foreground" />}
-              </button>
-              {showList && (
-                <div className="px-5 pb-5 border-t border-border pt-4">
-                  <div className="grid grid-cols-2 gap-2">
-                    {plano.lista_compras.map((item, i) => (
-                      <label key={i} className="flex items-center gap-2 p-2 rounded-lg hover:bg-secondary/50 cursor-pointer text-sm">
-                        <input type="checkbox" className="rounded border-border" />
-                        <span className="text-foreground">{item}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+            {/* Lista de compras inteligente */}
+            <SmartShoppingList
+              source={plano.lista_compras ?? []}
+              onRegenerate={generatePlan}
+              regenerating={generating}
+            />
 
             {/* Tips */}
             {plano.dicas && plano.dicas.length > 0 && (

@@ -145,6 +145,42 @@ export const useWater = (date: string) => {
   });
 };
 
+/** Água num intervalo (score, streak, insights) */
+export const useWaterRange = (from: string, to: string) => {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["waterRange", user?.id, from, to],
+    enabled: !!user,
+    staleTime: stale,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("water_log")
+        .select("amount_ml, logged_at")
+        .eq("user_id", user!.id)
+        .gte("logged_at", from)
+        .lte("logged_at", to);
+      return (data ?? []) as { amount_ml: number; logged_at: string }[];
+    },
+  });
+};
+
+/** Contagem de fotos de evolução (conquistas) */
+export const useProgressPhotoCount = () => {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["photoCount", user?.id],
+    enabled: !!user,
+    staleTime: stale,
+    queryFn: async () => {
+      const { count } = await supabase
+        .from("progress_photos")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user!.id);
+      return count ?? 0;
+    },
+  });
+};
+
 export const usePreferences = () => {
   const { user } = useAuth();
   return useQuery({
@@ -215,11 +251,11 @@ export const useSyncModules = () => {
     ) => {
       const map: Record<string, string[]> = {
         food: ["foodLog", "foodLogRange"],
-        water: ["water"],
+        water: ["water", "waterRange"],
         goals: ["goals"],
         prefs: ["prefs"],
         favorites: ["favorites"],
-        weight: ["weightLog"],
+        weight: ["weightLog", "photoCount"],
       };
       scopes.flatMap((s) => map[s]).forEach((key) => qc.invalidateQueries({ queryKey: [key] }));
     },

@@ -24,6 +24,7 @@ const DiarioAlimentar = lazy(() => import("./pages/DiarioAlimentar"));
 const AssistenteIA = lazy(() => import("./pages/AssistenteIA"));
 const Evolucao = lazy(() => import("./pages/Evolucao"));
 const Guias = lazy(() => import("./pages/Guias"));
+const Insights = lazy(() => import("./pages/Insights"));
 const Vendas = lazy(() => import("./pages/Vendas"));
 const Checkout = lazy(() => import("./pages/Checkout"));
 const DesignSystem = lazy(() => import("./pages/DesignSystem"));
@@ -70,6 +71,7 @@ const App = () => (
             <Route path="/assistente" element={<P><AssistenteIA /></P>} />
             <Route path="/evolucao" element={<P><Evolucao /></P>} />
             <Route path="/guias" element={<P><Guias /></P>} />
+            <Route path="/insights" element={<P><Insights /></P>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           </Suspense>
