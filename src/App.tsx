@@ -23,6 +23,7 @@ import Guias from "./pages/Guias";
 import NotFound from "./pages/NotFound";
 import Vendas from "./pages/Vendas";
 import Checkout from "./pages/Checkout";
+import DesignSystem from "./pages/DesignSystem";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -45,6 +46,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/" element={<Index />} />
+            <Route path="/design-system" element={<DesignSystem />} />
             <Route path="/dashboard" element={<P><Dashboard /></P>} />
             <Route path="/preferencias" element={<P><Preferencias /></P>} />
             <Route path="/scanner" element={<P><Scanner /></P>} />
