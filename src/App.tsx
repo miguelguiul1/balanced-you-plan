@@ -71,6 +71,7 @@ const App = () => (
             <Route path="/assistente" element={<P><AssistenteIA /></P>} />
             <Route path="/evolucao" element={<P><Evolucao /></P>} />
             <Route path="/guias" element={<P><Guias /></P>} />
+            <Route path="/insights" element={<P><Insights /></P>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           </Suspense>

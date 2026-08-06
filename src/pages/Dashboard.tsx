@@ -2,13 +2,17 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Flame, Beef, Wheat, Droplets, Target, TrendingUp, BookOpen, Camera,
-  Utensils, Bot, Clock, CalendarClock,
+  Utensils, Bot, Clock, CalendarClock, Lightbulb, Scale, BarChart3,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import WaterTracker from "@/components/WaterTracker";
 import MotivationalQuote from "@/components/MotivationalQuote";
 import { MEAL_TYPES, mealLabel, sumTotals, todayISO, useFoodLog, useGoals, useWater } from "@/hooks/useNutrition";
+import { useEngagement } from "@/hooks/useEngagement";
+import { useAchievementToasts } from "@/hooks/useAchievementToasts";
+import ScoreCard from "@/components/engajamento/ScoreCard";
+import StreakCard from "@/components/engajamento/StreakCard";
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -18,6 +22,8 @@ const Dashboard = () => {
   const { data: entries = [] } = useFoodLog(today);
   const { data: goals } = useGoals();
   const { data: waterMl = 0 } = useWater(today);
+  const engagement = useEngagement();
+  useAchievementToasts(engagement.achievements);
 
   useEffect(() => {
     if (!user) return;
@@ -65,9 +71,16 @@ const Dashboard = () => {
   const shortcuts = [
     { to: "/scanner", label: "Scanner", icon: Camera },
     { to: "/diario", label: "Diário", icon: Utensils },
-    { to: "/plano-semanal", label: "Plano", icon: BookOpen },
+    { to: "/insights", label: "Insights", icon: BarChart3 },
     { to: "/assistente", label: "IA", icon: Bot },
   ];
+
+  const lastWeight = engagement.weights.length ? engagement.weights[engagement.weights.length - 1] : null;
+  const insightOfDay =
+    engagement.proactive[0] ??
+    (protGoal > 0 && totals.protein > 0
+      ? `Hoje você já consumiu ${pct(totals.protein, protGoal)}% da sua meta de proteínas.`
+      : "Registre sua primeira refeição para receber insights personalizados.");
 
   return (
     <div className="min-h-screen bg-background pt-20 pb-16">
@@ -94,6 +107,26 @@ const Dashboard = () => {
               <span className="font-display font-semibold text-xs sm:text-sm text-foreground">{label}</span>
             </Link>
           ))}
+        </div>
+
+        {/* Score e sequência */}
+        <div className="grid lg:grid-cols-2 gap-4 mb-4">
+          <ScoreCard score={engagement.today.score} message={engagement.today.message} compact />
+          <div className="space-y-4">
+            <StreakCard current={engagement.streak.current} best={engagement.streak.best} />
+            <div className="bg-card rounded-2xl shadow-soft border border-border/50 p-5 flex items-start gap-3">
+              <span className="w-9 h-9 rounded-lg bg-accent/10 text-accent flex items-center justify-center shrink-0">
+                <Lightbulb className="w-4 h-4" />
+              </span>
+              <div className="min-w-0">
+                <p className="font-display font-semibold text-sm text-foreground">Insight do dia</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{insightOfDay}</p>
+                <Link to="/insights" className="text-xs font-medium text-primary hover:underline mt-1 inline-block">
+                  Ver central de insights
+                </Link>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Macros do dia */}
@@ -147,6 +180,19 @@ const Dashboard = () => {
             <Link to="/diario" className="block text-sm font-medium text-primary hover:underline">
               Abrir diário alimentar
             </Link>
+            <div className="flex items-start gap-3 border-t border-border/60 pt-4">
+              <span className="w-9 h-9 rounded-lg bg-secondary text-foreground flex items-center justify-center shrink-0">
+                <Scale className="w-4 h-4" />
+              </span>
+              <div className="min-w-0">
+                <p className="font-display font-semibold text-sm text-foreground">Último registro de evolução</p>
+                <p className="text-xs text-muted-foreground">
+                  {lastWeight
+                    ? `${Number(lastWeight.weight_kg)} kg em ${new Date(String(lastWeight.logged_at)).toLocaleDateString("pt-BR")}`
+                    : "Nenhum registro de evolução ainda."}
+                </p>
+              </div>
+            </div>
           </div>
         </div>
 
