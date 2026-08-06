@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { MEAL_TYPES, useSyncModules } from "@/hooks/useNutrition";
 
 interface Macros {
   calorias: number; proteina: number; carboidratos: number; gorduras: number; fibras: number; acucares?: number;
@@ -71,6 +72,7 @@ const FoodScanner = () => {
   const { toast } = useToast();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const sync = useSyncModules();
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [image, setImage] = useState<string | null>(null);
@@ -85,6 +87,9 @@ const FoodScanner = () => {
   const [customPortion, setCustomPortion] = useState("");
   const [compareWith, setCompareWith] = useState<ScannedFood | null>(null);
   const [saving, setSaving] = useState(false);
+  const [mealType, setMealType] = useState<string>("outro");
+  const [checked, setChecked] = useState<number[]>([]);
+  const [bulkSaving, setBulkSaving] = useState(false);
 
   useEffect(() => {
     if (!analyzing) return;
@@ -124,6 +129,7 @@ const FoodScanner = () => {
       }
       const list = data.alimentos as ScannedFood[];
       setFoods(list);
+      setChecked(list.map((_, i) => i));
       if (list.length === 1) openFood(list[0]);
       if (user) {
         await supabase.from("scan_history").insert({ user_id: user.id, result: data });
@@ -147,6 +153,7 @@ const FoodScanner = () => {
     setSelected(null);
     setErrorMsg(null);
     setCompareWith(null);
+    setChecked([]);
   };
 
   const factor = selected ? portion / (selected.porcao_base_g || 100) : 1;
@@ -163,7 +170,7 @@ const FoodScanner = () => {
       user_id: user.id,
       food_name: selected.nome,
       quantity: `${portion}g`,
-      meal_type: "outro",
+      meal_type: mealType,
       calories: scaled(selected.macros.calorias),
       protein: scaled(selected.macros.proteina),
       carbs: scaled(selected.macros.carboidratos),
@@ -175,7 +182,64 @@ const FoodScanner = () => {
       toast({ title: "Erro ao salvar", description: error.message, variant: "destructive" });
       return;
     }
-    toast({ title: "Adicionado ao diário!", description: `${selected.nome} · ${portion}g` });
+    sync(["food"]);
+    toast({ title: "Alimento adicionado ao diário.", description: `${selected.nome} · ${portion}g` });
+  };
+
+  const addSelectedToDiary = async () => {
+    if (!foods || !checked.length) return;
+    if (!user) return navigate("/auth");
+    setBulkSaving(true);
+    const rows = checked.map((i) => {
+      const f = foods[i];
+      const base = f.porcao_base_g || 100;
+      return {
+        user_id: user.id,
+        food_name: f.nome,
+        quantity: `${base}g`,
+        meal_type: mealType,
+        calories: round(f.macros.calorias),
+        protein: round(f.macros.proteina),
+        carbs: round(f.macros.carboidratos),
+        fat: round(f.macros.gorduras),
+        fiber: round(f.macros.fibras),
+      };
+    });
+    const { error } = await supabase.from("food_log").insert(rows);
+    setBulkSaving(false);
+    if (error) {
+      toast({ title: "Erro ao salvar", description: error.message, variant: "destructive" });
+      return;
+    }
+    sync(["food"]);
+    toast({ title: "Alimentos adicionados ao diário.", description: `${rows.length} itens registrados.` });
+  };
+
+  const saveFavorite = async () => {
+    if (!selected) return;
+    if (!user) return navigate("/auth");
+    const { error } = await supabase.from("food_favorites").upsert(
+      {
+        user_id: user.id,
+        food_name: selected.nome,
+        emoji: selected.emoji ?? null,
+        category: selected.categoria ?? null,
+        portion_g: portion,
+        calories: scaled(selected.macros.calorias),
+        protein: scaled(selected.macros.proteina),
+        carbs: scaled(selected.macros.carboidratos),
+        fat: scaled(selected.macros.gorduras),
+        fiber: scaled(selected.macros.fibras),
+        sodium_mg: scaled(selected.micros?.sodio_mg),
+      },
+      { onConflict: "user_id,food_name" }
+    );
+    if (error) {
+      toast({ title: "Erro ao favoritar", description: error.message, variant: "destructive" });
+      return;
+    }
+    sync(["favorites"]);
+    toast({ title: "Salvo nos favoritos", description: "Disponível na busca rápida do diário." });
   };
 
   const macroCards = selected
