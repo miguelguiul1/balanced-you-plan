@@ -233,7 +233,7 @@ const AssistenteIA = () => {
                 placeholder="Pergunte qualquer coisa sobre nutrição…"
                 disabled={loading}
               />
-              <Button onClick={send} disabled={loading || !input.trim()} size="icon">
+              <Button onClick={() => send()} disabled={loading || !input.trim()} size="icon">
                 <Send className="w-4 h-4" />
               </Button>
             </div>
