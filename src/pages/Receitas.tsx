@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Clock, DollarSign, Flame, Search, Filter } from "lucide-react";
+import { Clock, DollarSign, Flame, Search, Heart, SlidersHorizontal } from "lucide-react";
 import MotivationalQuote from "@/components/MotivationalQuote";
 
 type Receita = {
@@ -75,13 +75,53 @@ const Receitas = () => {
   const [search, setSearch] = useState("");
   const [activeTag, setActiveTag] = useState("");
   const [expanded, setExpanded] = useState<number | null>(null);
-
-  const filtered = receitas.filter((r) => {
-    const matchSearch = r.nome.toLowerCase().includes(search.toLowerCase()) ||
-      r.ingredientes.some((i) => i.toLowerCase().includes(search.toLowerCase()));
-    const matchTag = !activeTag || r.tags.includes(activeTag);
-    return matchSearch && matchTag;
+  const [maxTempo, setMaxTempo] = useState(0); // 0 = qualquer
+  const [maxCusto, setMaxCusto] = useState(0);
+  const [maxCalorias, setMaxCalorias] = useState(0);
+  const [minProteina, setMinProteina] = useState(0);
+  const [sortBy, setSortBy] = useState<"padrao" | "calorias" | "proteina" | "tempo" | "custo">("padrao");
+  const [onlyFavs, setOnlyFavs] = useState(false);
+  const [favs, setFavs] = useState<number[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem("receitasFavoritas") || "[]");
+    } catch {
+      return [];
+    }
   });
+
+  useEffect(() => {
+    localStorage.setItem("receitasFavoritas", JSON.stringify(favs));
+  }, [favs]);
+
+  const toggleFav = (id: number) =>
+    setFavs((prev) => (prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id]));
+
+  const filtered = useMemo(() => {
+    const list = receitas.filter((r) => {
+      const q = search.toLowerCase();
+      const matchSearch =
+        r.nome.toLowerCase().includes(q) || r.ingredientes.some((i) => i.toLowerCase().includes(q));
+      const matchTag = !activeTag || r.tags.includes(activeTag);
+      const matchFav = !onlyFavs || favs.includes(r.id);
+      const matchTempo = !maxTempo || minutos(r.tempo) <= maxTempo;
+      const matchCusto = !maxCusto || reais(r.custo) <= maxCusto;
+      const matchCal = !maxCalorias || r.calorias <= maxCalorias;
+      const matchProt = !minProteina || r.proteina >= minProteina;
+      return matchSearch && matchTag && matchFav && matchTempo && matchCusto && matchCal && matchProt;
+    });
+
+    const sorted = [...list];
+    if (sortBy === "calorias") sorted.sort((a, b) => a.calorias - b.calorias);
+    if (sortBy === "proteina") sorted.sort((a, b) => b.proteina - a.proteina);
+    if (sortBy === "tempo") sorted.sort((a, b) => minutos(a.tempo) - minutos(b.tempo));
+    if (sortBy === "custo") sorted.sort((a, b) => reais(a.custo) - reais(b.custo));
+    return sorted;
+  }, [search, activeTag, onlyFavs, favs, maxTempo, maxCusto, maxCalorias, minProteina, sortBy]);
+
+  const limparFiltros = () => {
+    setSearch(""); setActiveTag(""); setOnlyFavs(false);
+    setMaxTempo(0); setMaxCusto(0); setMaxCalorias(0); setMinProteina(0); setSortBy("padrao");
+  };
 
   return (
     <div className="min-h-screen bg-background pt-20 pb-16">
