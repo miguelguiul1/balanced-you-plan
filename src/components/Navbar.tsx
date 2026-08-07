@@ -18,6 +18,8 @@ const appLinks = [
   { path: "/historico", label: "Histórico" },
   { path: "/guias", label: "Guias" },
   { path: "/biblioteca", label: "Alimentos" },
+  { path: "/favoritos", label: "Favoritos" },
+  { path: "/configuracoes", label: "Ajustes" },
 ];
 
 const landingLinks = [

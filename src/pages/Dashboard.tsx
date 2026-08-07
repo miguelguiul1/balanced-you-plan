@@ -13,6 +13,8 @@ import { useEngagement } from "@/hooks/useEngagement";
 import { useAchievementToasts } from "@/hooks/useAchievementToasts";
 import ScoreCard from "@/components/engajamento/ScoreCard";
 import StreakCard from "@/components/engajamento/StreakCard";
+import WeekSummaryCards from "@/components/dashboard/WeekSummaryCards";
+import { PageSkeleton } from "@/components/ds/Skeletons";
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -82,6 +84,8 @@ const Dashboard = () => {
       ? `Hoje você já consumiu ${pct(totals.protein, protGoal)}% da sua meta de proteínas.`
       : "Registre sua primeira refeição para receber insights personalizados.");
 
+  if (engagement.loading) return <PageSkeleton />;
+
   return (
     <div className="min-h-screen bg-background pt-20 pb-16">
       <div className="container mx-auto px-4 sm:px-6 max-w-5xl">
@@ -130,6 +134,8 @@ const Dashboard = () => {
         </div>
 
         {/* Macros do dia */}
+        <WeekSummaryCards />
+
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4">
           {macros.map((m) => (
             <div key={m.label} className="bg-card rounded-2xl shadow-soft border border-border/50 p-4">
