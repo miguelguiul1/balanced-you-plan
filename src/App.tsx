@@ -28,6 +28,8 @@ const Insights = lazy(() => import("./pages/Insights"));
 const Vendas = lazy(() => import("./pages/Vendas"));
 const Checkout = lazy(() => import("./pages/Checkout"));
 const DesignSystem = lazy(() => import("./pages/DesignSystem"));
+const Favoritos = lazy(() => import("./pages/Favoritos"));
+const Configuracoes = lazy(() => import("./pages/Configuracoes"));
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000, refetchOnWindowFocus: true, retry: 1 } },
@@ -72,6 +74,8 @@ const App = () => (
             <Route path="/evolucao" element={<P><Evolucao /></P>} />
             <Route path="/guias" element={<P><Guias /></P>} />
             <Route path="/insights" element={<P><Insights /></P>} />
+            <Route path="/favoritos" element={<P><Favoritos /></P>} />
+            <Route path="/configuracoes" element={<P><Configuracoes /></P>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           </Suspense>

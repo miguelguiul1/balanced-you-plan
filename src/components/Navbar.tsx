@@ -3,6 +3,8 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Menu, X, LogIn, LogOut, User, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import GlobalSearch from "@/components/GlobalSearch";
+import NotificationCenter from "@/components/NotificationCenter";
 
 const appLinks = [
   { path: "/", label: "Início" },
@@ -18,6 +20,8 @@ const appLinks = [
   { path: "/historico", label: "Histórico" },
   { path: "/guias", label: "Guias" },
   { path: "/biblioteca", label: "Alimentos" },
+  { path: "/favoritos", label: "Favoritos" },
+  { path: "/configuracoes", label: "Ajustes" },
 ];
 
 const landingLinks = [
@@ -170,6 +174,8 @@ const Navbar = () => {
 
           {user ? (
             <div className="flex items-center gap-2 ml-3">
+              <GlobalSearch />
+              <NotificationCenter />
               <span className="text-xs text-muted-foreground flex items-center gap-1">
                 <User className="w-3 h-3" />
                 {user.user_metadata?.full_name || user.email?.split("@")[0]}
