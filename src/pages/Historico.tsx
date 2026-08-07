@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Clock, Apple, Flame, ChevronDown, ChevronUp, Trash2 } from "lucide-react";
+import { Clock, Apple, Flame, ChevronDown, ChevronUp, Trash2, Search, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface ScanRecord {
@@ -23,6 +23,8 @@ const Historico = () => {
   const [scans, setScans] = useState<ScanRecord[]>([]);
   const [loadingScans, setLoadingScans] = useState(true);
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [periodo, setPeriodo] = useState(0); // dias, 0 = tudo
 
   useEffect(() => {
     if (!loading && !user) {
@@ -58,6 +60,49 @@ const Historico = () => {
     });
   };
 
+  const filtered = useMemo(() => {
+    const limite = periodo ? Date.now() - periodo * 86400000 : 0;
+    const q = search.trim().toLowerCase();
+    return scans.filter((s) => {
+      const inPeriod = !limite || new Date(s.created_at).getTime() >= limite;
+      if (!inPeriod) return false;
+      if (!q) return true;
+      const nomes = [
+        ...(s.result.alimentos ?? []).map((a) => a.nome),
+        ...(s.result.receitas ?? []).map((r) => r.nome),
+      ].join(" ").toLowerCase();
+      return nomes.includes(q);
+    });
+  }, [scans, search, periodo]);
+
+  const stats = useMemo(() => {
+    const alimentos = filtered.flatMap((s) => s.result.alimentos ?? []);
+    const receitas = filtered.flatMap((s) => s.result.receitas ?? []);
+    const cont: Record<string, number> = {};
+    alimentos.forEach((a) => { cont[a.nome] = (cont[a.nome] || 0) + 1; });
+    const top = Object.entries(cont).sort((a, b) => b[1] - a[1]).slice(0, 5);
+    return { scans: filtered.length, alimentos: alimentos.length, receitas: receitas.length, top };
+  }, [filtered]);
+
+  const exportCSV = () => {
+    const linhas = [["Data", "Alimentos", "Receitas"]];
+    filtered.forEach((s) => {
+      linhas.push([
+        formatDate(s.created_at),
+        (s.result.alimentos ?? []).map((a) => `${a.nome} (${a.calorias} kcal)`).join(" | "),
+        (s.result.receitas ?? []).map((r) => r.nome).join(" | "),
+      ]);
+    });
+    const csv = linhas.map((l) => l.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(";")).join("\n");
+    const url = URL.createObjectURL(new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `evolua-plus-historico-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast({ title: "Histórico exportado" });
+  };
+
   if (loading || loadingScans) {
     return (
       <div className="min-h-screen bg-background pt-20 pb-16 flex items-center justify-center">
@@ -86,8 +131,65 @@ const Historico = () => {
             <Button variant="hero" onClick={() => navigate("/scanner")}>Ir para o Scanner</Button>
           </div>
         ) : (
+          <>
+            {/* Estatísticas */}
+            <div className="grid grid-cols-3 gap-3 mb-4">
+              {[
+                { label: "Análises", value: stats.scans },
+                { label: "Alimentos", value: stats.alimentos },
+                { label: "Receitas", value: stats.receitas },
+              ].map((s) => (
+                <div key={s.label} className="bg-card rounded-2xl shadow-soft border border-border/50 p-4 text-center">
+                  <p className="font-display text-2xl font-bold text-foreground">{s.value}</p>
+                  <p className="text-xs text-muted-foreground">{s.label}</p>
+                </div>
+              ))}
+            </div>
+
+            {stats.top.length > 0 && (
+              <div className="bg-card rounded-2xl shadow-soft border border-border/50 p-4 mb-4">
+                <p className="text-sm font-display font-semibold text-foreground mb-2">Alimentos mais detectados</p>
+                <div className="flex flex-wrap gap-2">
+                  {stats.top.map(([nome, n]) => (
+                    <span key={nome} className="text-xs px-2.5 py-1 rounded-full bg-secondary text-secondary-foreground">
+                      {nome} · {n}x
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Busca, período e exportação */}
+            <div className="flex flex-col sm:flex-row gap-3 mb-6">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Buscar alimento ou receita..."
+                  className="w-full h-11 pl-10 pr-3 rounded-xl border border-border bg-background text-foreground text-sm focus:border-primary focus:outline-none"
+                />
+              </div>
+              <select
+                value={periodo}
+                onChange={(e) => setPeriodo(Number(e.target.value))}
+                className="h-11 rounded-xl border border-border bg-background text-foreground text-sm px-3 focus:border-primary focus:outline-none"
+              >
+                <option value={0}>Todo o período</option>
+                <option value={7}>Últimos 7 dias</option>
+                <option value={30}>Últimos 30 dias</option>
+                <option value={90}>Últimos 90 dias</option>
+              </select>
+              <Button variant="outline" onClick={exportCSV} className="gap-2">
+                <Download className="w-4 h-4" /> Exportar
+              </Button>
+            </div>
+
           <div className="space-y-4">
-            {scans.map((scan) => (
+            {filtered.length === 0 && (
+              <p className="text-center text-sm text-muted-foreground py-8">Nenhuma análise encontrada nesse filtro.</p>
+            )}
+            {filtered.map((scan) => (
               <div key={scan.id} className="bg-card rounded-2xl shadow-soft overflow-hidden">
                 <button
                   onClick={() => setExpanded(expanded === scan.id ? null : scan.id)}
@@ -158,6 +260,7 @@ const Historico = () => {
               </div>
             ))}
           </div>
+          </>
         )}
       </div>
     </div>
