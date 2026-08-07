@@ -174,6 +174,60 @@ const Receitas = () => {
               {tagLabels[tag]}
             </button>
           ))}
+          <button
+            onClick={() => setOnlyFavs((v) => !v)}
+            className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all flex items-center gap-1 ${
+              onlyFavs ? "bg-accent text-accent-foreground" : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+            }`}
+          >
+            <Heart className={`w-3.5 h-3.5 ${onlyFavs ? "fill-current" : ""}`} /> Favoritas ({favs.length})
+          </button>
+        </div>
+
+        {/* Filtros avançados */}
+        <div className="mt-4 bg-card border border-border/50 rounded-2xl p-4 shadow-soft">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-sm font-display font-semibold text-foreground flex items-center gap-2">
+              <SlidersHorizontal className="w-4 h-4 text-primary" /> Filtros avançados
+            </p>
+            <Button variant="ghost" size="sm" onClick={limparFiltros}>Limpar</Button>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+            {[
+              { label: "Tempo máx.", value: maxTempo, set: setMaxTempo, opts: [[0, "Qualquer"], [5, "até 5 min"], [10, "até 10 min"], [15, "até 15 min"]] },
+              { label: "Custo máx.", value: maxCusto, set: setMaxCusto, opts: [[0, "Qualquer"], [3, "até R$ 3"], [5, "até R$ 5"], [7, "até R$ 7"]] },
+              { label: "Calorias máx.", value: maxCalorias, set: setMaxCalorias, opts: [[0, "Qualquer"], [250, "até 250"], [350, "até 350"], [450, "até 450"]] },
+              { label: "Proteína mín.", value: minProteina, set: setMinProteina, opts: [[0, "Qualquer"], [10, "10g+"], [20, "20g+"], [25, "25g+"]] },
+            ].map((f) => (
+              <label key={f.label} className="text-xs text-muted-foreground">
+                {f.label}
+                <select
+                  value={f.value}
+                  onChange={(e) => f.set(Number(e.target.value))}
+                  className="mt-1 w-full h-9 rounded-lg border border-border bg-background text-foreground text-sm px-2 focus:border-primary focus:outline-none"
+                >
+                  {(f.opts as [number, string][]).map(([v, l]) => (
+                    <option key={v} value={v}>{l}</option>
+                  ))}
+                </select>
+              </label>
+            ))}
+            <label className="text-xs text-muted-foreground">
+              Ordenar por
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+                className="mt-1 w-full h-9 rounded-lg border border-border bg-background text-foreground text-sm px-2 focus:border-primary focus:outline-none"
+              >
+                <option value="padrao">Padrão</option>
+                <option value="calorias">Menos calorias</option>
+                <option value="proteina">Mais proteína</option>
+                <option value="tempo">Mais rápida</option>
+                <option value="custo">Mais barata</option>
+              </select>
+            </label>
+          </div>
+          <p className="mt-3 text-xs text-muted-foreground">{filtered.length} receita(s) encontrada(s)</p>
         </div>
 
         {/* Recipes */}
@@ -188,7 +242,19 @@ const Receitas = () => {
                 className="w-full p-5 text-left"
               >
                 <div className="flex items-center justify-between">
-                  <h3 className="font-display font-semibold text-foreground">{r.nome}</h3>
+                  <h3 className="font-display font-semibold text-foreground flex items-center gap-2">
+                    <span
+                      role="button"
+                      tabIndex={0}
+                      aria-label={favs.includes(r.id) ? "Remover dos favoritos" : "Adicionar aos favoritos"}
+                      onClick={(e) => { e.stopPropagation(); toggleFav(r.id); }}
+                      onKeyDown={(e) => { if (e.key === "Enter") { e.stopPropagation(); toggleFav(r.id); } }}
+                      className="text-muted-foreground hover:text-accent transition-colors"
+                    >
+                      <Heart className={`w-4 h-4 ${favs.includes(r.id) ? "fill-accent text-accent" : ""}`} />
+                    </span>
+                    {r.nome}
+                  </h3>
                   <div className="flex items-center gap-3 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{r.tempo}</span>
                     <span className="flex items-center gap-1"><DollarSign className="w-3 h-3" />{r.custo}</span>
