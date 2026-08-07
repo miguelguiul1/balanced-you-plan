@@ -66,6 +66,10 @@ const receitas: Receita[] = [
 ];
 
 const allTags = ["rapido", "barato", "proteina", "saudavel", "pratico", "energia", "classico", "completo", "leve"];
+
+const minutos = (t: string) => parseInt(t) || 0;
+const reais = (c: string) => Number(c.replace(/[^\d,]/g, "").replace(",", ".")) || 0;
+
 const tagLabels: Record<string, string> = {
   rapido: "⚡ Rápido", barato: "💰 Barato", proteina: "💪 Proteína", saudavel: "🥗 Saudável",
   pratico: "👨‍🍳 Prático", energia: "🔋 Energia", classico: "🍚 Clássico", completo: "✅ Completo", leve: "🍃 Leve",
