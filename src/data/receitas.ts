@@ -62,3 +62,9 @@ export const receitas: Receita[] = [
 
 export const allTags = ["rapido", "barato", "proteina", "saudavel", "pratico", "energia", "classico", "completo", "leve"];
 
+
+export const tagLabels: Record<string, string> = {
+  rapido: "⚡ Rápido", barato: "💰 Barato", proteina: "💪 Proteína", saudavel: "🥗 Saudável",
+  pratico: "👨‍🍳 Prático", energia: "🔋 Energia", classico: "🍚 Clássico", completo: "✅ Completo", leve: "🍃 Leve",
+};
+
