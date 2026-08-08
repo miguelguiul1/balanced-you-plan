@@ -4,9 +4,9 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
-  Plus, Trash2, Zap, TrendingUp, TrendingDown, AlertTriangle, CheckCircle,
+  Plus, Trash2, Zap, TrendingUp, TrendingDown, AlertTriangle, CheckCircle, Sparkles,
   RefreshCw, Apple, Coffee, Sun, Moon, Cookie, Pencil, Search, Star, X, Camera, Bot, Download,
 } from "lucide-react";
 import MotivationalQuote from "@/components/MotivationalQuote";
