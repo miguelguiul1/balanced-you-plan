@@ -429,6 +429,20 @@ const DiarioAlimentar = () => {
                             <Pencil className="w-4 h-4" />
                           </button>
                           <button
+                            onClick={() =>
+                              navigate(
+                                `/assistente?q=${encodeURIComponent(
+                                  `Analise esta refeição do meu diário: ${entry.food_name} (${entry.quantity}) — ${Math.round(Number(entry.calories))} kcal, P ${Math.round(Number(entry.protein))}g, C ${Math.round(Number(entry.carbs))}g, G ${Math.round(Number(entry.fat))}g, F ${Math.round(Number(entry.fiber))}g. Traga resumo nutricional, pontos positivos, possíveis melhorias e uma sugestão de complemento.`,
+                                )}`,
+                              )
+                            }
+                            aria-label="Analisar refeição com a IA"
+                            title="Analisar com a IA"
+                            className="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                          >
+                            <Sparkles className="w-4 h-4" />
+                          </button>
+                          <button
                             onClick={() => deleteEntry(entry.id)}
                             aria-label="Excluir refeição"
                             className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
