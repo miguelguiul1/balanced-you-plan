@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import {
   Plus, Trash2, Zap, TrendingUp, TrendingDown, AlertTriangle, CheckCircle,
-  RefreshCw, Apple, Coffee, Sun, Moon, Cookie, Pencil, Search, Star, X, Camera, Bot,
+  RefreshCw, Apple, Coffee, Sun, Moon, Cookie, Pencil, Search, Star, X, Camera, Bot, Download,
 } from "lucide-react";
 import MotivationalQuote from "@/components/MotivationalQuote";
 import WaterTracker from "@/components/WaterTracker";
@@ -233,6 +233,24 @@ const DiarioAlimentar = () => {
     { label: "gord", value: `${Math.round(totals.fat)}g`, cls: "text-foreground" },
     { label: "fibra", value: `${Math.round(totals.fiber)}g`, cls: "text-primary" },
   ];
+
+  const exportDayPdf = () => {
+    const groups = entries.reduce<Record<string, typeof entries>>((acc, e) => {
+      (acc[e.meal_type] ||= []).push(e);
+      return acc;
+    }, {});
+    exportBrandedPdf({
+      title: `Diário alimentar — ${new Date(`${selectedDate}T12:00:00`).toLocaleDateString("pt-BR")}`,
+      subtitle: `${Math.round(totals.calories)} / ${caloriesGoal} kcal · P ${Math.round(totals.protein)}g · C ${Math.round(totals.carbs)}g · G ${Math.round(totals.fat)}g · Fibra ${Math.round(totals.fiber)}g`,
+      sections: Object.entries(groups).map(([meal, rows]) => ({
+        title: meal.charAt(0).toUpperCase() + meal.slice(1),
+        lines: rows.map(
+          (r) => `${r.food_name} (${r.quantity}) — ${Math.round(Number(r.calories))} kcal · P ${Math.round(Number(r.protein))}g · C ${Math.round(Number(r.carbs))}g · G ${Math.round(Number(r.fat))}g`
+        ),
+      })),
+      fileName: `evolua-plus-diario-${selectedDate}.pdf`,
+    });
+  };
 
   return (
     <div className="min-h-screen bg-background pt-20 pb-24 md:pb-16">
