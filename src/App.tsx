@@ -6,6 +6,7 @@ import { Suspense, lazy } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Navbar from "./components/Navbar";
+import MobileTabBar from "./components/MobileTabBar";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
@@ -79,6 +80,7 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
           </Suspense>
+          <MobileTabBar />
         </BrowserRouter>
       </AuthProvider>
     </TooltipProvider>

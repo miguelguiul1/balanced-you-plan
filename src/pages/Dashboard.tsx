@@ -87,7 +87,7 @@ const Dashboard = () => {
   if (engagement.loading) return <PageSkeleton />;
 
   return (
-    <div className="min-h-screen bg-background pt-20 pb-16">
+    <div className="min-h-screen bg-background pt-20 pb-24 md:pb-16">
       <div className="container mx-auto px-4 sm:px-6 max-w-5xl">
         <header className="mb-6">
           <p className="text-sm text-muted-foreground">{greeting()},</p>

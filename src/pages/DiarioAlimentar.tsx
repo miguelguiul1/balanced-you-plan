@@ -7,12 +7,13 @@ import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import {
   Plus, Trash2, Zap, TrendingUp, TrendingDown, AlertTriangle, CheckCircle,
-  RefreshCw, Apple, Coffee, Sun, Moon, Cookie, Pencil, Search, Star, X, Camera, Bot,
+  RefreshCw, Apple, Coffee, Sun, Moon, Cookie, Pencil, Search, Star, X, Camera, Bot, Download,
 } from "lucide-react";
 import MotivationalQuote from "@/components/MotivationalQuote";
 import WaterTracker from "@/components/WaterTracker";
 import FoodCalendar from "@/components/diario/FoodCalendar";
 import WeeklySummary from "@/components/diario/WeeklySummary";
+import { exportBrandedPdf } from "@/lib/pdf";
 import {
   FoodEntry, MEAL_TYPES, sumTotals, todayISO, toISODate,
   useFavorites, useFoodLog, useFoodLogRange, useGoals, useSyncModules,
@@ -233,8 +234,26 @@ const DiarioAlimentar = () => {
     { label: "fibra", value: `${Math.round(totals.fiber)}g`, cls: "text-primary" },
   ];
 
+  const exportDayPdf = () => {
+    const groups = entries.reduce<Record<string, typeof entries>>((acc, e) => {
+      (acc[e.meal_type] ||= []).push(e);
+      return acc;
+    }, {});
+    exportBrandedPdf({
+      title: `Diário alimentar — ${new Date(`${selectedDate}T12:00:00`).toLocaleDateString("pt-BR")}`,
+      subtitle: `${Math.round(totals.calories)} / ${caloriesGoal} kcal · P ${Math.round(totals.protein)}g · C ${Math.round(totals.carbs)}g · G ${Math.round(totals.fat)}g · Fibra ${Math.round(totals.fiber)}g`,
+      sections: Object.entries(groups).map(([meal, rows]) => ({
+        title: meal.charAt(0).toUpperCase() + meal.slice(1),
+        lines: rows.map(
+          (r) => `${r.food_name} (${r.quantity}) — ${Math.round(Number(r.calories))} kcal · P ${Math.round(Number(r.protein))}g · C ${Math.round(Number(r.carbs))}g · G ${Math.round(Number(r.fat))}g`
+        ),
+      })),
+      fileName: `evolua-plus-diario-${selectedDate}.pdf`,
+    });
+  };
+
   return (
-    <div className="min-h-screen bg-background pt-20 pb-16">
+    <div className="min-h-screen bg-background pt-20 pb-24 md:pb-24 md:pb-16">
       <div className="container mx-auto px-4 sm:px-6 max-w-4xl">
         <div className="text-center mb-8">
           <span className="inline-block mb-3 px-4 py-1.5 rounded-full bg-primary/10 text-primary font-display text-sm font-medium">
@@ -457,9 +476,12 @@ const DiarioAlimentar = () => {
             )}
 
             {entries.length > 0 && (
-              <div className="text-center">
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Button variant="hero" size="lg" onClick={analyzeDay} disabled={analyzing} className="gap-2">
                   {analyzing ? <><RefreshCw className="w-5 h-5 animate-spin" /> Analisando...</> : <><Zap className="w-5 h-5" /> Analisar dia com IA</>}
+                </Button>
+                <Button variant="outline" size="lg" onClick={exportDayPdf} className="gap-2">
+                  <Download className="w-5 h-5" /> Exportar PDF
                 </Button>
               </div>
             )}
