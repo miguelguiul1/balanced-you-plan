@@ -15,6 +15,7 @@ const appLinks = [
   { path: "/plano-semanal", label: "Plano" },
   { path: "/receitas", label: "Receitas" },
   { path: "/assistente", label: "IA" },
+  { path: "/memoria-ia", label: "Memória IA" },
   { path: "/evolucao", label: "Evolução" },
   { path: "/preferencias", label: "Perfil" },
   { path: "/historico", label: "Histórico" },

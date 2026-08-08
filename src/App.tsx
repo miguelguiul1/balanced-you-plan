@@ -31,6 +31,7 @@ const Checkout = lazy(() => import("./pages/Checkout"));
 const DesignSystem = lazy(() => import("./pages/DesignSystem"));
 const Favoritos = lazy(() => import("./pages/Favoritos"));
 const Configuracoes = lazy(() => import("./pages/Configuracoes"));
+const MemoriaIA = lazy(() => import("./pages/MemoriaIA"));
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000, refetchOnWindowFocus: true, retry: 1 } },
@@ -72,6 +73,7 @@ const App = () => (
             <Route path="/plano-semanal" element={<P><PlanoSemanal /></P>} />
             <Route path="/diario" element={<P><DiarioAlimentar /></P>} />
             <Route path="/assistente" element={<P><AssistenteIA /></P>} />
+            <Route path="/memoria-ia" element={<P><MemoriaIA /></P>} />
             <Route path="/evolucao" element={<P><Evolucao /></P>} />
             <Route path="/guias" element={<P><Guias /></P>} />
             <Route path="/insights" element={<P><Insights /></P>} />
