@@ -4,9 +4,9 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
-  Plus, Trash2, Zap, TrendingUp, TrendingDown, AlertTriangle, CheckCircle,
+  Plus, Trash2, Zap, TrendingUp, TrendingDown, AlertTriangle, CheckCircle, Sparkles,
   RefreshCw, Apple, Coffee, Sun, Moon, Cookie, Pencil, Search, Star, X, Camera, Bot, Download,
 } from "lucide-react";
 import MotivationalQuote from "@/components/MotivationalQuote";
@@ -36,6 +36,7 @@ const mealIcons: Record<string, typeof Coffee> = {
 
 const DiarioAlimentar = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const sync = useSyncModules();
 
   const [selectedDate, setSelectedDate] = useState(todayISO());
@@ -427,6 +428,20 @@ const DiarioAlimentar = () => {
                             className="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
                           >
                             <Pencil className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() =>
+                              navigate(
+                                `/assistente?q=${encodeURIComponent(
+                                  `Analise esta refeição do meu diário: ${entry.food_name} (${entry.quantity}) — ${Math.round(Number(entry.calories))} kcal, P ${Math.round(Number(entry.protein))}g, C ${Math.round(Number(entry.carbs))}g, G ${Math.round(Number(entry.fat))}g, F ${Math.round(Number(entry.fiber))}g. Traga resumo nutricional, pontos positivos, possíveis melhorias e uma sugestão de complemento.`,
+                                )}`,
+                              )
+                            }
+                            aria-label="Analisar refeição com a IA"
+                            title="Analisar com a IA"
+                            className="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                          >
+                            <Sparkles className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => deleteEntry(entry.id)}

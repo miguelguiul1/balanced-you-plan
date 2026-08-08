@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Bot, Send, Sparkles, User, ShieldCheck, Lightbulb } from "lucide-react";
+import { Bot, Send, Sparkles, User, ShieldCheck, Lightbulb, Brain } from "lucide-react";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -12,6 +13,7 @@ import {
   sumTotals, todayISO, toISODate,
   useFoodLogRange, useGoals, usePreferences, useWeightLog,
 } from "@/hooks/useNutrition";
+import { memoryToPrompt, useAiMemory } from "@/hooks/useAiMemory";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
@@ -28,6 +30,8 @@ const AssistenteIA = () => {
   const { data: goals } = useGoals();
   const { data: prefs } = usePreferences();
   const { data: weights = [] } = useWeightLog();
+  const { data: memory = [] } = useAiMemory();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [messages, setMessages] = useState<Msg[]>([
     { role: "assistant", content: "Olá! Sou a **Evolua Plus AI**, sua assistente de alimentação e hábitos saudáveis.\n\nPosso te ajudar com informações gerais sobre nutrição, receitas, rotina e uso da plataforma. Por onde quer começar?" },
@@ -49,6 +53,7 @@ const AssistenteIA = () => {
     const first = weights[0];
     return {
       objective: prefs?.objective ?? null,
+      memoria: memoryToPrompt(memory),
       restrictions: prefs?.restrictions ?? [],
       disliked_foods: prefs?.disliked_foods ?? [],
       liked_foods: prefs?.liked_foods ?? [],
@@ -82,7 +87,7 @@ const AssistenteIA = () => {
           }
         : null,
     };
-  }, [weekLog, prefs, goals, weights, todayTotals, today]);
+  }, [weekLog, prefs, goals, weights, todayTotals, today, memory]);
 
   const autoInsights = useMemo(() => {
     const out: string[] = [];
@@ -150,13 +155,23 @@ const AssistenteIA = () => {
   };
 
   const suggestions = [
-    "Quero melhorar minha alimentação",
-    "Me ajudar com receitas",
-    "Como emagrecer?",
-    "Como ganhar massa muscular?",
-    "Analisar meu progresso",
-    "Entender meus hábitos",
+    "O que posso comer agora?",
+    "Trocar minha próxima refeição",
+    "Analise meu dia",
+    "Como está minha alimentação?",
+    "Sugira uma receita",
+    "Monte minha lista de compras",
+    "Explique meus resultados",
   ];
+
+  // Pergunta vinda de outro módulo (ex.: "Analisar refeição" no diário).
+  const prefill = searchParams.get("q");
+  useEffect(() => {
+    if (!prefill || !user || loading) return;
+    setSearchParams({}, { replace: true });
+    send(prefill);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prefill, user]);
 
   return (
     <main className="min-h-screen pt-24 pb-12 bg-background">

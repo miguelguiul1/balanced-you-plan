@@ -14,6 +14,7 @@ import { useAchievementToasts } from "@/hooks/useAchievementToasts";
 import ScoreCard from "@/components/engajamento/ScoreCard";
 import StreakCard from "@/components/engajamento/StreakCard";
 import WeekSummaryCards from "@/components/dashboard/WeekSummaryCards";
+import AiInsightCard from "@/components/dashboard/AiInsightCard";
 import { PageSkeleton } from "@/components/ds/Skeletons";
 
 const Dashboard = () => {
@@ -118,18 +119,7 @@ const Dashboard = () => {
           <ScoreCard score={engagement.today.score} message={engagement.today.message} compact />
           <div className="space-y-4">
             <StreakCard current={engagement.streak.current} best={engagement.streak.best} />
-            <div className="bg-card rounded-2xl shadow-soft border border-border/50 p-5 flex items-start gap-3">
-              <span className="w-9 h-9 rounded-lg bg-accent/10 text-accent flex items-center justify-center shrink-0">
-                <Lightbulb className="w-4 h-4" />
-              </span>
-              <div className="min-w-0">
-                <p className="font-display font-semibold text-sm text-foreground">Insight do dia</p>
-                <p className="text-xs text-muted-foreground mt-0.5">{insightOfDay}</p>
-                <Link to="/insights" className="text-xs font-medium text-primary hover:underline mt-1 inline-block">
-                  Ver central de insights
-                </Link>
-              </div>
-            </div>
+            <AiInsightCard />
           </div>
         </div>
 
