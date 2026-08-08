@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Calendar, ShoppingCart, Lightbulb, RefreshCw, ChevronDown, ChevronUp, Flame } from "lucide-react";
+import { Calendar, ShoppingCart, Lightbulb, RefreshCw, ChevronDown, ChevronUp, Flame, FileDown, Plus } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import MotivationalQuote from "@/components/MotivationalQuote";
 import SmartShoppingList from "@/components/plano/SmartShoppingList";
+import { exportBrandedPdf } from "@/lib/pdf";
+import { todayISO } from "@/hooks/useNutrition";
 
 interface Refeicao {
   tipo: string;
@@ -87,8 +89,61 @@ const PlanoSemanal = () => {
 
   const mealKey = (dia: string, tipo: string) => `${dia}-${tipo}`;
 
+  const mealTypeId = (tipo: string) => {
+    const t = tipo.toLowerCase();
+    if (t.includes("café") || t.includes("cafe") || t.includes("manhã")) return "cafe";
+    if (t.includes("almo")) return "almoco";
+    if (t.includes("lanche")) return "lanche";
+    if (t.includes("jantar") || t.includes("ceia")) return "jantar";
+    return "outro";
+  };
+
+  const addToDiary = async (ref: Refeicao) => {
+    if (!user) {
+      toast({ title: "Faça login", description: "Entre para registrar refeições no diário." });
+      return;
+    }
+    const { error } = await supabase.from("food_log").insert({
+      user_id: user.id,
+      food_name: ref.nome,
+      quantity: "1 porção",
+      meal_type: mealTypeId(ref.tipo),
+      calories: ref.calorias || 0,
+      protein: ref.proteina || 0,
+      carbs: ref.carb || 0,
+      fat: ref.gordura || 0,
+      logged_at: todayISO(),
+    });
+    if (error) {
+      toast({ title: "Não foi possível registrar", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Adicionado ao diário", description: `${ref.nome} registrado hoje.` });
+  };
+
+  const exportPdf = () => {
+    if (!plano) return;
+    exportBrandedPdf({
+      title: "Plano alimentar semanal",
+      subtitle: `Média diária: ${plano.resumo.calorias_media} kcal · ${plano.resumo.proteina_media}g proteína${plano.custo_estimado ? ` · Custo estimado: ${plano.custo_estimado}` : ""}`,
+      sections: [
+        ...plano.plano.map((dia) => ({
+          title: dia.dia,
+          lines: dia.refeicoes.map(
+            (r) => `${r.tipo}: ${r.nome} — ${r.calorias} kcal (P ${r.proteina}g · C ${r.carb}g · G ${r.gordura}g)`
+          ),
+        })),
+        ...(plano.lista_compras?.length
+          ? [{ title: "Lista de compras", lines: plano.lista_compras.map((i) => `• ${i}`) }]
+          : []),
+        ...(plano.dicas?.length ? [{ title: "Dicas", lines: plano.dicas.map((d, i) => `${i + 1}. ${d}`) }] : []),
+      ],
+      fileName: "evolua-plus-plano-semanal.pdf",
+    });
+  };
+
   return (
-    <div className="min-h-screen bg-background pt-20 pb-16">
+    <div className="min-h-screen bg-background pt-20 pb-24 md:pb-16">
       <div className="container mx-auto px-6 max-w-3xl">
         <div className="text-center mb-10">
           <span className="inline-block mb-4 px-4 py-1.5 rounded-full bg-primary/10 text-primary font-display text-sm font-medium">
@@ -256,6 +311,14 @@ const PlanoSemanal = () => {
                                   <p className="text-xs text-muted-foreground"><strong>Preparo:</strong> {ref.preparo}</p>
                                 </div>
                               )}
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="w-full gap-2"
+                                onClick={() => addToDiary(ref)}
+                              >
+                                <Plus className="w-4 h-4" /> Adicionar ao diário
+                              </Button>
                             </div>
                           )}
                         </div>
