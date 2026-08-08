@@ -36,6 +36,7 @@ const mealIcons: Record<string, typeof Coffee> = {
 
 const DiarioAlimentar = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const sync = useSyncModules();
 
   const [selectedDate, setSelectedDate] = useState(todayISO());
