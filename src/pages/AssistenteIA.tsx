@@ -155,13 +155,23 @@ const AssistenteIA = () => {
   };
 
   const suggestions = [
-    "Quero melhorar minha alimentação",
-    "Me ajudar com receitas",
-    "Como emagrecer?",
-    "Como ganhar massa muscular?",
-    "Analisar meu progresso",
-    "Entender meus hábitos",
+    "O que posso comer agora?",
+    "Trocar minha próxima refeição",
+    "Analise meu dia",
+    "Como está minha alimentação?",
+    "Sugira uma receita",
+    "Monte minha lista de compras",
+    "Explique meus resultados",
   ];
+
+  // Pergunta vinda de outro módulo (ex.: "Analisar refeição" no diário).
+  const prefill = searchParams.get("q");
+  useEffect(() => {
+    if (!prefill || !user || loading) return;
+    setSearchParams({}, { replace: true });
+    send(prefill);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prefill, user]);
 
   return (
     <main className="min-h-screen pt-24 pb-12 bg-background">

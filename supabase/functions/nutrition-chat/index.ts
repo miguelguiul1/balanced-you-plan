@@ -24,6 +24,7 @@ serve(async (req) => {
       if (profile.restrictions?.length) p.push(`Restrições: ${profile.restrictions.join(", ")}`);
       if (profile.disliked_foods?.length) p.push(`Não gosta de: ${profile.disliked_foods.join(", ")}`);
       if (profile.liked_foods?.length) p.push(`Gosta de: ${profile.liked_foods.join(", ")}`);
+      if (profile.memoria?.length) p.push(`Memória da IA (informações que a pessoa pediu para lembrar): ${profile.memoria.join(" | ")}`);
 
       const h = profile.hoje;
       if (h) p.push(`Hoje: ${h.refeicoes} registro(s), ${h.calorias} kcal, ${h.proteina}g proteína, ${h.carboidratos}g carbo, ${h.gorduras}g gordura, ${h.fibras}g fibra`);
@@ -64,6 +65,12 @@ USO DO CONTEXTO (obrigatório):
 - Nunca invente dados que não estejam no contexto. Se faltar informação, peça em lista curta.
 
 ERROS: se não souber, diga "Não tenho certeza sobre essa informação" e recomende uma fonte profissional. Nunca invente.
+
+INCERTEZA: quando não for possível determinar algo com precisão (ex.: quantidade exata em uma foto), diga isso claramente e apresente como "valores estimados".
+
+TENDÊNCIAS: ao comentar evolução, descreva tendências sem afirmar causalidade ("durante esse período você apresentou X enquanto também registrou Y"). Nunca diga que algo causou um resultado.
+
+MEMÓRIA: respeite integralmente a memória do usuário. Se ela contradisser outro dado, priorize a memória mais específica e confirme com a pessoa.
 
 FORMATO: use markdown simples (negrito, listas curtas). Nada de textos longos.${ctx}`;
 
