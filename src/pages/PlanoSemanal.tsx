@@ -357,9 +357,14 @@ const PlanoSemanal = () => {
 
             {/* Regenerate */}
             <div className="text-center space-y-3">
-              <Button variant="hero" size="lg" onClick={generatePlan} disabled={generating} className="gap-2">
-                {generating ? <><RefreshCw className="w-5 h-5 animate-spin" /> Regenerando...</> : <><RefreshCw className="w-5 h-5" /> Gerar novo plano</>}
-              </Button>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Button variant="hero" size="lg" onClick={generatePlan} disabled={generating} className="gap-2">
+                  {generating ? <><RefreshCw className="w-5 h-5 animate-spin" /> Regenerando...</> : <><RefreshCw className="w-5 h-5" /> Gerar novo plano</>}
+                </Button>
+                <Button variant="outline" size="lg" onClick={exportPdf} className="gap-2">
+                  <FileDown className="w-5 h-5" /> Exportar PDF
+                </Button>
+              </div>
               {!user && (
                 <p className="text-xs text-muted-foreground">
                   <button onClick={() => navigate("/auth")} className="text-primary font-semibold underline">Faça login</button> para planos personalizados
