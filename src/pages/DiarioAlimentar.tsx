@@ -13,6 +13,7 @@ import MotivationalQuote from "@/components/MotivationalQuote";
 import WaterTracker from "@/components/WaterTracker";
 import FoodCalendar from "@/components/diario/FoodCalendar";
 import WeeklySummary from "@/components/diario/WeeklySummary";
+import { exportBrandedPdf } from "@/lib/pdf";
 import {
   FoodEntry, MEAL_TYPES, sumTotals, todayISO, toISODate,
   useFavorites, useFoodLog, useFoodLogRange, useGoals, useSyncModules,
@@ -234,7 +235,7 @@ const DiarioAlimentar = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background pt-20 pb-16">
+    <div className="min-h-screen bg-background pt-20 pb-24 md:pb-16">
       <div className="container mx-auto px-4 sm:px-6 max-w-4xl">
         <div className="text-center mb-8">
           <span className="inline-block mb-3 px-4 py-1.5 rounded-full bg-primary/10 text-primary font-display text-sm font-medium">
@@ -457,9 +458,12 @@ const DiarioAlimentar = () => {
             )}
 
             {entries.length > 0 && (
-              <div className="text-center">
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Button variant="hero" size="lg" onClick={analyzeDay} disabled={analyzing} className="gap-2">
                   {analyzing ? <><RefreshCw className="w-5 h-5 animate-spin" /> Analisando...</> : <><Zap className="w-5 h-5" /> Analisar dia com IA</>}
+                </Button>
+                <Button variant="outline" size="lg" onClick={exportDayPdf} className="gap-2">
+                  <Download className="w-5 h-5" /> Exportar PDF
                 </Button>
               </div>
             )}
