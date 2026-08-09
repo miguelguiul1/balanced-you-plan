@@ -49,7 +49,8 @@ Responda APENAS com JSON válido (sem markdown, sem backticks) nesta estrutura e
 
 Regras:
 - TODOS os macros e micros referem-se à "porcao_base" informada (use 100g para sólidos, 100ml para líquidos).
-- Se a foto tiver vários alimentos (ex: prato feito), retorne um item por alimento identificado.
+- Se a foto tiver vários alimentos (ex: prato feito com arroz, feijão, frango e salada), SEPARE e retorne um item por alimento identificado, com a quantidade estimada de cada componente do prato.
+- Nunca apresente estimativas como valores exatos: em "quantidade_estimada" use linguagem de estimativa (ex: "aprox. 4 colheres (~120g)").
 - Se a imagem estiver ruim, escura, sem alimento ou ilegível: {"sucesso": false, "erro": "mensagem amigável em português", "alimentos": []}.
 - Se houver dúvida na identificação, preencha "possiveis_identificacoes" com 2-3 opções e suas confianças; caso contrário use [].
 - Sugira 2-3 alternativas mais saudáveis relevantes.
