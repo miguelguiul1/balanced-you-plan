@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Calendar, ShoppingCart, Lightbulb, RefreshCw, ChevronDown, ChevronUp, Flame, FileDown, Plus } from "lucide-react";
+import { Calendar, ShoppingCart, Lightbulb, RefreshCw, ChevronDown, ChevronUp, Flame, FileDown, Plus, Shuffle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -9,6 +9,7 @@ import MotivationalQuote from "@/components/MotivationalQuote";
 import SmartShoppingList from "@/components/plano/SmartShoppingList";
 import { exportBrandedPdf } from "@/lib/pdf";
 import { todayISO } from "@/hooks/useNutrition";
+import { useAiMemory, memoryToPrompt } from "@/hooks/useAiMemory";
 
 interface Refeicao {
   tipo: string;
@@ -41,9 +42,11 @@ const PlanoSemanal = () => {
   const [expandedMeal, setExpandedMeal] = useState<string | null>(null);
   const [showList, setShowList] = useState(false);
   const [goal, setGoal] = useState("");
+  const [swapping, setSwapping] = useState<string | null>(null);
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { data: memories } = useAiMemory();
 
   const generatePlan = async () => {
     setGenerating(true);
@@ -88,6 +91,66 @@ const PlanoSemanal = () => {
   };
 
   const mealKey = (dia: string, tipo: string) => `${dia}-${tipo}`;
+
+  const loadPreferences = async () => {
+    if (!user) return null;
+    const { data } = await supabase
+      .from("user_preferences")
+      .select("*")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    if (!data) return null;
+    return {
+      objective: data.objective,
+      restrictions: data.restrictions,
+      liked_foods: data.liked_foods,
+      disliked_foods: data.disliked_foods,
+    };
+  };
+
+  const swapMeal = async (dia: string, ref: Refeicao) => {
+    const key = mealKey(dia, ref.tipo);
+    setSwapping(key);
+    try {
+      const preferences = await loadPreferences();
+      const { data, error } = await supabase.functions.invoke("meal-swap", {
+        body: { refeicao: ref, preferences, memoria: memoryToPrompt(memories) },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      const nova = data as Refeicao & { motivo_troca?: string };
+      setPlano((prev) =>
+        prev
+          ? {
+              ...prev,
+              plano: prev.plano.map((d) =>
+                d.dia !== dia
+                  ? d
+                  : {
+                      ...d,
+                      refeicoes: d.refeicoes.map((r) =>
+                        r.tipo === ref.tipo ? { ...nova, tipo: ref.tipo } : r
+                      ),
+                    }
+              ),
+            }
+          : prev
+      );
+      toast({
+        title: "Refeição substituída",
+        description: nova.motivo_troca || `${ref.nome} → ${nova.nome}`,
+      });
+    } catch (e: any) {
+      toast({
+        title: "Não consegui trocar a refeição",
+        description: e.message || "Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setSwapping(null);
+    }
+  };
 
   const mealTypeId = (tipo: string) => {
     const t = tipo.toLowerCase();
@@ -318,6 +381,19 @@ const PlanoSemanal = () => {
                                 onClick={() => addToDiary(ref)}
                               >
                                 <Plus className="w-4 h-4" /> Adicionar ao diário
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="w-full gap-2"
+                                disabled={swapping === key}
+                                onClick={() => swapMeal(dia.dia, ref)}
+                              >
+                                {swapping === key ? (
+                                  <><RefreshCw className="w-4 h-4 animate-spin" /> Buscando outra opção...</>
+                                ) : (
+                                  <><Shuffle className="w-4 h-4" /> Não gostei, trocar refeição</>
+                                )}
                               </Button>
                             </div>
                           )}

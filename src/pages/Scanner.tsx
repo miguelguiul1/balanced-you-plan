@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import FoodScanner from "@/components/FoodScanner";
+import BarcodeScanner from "@/components/BarcodeScanner";
 
 interface Alimento {
   nome: string;
@@ -37,7 +38,7 @@ const Scanner = () => {
   const fileRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const { user } = useAuth();
-  const [tab, setTab] = useState<"alimento" | "geladeira">("alimento");
+  const [tab, setTab] = useState<"alimento" | "codigo" | "geladeira">("alimento");
 
   const handleImage = (file: File) => {
     const reader = new FileReader();
@@ -117,17 +118,20 @@ const Scanner = () => {
           <p className="mt-3 text-muted-foreground max-w-lg mx-auto">
             {tab === "alimento"
               ? "Fotografe um alimento, bebida ou produto e receba uma análise nutricional completa"
+              : tab === "codigo"
+              ? "Leia o código de barras do produto e registre os dados nutricionais no seu diário"
               : "Tire uma foto da sua geladeira e a IA vai sugerir receitas práticas, saudáveis e econômicas"}
           </p>
           <div className="mt-6 inline-flex p-1 rounded-full bg-secondary">
             {([
               ["alimento", "Alimento"],
+              ["codigo", "Código de barras"],
               ["geladeira", "Geladeira"],
             ] as const).map(([id, label]) => (
               <button
                 key={id}
                 onClick={() => setTab(id)}
-                className={`px-5 py-2 rounded-full text-sm font-medium transition-colors ${
+                className={`px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition-colors ${
                   tab === id ? "bg-card text-foreground shadow-soft" : "text-muted-foreground"
                 }`}
               >
@@ -138,6 +142,8 @@ const Scanner = () => {
         </div>
 
         {tab === "alimento" && <FoodScanner />}
+
+        {tab === "codigo" && <BarcodeScanner />}
 
         {/* Upload area */}
         {tab === "geladeira" && !image && (
