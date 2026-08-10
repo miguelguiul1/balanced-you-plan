@@ -98,6 +98,7 @@ const Preferencias = () => {
           updated_at: new Date().toISOString(),
         }, { onConflict: "user_id" });
       if (error) throw error;
+      sync(["prefs"]);
       toast({ title: "✓ Preferências salvas!" });
     } catch (e: any) {
       toast({ title: "Erro ao salvar", description: e.message, variant: "destructive" });
