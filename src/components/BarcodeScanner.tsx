@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { MEAL_TYPES, useSyncModules } from "@/hooks/useNutrition";
+import { MEAL_TYPES, todayISO, useSyncModules } from "@/hooks/useNutrition";
 
 type Product = {
   code: string;
@@ -170,6 +170,7 @@ const BarcodeScanner = () => {
       food_name: product.marca ? `${product.nome} (${product.marca})` : product.nome,
       quantity: `${portion}g`,
       meal_type: mealType,
+      logged_at: todayISO(),
       calories: sc(product.calorias),
       protein: sc(product.proteina),
       carbs: sc(product.carboidratos),

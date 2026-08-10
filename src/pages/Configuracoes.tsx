@@ -112,8 +112,36 @@ const Configuracoes = () => {
 
   const deleteAccount = async () => {
     if (!user) return;
-    const { error } = await supabase.from("profiles").delete().eq("id", user.id);
-    if (error) return toast.error("Não foi possível excluir sua conta agora");
+    try {
+      // Remove as fotos de progresso do armazenamento antes dos registros.
+      const { data: fotos } = await supabase
+        .from("progress_photos")
+        .select("photo_url")
+        .eq("user_id", user.id);
+      const paths = (fotos ?? [])
+        .map((f) => {
+          const m = String(f.photo_url).match(/progress\/(.+)$/);
+          return m ? m[1].split("?")[0] : null;
+        })
+        .filter(Boolean) as string[];
+      if (paths.length) await supabase.storage.from("progress").remove(paths);
+
+      const tabelas = [
+        "progress_photos", "food_log", "water_log", "weight_log", "scan_history",
+        "chat_messages", "ai_insights", "ai_memory", "food_favorites",
+        "user_preferences", "user_goals",
+      ] as const;
+      for (const t of tabelas) {
+        const { error } = await supabase.from(t).delete().eq("user_id", user.id);
+        if (error) throw error;
+      }
+
+      const { error } = await supabase.from("profiles").delete().eq("id", user.id);
+      if (error) throw error;
+    } catch {
+      return toast.error("Não foi possível excluir seus dados agora");
+    }
+    localStorage.removeItem(`evoluaPlano:${user.id}`);
     toast.success("Seus dados foram removidos");
     await signOut();
     navigate("/");

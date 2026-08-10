@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { MEAL_TYPES, useSyncModules } from "@/hooks/useNutrition";
+import { MEAL_TYPES, todayISO, useSyncModules } from "@/hooks/useNutrition";
 
 interface Macros {
   calorias: number; proteina: number; carboidratos: number; gorduras: number; fibras: number; acucares?: number;
@@ -171,6 +171,7 @@ const FoodScanner = () => {
       food_name: selected.nome,
       quantity: `${portion}g`,
       meal_type: mealType,
+      logged_at: todayISO(),
       calories: scaled(selected.macros.calorias),
       protein: scaled(selected.macros.proteina),
       carbs: scaled(selected.macros.carboidratos),
@@ -198,6 +199,7 @@ const FoodScanner = () => {
         food_name: f.nome,
         quantity: `${base}g`,
         meal_type: mealType,
+        logged_at: todayISO(),
         calories: round(f.macros.calorias),
         protein: round(f.macros.proteina),
         carbs: round(f.macros.carboidratos),

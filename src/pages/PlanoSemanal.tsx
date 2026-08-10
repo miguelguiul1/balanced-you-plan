@@ -48,6 +48,31 @@ const PlanoSemanal = () => {
   const navigate = useNavigate();
   const { data: memories } = useAiMemory();
 
+  const storageKey = user ? `evoluaPlano:${user.id}` : null;
+
+  // Restaura o último plano gerado (evita perder tudo ao recarregar a página).
+  useEffect(() => {
+    if (!storageKey) return;
+    try {
+      const raw = localStorage.getItem(storageKey);
+      if (!raw) return;
+      const saved = JSON.parse(raw) as { plano: PlanoSemanal; goal?: string };
+      if (saved?.plano?.plano?.length) {
+        setPlano(saved.plano);
+        setGoal(saved.goal ?? "");
+        setExpandedDay(saved.plano.plano[0].dia);
+      }
+    } catch {
+      localStorage.removeItem(storageKey);
+    }
+  }, [storageKey]);
+
+  // Persiste alterações (inclusive trocas de refeição feitas pela IA).
+  useEffect(() => {
+    if (!storageKey) return;
+    if (plano) localStorage.setItem(storageKey, JSON.stringify({ plano, goal }));
+  }, [plano, goal, storageKey]);
+
   const generatePlan = async () => {
     setGenerating(true);
     try {

@@ -254,7 +254,7 @@ const DiarioAlimentar = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background pt-20 pb-24 md:pb-24 md:pb-16">
+    <div className="min-h-screen bg-background pt-20 pb-24 md:pb-16">
       <div className="container mx-auto px-4 sm:px-6 max-w-4xl">
         <div className="text-center mb-8">
           <span className="inline-block mb-3 px-4 py-1.5 rounded-full bg-primary/10 text-primary font-display text-sm font-medium">
