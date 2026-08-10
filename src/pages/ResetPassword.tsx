@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -6,30 +6,63 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Lock, ArrowRight } from "lucide-react";
-import { useEffect } from "react";
 
 const ResetPassword = () => {
   const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
-  const [isRecovery, setIsRecovery] = useState(false);
+  const [status, setStatus] = useState<"checking" | "ready" | "invalid">("checking");
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
-    const hash = window.location.hash;
-    if (hash.includes("type=recovery")) {
-      setIsRecovery(true);
-    }
+    let done = false;
+    const finish = (ok: boolean) => {
+      if (done) return;
+      done = true;
+      setStatus(ok ? "ready" : "invalid");
+    };
+
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "PASSWORD_RECOVERY" || session) finish(true);
+    });
+
+    (async () => {
+      const url = new URL(window.location.href);
+      const code = url.searchParams.get("code");
+      const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+
+      // Fluxo PKCE (?code=...)
+      if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        finish(!error);
+        return;
+      }
+      // Fluxo implícito (#access_token=...&type=recovery)
+      if (hash.get("type") === "recovery" || hash.get("access_token")) {
+        finish(true);
+        return;
+      }
+      // Sessão de recuperação já estabelecida pelo cliente
+      const { data } = await supabase.auth.getSession();
+      finish(!!data.session);
+    })();
+
+    return () => sub.subscription.unsubscribe();
   }, []);
 
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (password !== confirm) {
+      toast({ title: "As senhas não coincidem", variant: "destructive" });
+      return;
+    }
     setLoading(true);
     try {
       const { error } = await supabase.auth.updateUser({ password });
       if (error) throw error;
       toast({ title: "Senha atualizada com sucesso! 🎉" });
-      navigate("/");
+      navigate("/dashboard", { replace: true });
     } catch (error: any) {
       toast({ title: "Erro", description: error.message, variant: "destructive" });
     } finally {
@@ -37,10 +70,19 @@ const ResetPassword = () => {
     }
   };
 
-  if (!isRecovery) {
+  if (status === "checking") {
     return (
       <div className="min-h-screen bg-background pt-20 pb-16 flex items-center justify-center">
+        <p className="text-muted-foreground">Validando link...</p>
+      </div>
+    );
+  }
+
+  if (status === "invalid") {
+    return (
+      <div className="min-h-screen bg-background pt-20 pb-16 flex flex-col items-center justify-center gap-4 px-6 text-center">
         <p className="text-muted-foreground">Link inválido ou expirado.</p>
+        <Button variant="hero" onClick={() => navigate("/auth")}>Pedir um novo link</Button>
       </div>
     );
   }
@@ -64,6 +106,22 @@ const ResetPassword = () => {
                   placeholder="Mínimo 6 caracteres"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  className="pl-10"
+                  required
+                  minLength={6}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirm" className="text-foreground">Confirmar senha</Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  id="confirm"
+                  type="password"
+                  placeholder="Repita a nova senha"
+                  value={confirm}
+                  onChange={(e) => setConfirm(e.target.value)}
                   className="pl-10"
                   required
                   minLength={6}
