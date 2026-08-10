@@ -199,6 +199,7 @@ const FoodScanner = () => {
         food_name: f.nome,
         quantity: `${base}g`,
         meal_type: mealType,
+        logged_at: todayISO(),
         calories: round(f.macros.calorias),
         protein: round(f.macros.proteina),
         carbs: round(f.macros.carboidratos),
