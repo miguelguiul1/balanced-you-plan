@@ -1,15 +1,30 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Mail, Lock, User, ArrowRight, Eye, EyeOff, Sparkles, Leaf, Heart } from "lucide-react";
 
+const traduzErro = (msg: string) => {
+  const m = msg.toLowerCase();
+  if (m.includes("invalid login credentials")) return "E-mail ou senha incorretos.";
+  if (m.includes("email not confirmed")) return "Confirme seu e-mail antes de entrar. Verifique sua caixa de entrada.";
+  if (m.includes("user already registered")) return "Este e-mail já possui conta. Faça login.";
+  if (m.includes("password should be at least")) return "A senha precisa ter pelo menos 6 caracteres.";
+  if (m.includes("rate limit") || m.includes("too many")) return "Muitas tentativas. Aguarde alguns minutos e tente novamente.";
+  if (m.includes("pwned") || m.includes("compromised")) return "Essa senha apareceu em vazamentos. Escolha outra mais segura.";
+  if (m.includes("failed to fetch") || m.includes("network")) return "Sem conexão com o servidor. Verifique sua internet.";
+  return msg || "Algo deu errado. Tente novamente.";
+};
+
 const Auth = () => {
   const [showWelcome, setShowWelcome] = useState(true);
   const [isLogin, setIsLogin] = useState(false);
+  const [isForgot, setIsForgot] = useState(false);
+  const [sent, setSent] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
@@ -17,6 +32,11 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user, loading: authLoading } = useAuth();
+
+  useEffect(() => {
+    if (!authLoading && user) navigate("/dashboard", { replace: true });
+  }, [user, authLoading, navigate]);
 
   const dismissWelcome = () => {
     setIsLogin(false); // go straight to sign up
@@ -28,14 +48,24 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (isForgot) {
+        const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+          redirectTo: `${window.location.origin}/reset-password`,
+        });
+        if (error) throw error;
+        setSent(true);
+        toast({
+          title: "E-mail enviado 📧",
+          description: "Se existir uma conta com esse e-mail, você receberá o link de redefinição.",
+        });
+      } else if (isLogin) {
+        const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
         if (error) throw error;
         toast({ title: "Bem-vindo de volta! 🎉" });
-        navigate("/");
+        navigate("/dashboard");
       } else {
         const { error } = await supabase.auth.signUp({
-          email,
+          email: email.trim(),
           password,
           options: {
             data: { full_name: fullName },
@@ -51,7 +81,7 @@ const Auth = () => {
     } catch (error: any) {
       toast({
         title: "Erro",
-        description: error.message || "Algo deu errado. Tente novamente.",
+        description: traduzErro(error?.message ?? ""),
         variant: "destructive",
       });
     } finally {
