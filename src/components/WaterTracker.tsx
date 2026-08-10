@@ -3,7 +3,7 @@ import { Droplet, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { useSyncModules } from "@/hooks/useNutrition";
+import { todayISO, useSyncModules } from "@/hooks/useNutrition";
 
 const INCREMENTS = [250, 500, 750, 1000];
 
@@ -23,7 +23,7 @@ const WaterTracker = ({ compact = false }: Props) => {
   const [total, setTotal] = useState(0);
   const [goal, setGoal] = useState(2500);
   const [loading, setLoading] = useState(true);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayISO();
 
   const load = async () => {
     if (!user) return;
@@ -42,7 +42,9 @@ const WaterTracker = ({ compact = false }: Props) => {
     if (!user) { toast.error("Faça login para registrar"); return; }
     const prev = total;
     setTotal(prev + ml);
-    const { error } = await supabase.from("water_log").insert({ user_id: user.id, amount_ml: ml });
+    const { error } = await supabase
+      .from("water_log")
+      .insert({ user_id: user.id, amount_ml: ml, logged_at: today });
     if (error) { setTotal(prev); toast.error("Erro ao registrar"); return; }
     sync(["water"]);
     const newPct = ((prev + ml) / goal) * 100;
