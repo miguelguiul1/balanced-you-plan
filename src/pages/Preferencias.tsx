@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { useSyncModules } from "@/hooks/useNutrition";
 
 const allFoods: Record<string, string[]> = {
   "Proteínas": ["Frango", "Ovo", "Carne vermelha", "Peixe", "Atum", "Sardinha", "Tofu", "Feijão", "Lentilha", "Grão-de-bico", "Whey"],
@@ -31,6 +32,7 @@ const objectives = [
 ];
 
 const Preferencias = () => {
+  const sync = useSyncModules();
   const [liked, setLiked] = useState<string[]>([]);
   const [disliked, setDisliked] = useState<string[]>([]);
   const [selectedRestrictions, setSelectedRestrictions] = useState<string[]>([]);
