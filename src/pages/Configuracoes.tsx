@@ -185,7 +185,7 @@ const Configuracoes = () => {
                 </Button>
                 <ConfirmDialog
                   title="Excluir sua conta?"
-                  description="Todos os seus registros de alimentação, hidratação e evolução serão removidos permanentemente."
+                  description="Sua conta de acesso, arquivos e todos os registros (alimentação, hidratação, evolução, IA e favoritos) serão removidos permanentemente. Esta ação não pode ser desfeita."
                   confirmLabel="Excluir tudo"
                   onConfirm={deleteAccount}
                   trigger={
