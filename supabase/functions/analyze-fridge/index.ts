@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { corsHeaders, json, requireUser, rateLimit, readJson, isResponse } from "../_shared/guard.ts";
+import { corsHeaders, json, requireUser, rateLimit, readJson, isResponse, validateImage } from "../_shared/guard.ts";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -14,6 +14,8 @@ serve(async (req) => {
     const body = await readJson(req);
     if (isResponse(body)) return body;
     const { imageBase64, preferences } = body as Record<string, unknown> as any;
+    const badImage = validateImage(imageBase64);
+    if (badImage) return badImage;
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
@@ -27,7 +29,7 @@ serve(async (req) => {
       if (parts.length) preferencesContext = `\n\nPERFIL DO USUÁRIO:\n${parts.join("\n")}`;
     }
 
-    const systemPrompt = `Você é um nutricionista brasileiro especialista. Analise a foto da geladeira e retorne APENAS um JSON válido (sem markdown, sem backticks) com esta estrutura:
+    const systemPrompt = `Você é o Evolua Plus AI, assistente de nutrição baseado em IA (NÃO é nutricionista, médico nem profissional de saúde; nunca afirme formação, registro profissional ou identidade humana). Todos os valores nutricionais são ESTIMATIVAS. Analise a foto da geladeira e retorne APENAS um JSON válido (sem markdown, sem backticks) com esta estrutura:
 {
   "alimentos": [{"nome": "string", "quantidade": "string", "calorias": number}],
   "receitas": [{"nome": "string", "ingredientes": ["string"], "tempo": "string", "calorias": number, "proteina": number, "carb": number, "gordura": number, "preparo": "string"}],

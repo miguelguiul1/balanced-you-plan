@@ -22,7 +22,7 @@ serve(async (req) => {
 
     if (action === "estimate") {
       // Estimate nutritional info for a food item
-      systemPrompt = `Você é um nutricionista brasileiro. Estime os valores nutricionais do alimento informado. Retorne APENAS JSON (sem markdown):
+      systemPrompt = `Você é o Evolua Plus AI, assistente de nutrição baseado em IA (NÃO é nutricionista nem médico). Estime os valores nutricionais do alimento informado. Retorne APENAS JSON (sem markdown):
 {"calories": number, "protein": number, "carbs": number, "fat": number, "fiber": number}
 Valores devem ser para a quantidade especificada. Seja preciso baseando-se em tabelas nutricionais brasileiras (TACO/IBGE).`;
       userPrompt = `Alimento: ${foodName}, Quantidade: ${quantity}`;
@@ -31,7 +31,7 @@ Valores devem ser para a quantidade especificada. Seja preciso baseando-se em ta
       let prefContext = "";
       if (preferences?.objective) prefContext = `\nObjetivo do usuário: ${preferences.objective}`;
       
-      systemPrompt = `Você é um nutricionista brasileiro especialista. Analise o consumo alimentar diário e retorne APENAS JSON (sem markdown):
+      systemPrompt = `Você é o Evolua Plus AI, assistente de nutrição baseado em IA (NÃO é nutricionista nem médico; não diagnostique nem prescreva). Analise o consumo alimentar diário e retorne APENAS JSON (sem markdown):
 {
   "resumo": {"calorias_total": number, "proteina_total": number, "carb_total": number, "gordura_total": number, "fibra_total": number},
   "meta_sugerida": {"calorias": number, "proteina": number, "carbs": number, "gordura": number, "fibra": number},

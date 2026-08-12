@@ -30,7 +30,7 @@ serve(async (req) => {
       preferencesContext += `\n\nOBJETIVO DESCRITO PELO USUÁRIO: "${goal}"\nAdapte todo o plano para atender este objetivo específico.`;
     }
 
-    const systemPrompt = `Você é um nutricionista brasileiro. Crie um plano semanal de refeições (segunda a domingo) com café da manhã, almoço, lanche e jantar. Retorne APENAS JSON válido (sem markdown, sem backticks):
+    const systemPrompt = `Você é o Evolua Plus AI, assistente de nutrição baseado em IA (NÃO é nutricionista nem médico; o plano é educacional, com valores estimados, e não substitui acompanhamento profissional). Não crie dietas terapêuticas para doenças nem restrições extremas. Crie um plano semanal de refeições (segunda a domingo) com café da manhã, almoço, lanche e jantar. Retorne APENAS JSON válido (sem markdown, sem backticks):
 {
   "plano": [
     {

@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { corsHeaders, json, requireUser, rateLimit, readJson, isResponse } from "../_shared/guard.ts";
+import { corsHeaders, json, requireUser, rateLimit, readJson, isResponse, validateImage } from "../_shared/guard.ts";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -14,6 +14,8 @@ serve(async (req) => {
     const body = await readJson(req);
     if (isResponse(body)) return body;
     const { imageBase64, objetivo } = body as Record<string, unknown> as any;
+    const badImage = validateImage(imageBase64);
+    if (badImage) return badImage;
     if (!imageBase64 || typeof imageBase64 !== "string") {
       return new Response(JSON.stringify({ error: "Imagem inválida" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -25,7 +27,7 @@ serve(async (req) => {
 
     const objetivoCtx = objetivo ? `\nObjetivo do usuário: ${objetivo}. Adapte o campo "analise_objetivo" a esse objetivo.` : "";
 
-    const systemPrompt = `Você é um especialista em nutrição analisando a foto de um alimento, bebida ou produto alimentício.
+    const systemPrompt = `Você é o Evolua Plus AI, assistente de nutrição baseado em IA (NÃO é nutricionista nem profissional de saúde). Identificações por imagem são ESTIMATIVAS: use o campo "confianca" com honestidade, nunca apresente valores como exatos e nunca invente marcas ou produtos. Analise a foto de um alimento, bebida ou produto alimentício.
 Responda APENAS com JSON válido (sem markdown, sem backticks) nesta estrutura exata:
 {
   "sucesso": boolean,

@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { corsHeaders, json, requireUser, rateLimit, readJson, isResponse } from "../_shared/guard.ts";
+import { corsHeaders, json, requireUser, rateLimit, readJson, isResponse, validateImage } from "../_shared/guard.ts";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -14,10 +14,12 @@ serve(async (req) => {
     const body = await readJson(req);
     if (isResponse(body)) return body;
     const { imageBase64 } = body as Record<string, unknown> as any;
+    const badImage = validateImage(imageBase64);
+    if (badImage) return badImage;
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY não configurado");
 
-    const systemPrompt = `Você é um nutricionista analisando a foto de um prato/porção. Retorne APENAS JSON válido (sem markdown):
+    const systemPrompt = `Você é o Evolua Plus AI, assistente de nutrição baseado em IA (NÃO é nutricionista nem profissional de saúde). Todos os números são ESTIMATIVAS visuais, nunca valores exatos. Analise a foto de um prato/porção. Retorne APENAS JSON válido (sem markdown):
 {
   "prato": "string breve descrevendo o prato",
   "porcao_estimada": "string ex: 250g, 1 prato médio",
