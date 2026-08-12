@@ -1,15 +1,19 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { corsHeaders, json, requireUser, rateLimit, readJson, isResponse } from "../_shared/guard.ts";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method !== "POST") return json({ error: "Método não permitido" }, 405);
+  const auth = await requireUser(req);
+  if (isResponse(auth)) return auth;
+  const limited = rateLimit("nutrition-chat:" + auth.userId, 25);
+  if (limited) return limited;
+
 
   try {
-    const { messages, profile } = await req.json();
+    const body = await readJson(req);
+    if (isResponse(body)) return body;
+    const { messages, profile } = body as Record<string, unknown> as any;
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY não configurado");
 
@@ -87,7 +91,7 @@ FORMATO: use markdown simples (negrito, listas curtas). Nada de textos longos.${
     if (!response.ok) {
       const errorText = await response.text();
       console.error("AI Gateway error:", response.status, errorText);
-      return new Response(JSON.stringify({ error: "Erro no assistente", details: errorText }), {
+      return new Response(JSON.stringify({ error: "Erro no assistente" }), {
         status: response.status,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -100,7 +104,7 @@ FORMATO: use markdown simples (negrito, listas curtas). Nada de textos longos.${
     });
   } catch (err) {
     console.error("nutrition-chat error:", err);
-    return new Response(JSON.stringify({ error: (err as Error).message }), {
+    return new Response(JSON.stringify({ error: "Erro interno. Tente novamente." }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
