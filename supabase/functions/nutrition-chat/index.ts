@@ -14,6 +14,14 @@ serve(async (req) => {
     const body = await readJson(req);
     if (isResponse(body)) return body;
     const { messages, profile } = body as Record<string, unknown> as any;
+    if (!Array.isArray(messages) || messages.length === 0 || messages.length > 20) {
+      return json({ error: "Conversa inválida." }, 400);
+    }
+    const safeMessages = messages
+      .filter((m: any) => m && (m.role === "user" || m.role === "assistant") && typeof m.content === "string")
+      .slice(-10)
+      .map((m: any) => ({ role: m.role, content: m.content.slice(0, 4000) }));
+    if (!safeMessages.length) return json({ error: "Conversa inválida." }, 400);
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY não configurado");
 
