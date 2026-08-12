@@ -13,7 +13,8 @@ serve(async (req) => {
   try {
     const body = await readJson(req);
     if (isResponse(body)) return body;
-    const { imageBase64, objetivo } = body as Record<string, unknown> as any;
+    const { imageBase64, objetivo: rawObjetivo } = body as Record<string, unknown> as any;
+    const objetivo = typeof rawObjetivo === "string" ? rawObjetivo.slice(0, 300) : "";
     const badImage = validateImage(imageBase64);
     if (badImage) return badImage;
     if (!imageBase64 || typeof imageBase64 !== "string") {

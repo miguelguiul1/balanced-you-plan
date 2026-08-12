@@ -13,7 +13,8 @@ serve(async (req) => {
   try {
     const body = await readJson(req);
     if (isResponse(body)) return body;
-    const { preferences, goal } = body as Record<string, unknown> as any;
+    const { preferences, goal: rawGoal } = body as Record<string, unknown> as any;
+    const goal = typeof rawGoal === "string" ? rawGoal.slice(0, 600) : "";
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 

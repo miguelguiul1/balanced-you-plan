@@ -13,7 +13,8 @@ serve(async (req) => {
   try {
     const body = await readJson(req);
     if (isResponse(body)) return body;
-    const { refeicao, motivo, preferences, memoria } = body as Record<string, unknown> as any;
+    const { refeicao, motivo: rawMotivo, preferences, memoria } = body as Record<string, unknown> as any;
+    const motivo = typeof rawMotivo === "string" ? rawMotivo.slice(0, 400) : "";
     if (!refeicao?.nome) {
       return new Response(JSON.stringify({ error: "Refeição inválida" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },

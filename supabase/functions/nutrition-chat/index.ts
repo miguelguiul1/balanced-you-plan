@@ -101,7 +101,7 @@ FORMATO: use markdown simples (negrito, listas curtas). Nada de textos longos.${
       body: JSON.stringify({
         model: "openai/gpt-5.6-sol",
         reasoning_effort: "none",
-        messages: [{ role: "system", content: systemPrompt }, ...messages],
+        messages: [{ role: "system", content: systemPrompt }, ...safeMessages],
       }),
     });
 

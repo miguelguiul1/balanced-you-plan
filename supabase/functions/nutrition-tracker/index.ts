@@ -13,7 +13,12 @@ serve(async (req) => {
   try {
     const body = await readJson(req);
     if (isResponse(body)) return body;
-    const { action, foodName, quantity, dailyLog, preferences } = body as Record<string, unknown> as any;
+    const { action, foodName: rawFood, quantity: rawQty, dailyLog, preferences } = body as Record<string, unknown> as any;
+    if (action !== "estimate" && action !== "analyze") return json({ error: "Ação inválida." }, 400);
+    const foodName = typeof rawFood === "string" ? rawFood.slice(0, 200) : "";
+    const quantity = typeof rawQty === "string" ? rawQty.slice(0, 100) : "";
+    if (action === "estimate" && !foodName.trim()) return json({ error: "Informe o alimento." }, 400);
+    if (action === "analyze" && !Array.isArray(dailyLog)) return json({ error: "Registro inválido." }, 400);
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
