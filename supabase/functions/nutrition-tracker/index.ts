@@ -1,15 +1,24 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
+import { corsHeaders, json, requireUser, rateLimit, readJson, isResponse } from "../_shared/guard.ts";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method !== "POST") return json({ error: "Método não permitido" }, 405);
+  const auth = await requireUser(req);
+  if (isResponse(auth)) return auth;
+  const limited = rateLimit("nutrition-tracker:" + auth.userId, 30);
+  if (limited) return limited;
+
 
   try {
-    const { action, foodName, quantity, dailyLog, preferences } = await req.json();
+    const body = await readJson(req);
+    if (isResponse(body)) return body;
+    const { action, foodName: rawFood, quantity: rawQty, dailyLog, preferences } = body as Record<string, unknown> as any;
+    if (action !== "estimate" && action !== "analyze") return json({ error: "Ação inválida." }, 400);
+    const foodName = typeof rawFood === "string" ? rawFood.slice(0, 200) : "";
+    const quantity = typeof rawQty === "string" ? rawQty.slice(0, 100) : "";
+    if (action === "estimate" && !foodName.trim()) return json({ error: "Informe o alimento." }, 400);
+    if (action === "analyze" && !Array.isArray(dailyLog)) return json({ error: "Registro inválido." }, 400);
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
@@ -18,7 +27,7 @@ serve(async (req) => {
 
     if (action === "estimate") {
       // Estimate nutritional info for a food item
-      systemPrompt = `Você é um nutricionista brasileiro. Estime os valores nutricionais do alimento informado. Retorne APENAS JSON (sem markdown):
+      systemPrompt = `Você é o Evolua Plus AI, assistente de nutrição baseado em IA (NÃO é nutricionista nem médico). Estime os valores nutricionais do alimento informado. Retorne APENAS JSON (sem markdown):
 {"calories": number, "protein": number, "carbs": number, "fat": number, "fiber": number}
 Valores devem ser para a quantidade especificada. Seja preciso baseando-se em tabelas nutricionais brasileiras (TACO/IBGE).`;
       userPrompt = `Alimento: ${foodName}, Quantidade: ${quantity}`;
@@ -27,7 +36,7 @@ Valores devem ser para a quantidade especificada. Seja preciso baseando-se em ta
       let prefContext = "";
       if (preferences?.objective) prefContext = `\nObjetivo do usuário: ${preferences.objective}`;
       
-      systemPrompt = `Você é um nutricionista brasileiro especialista. Analise o consumo alimentar diário e retorne APENAS JSON (sem markdown):
+      systemPrompt = `Você é o Evolua Plus AI, assistente de nutrição baseado em IA (NÃO é nutricionista nem médico; não diagnostique nem prescreva). Analise o consumo alimentar diário e retorne APENAS JSON (sem markdown):
 {
   "resumo": {"calorias_total": number, "proteina_total": number, "carb_total": number, "gordura_total": number, "fibra_total": number},
   "meta_sugerida": {"calorias": number, "proteina": number, "carbs": number, "gordura": number, "fibra": number},
@@ -97,7 +106,7 @@ Valores devem ser para a quantidade especificada. Seja preciso baseando-se em ta
     });
   } catch (e) {
     console.error("nutrition-tracker error:", e);
-    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Erro desconhecido" }), {
+    return new Response(JSON.stringify({ error: "Erro interno. Tente novamente." }), {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }

@@ -1,15 +1,20 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
+import { corsHeaders, json, requireUser, rateLimit, readJson, isResponse } from "../_shared/guard.ts";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method !== "POST") return json({ error: "Método não permitido" }, 405);
+  const auth = await requireUser(req);
+  if (isResponse(auth)) return auth;
+  const limited = rateLimit("myth-checker:" + auth.userId, 15);
+  if (limited) return limited;
+
 
   try {
-    const { question } = await req.json();
+    const body = await readJson(req);
+    if (isResponse(body)) return body;
+    const { question: rawQuestion } = body as Record<string, unknown> as any;
+    const question = typeof rawQuestion === "string" ? rawQuestion.slice(0, 500) : "";
     if (!question || typeof question !== "string" || question.trim().length < 3) {
       return new Response(JSON.stringify({ error: "Pergunta inválida" }), {
         status: 400,
@@ -31,7 +36,7 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `Você é um nutricionista especialista em desmistificar mitos alimentares. 
+            content: `Você é o Evolua Plus AI, assistente baseado em IA especializado em desmistificar mitos alimentares (NÃO é nutricionista nem médico; nunca diagnostique nem prescreva). Se a afirmação envolver doença, medicamento, gravidez ou transtorno alimentar, explique de forma educativa e oriente avaliação com profissional de saúde. 
 Responda APENAS com JSON válido, sem markdown. Use este formato:
 {"veredicto":"MITO" ou "VERDADE" ou "PARCIALMENTE VERDADE","explicacao":"explicação clara em 2-3 frases","fonte":"nome da instituição científica que embasa a resposta"}
 
