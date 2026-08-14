@@ -251,6 +251,12 @@ const Calculator = () => {
     setStep(TOTAL_STEPS);
   };
 
+  const bodyDataError = firstError([
+    checkRange(form.peso, RANGES.peso),
+    checkRange(form.altura, RANGES.altura),
+    checkRange(form.idade, RANGES.idade),
+  ]);
+
   const canProceed = () => {
     switch (step) {
       case 0:
