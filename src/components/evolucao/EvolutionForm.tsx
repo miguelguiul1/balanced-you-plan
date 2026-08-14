@@ -81,8 +81,19 @@ const EvolutionForm = ({
   };
 
   const save = async () => {
-    const weight = num(form.weight_kg);
-    if (!weight || weight <= 0) return toast.error("Informe o peso");
+    const invalid = firstError([
+      checkRange(form.weight_kg, RANGES.peso),
+      checkOptional(form.height_cm, RANGES.altura),
+      checkOptional(form.waist_cm, RANGES.medida),
+      checkOptional(form.arm_cm, RANGES.medida),
+      checkOptional(form.hip_cm, RANGES.medida),
+      checkOptional(form.thigh_cm, RANGES.medida),
+      checkOptional(form.chest_cm, RANGES.medida),
+      checkOptional(form.neck_cm, RANGES.medida),
+      checkOptional(form.body_fat_pct, RANGES.gordura),
+    ]);
+    if (invalid) return toast.error(invalid);
+    const weight = num(form.weight_kg) as number;
     setSaving(true);
     try {
       const payload = {
