@@ -165,8 +165,9 @@ const BarcodeScanner = () => {
   const addToDiary = async () => {
     if (!product) return;
     if (!user) return navigate("/auth");
-    if (!product.nome.trim()) {
-      toast({ title: "Informe o nome do produto", variant: "destructive" });
+    const invalid = validateProduct();
+    if (invalid) {
+      toast({ title: invalid, variant: "destructive" });
       return;
     }
     setSaving(true);
@@ -193,6 +194,11 @@ const BarcodeScanner = () => {
 
   const saveFavorite = async () => {
     if (!product || !user) return user ? undefined : navigate("/auth");
+    const invalid = validateProduct();
+    if (invalid) {
+      toast({ title: invalid, variant: "destructive" });
+      return;
+    }
     const { error } = await supabase.from("food_favorites").upsert(
       {
         user_id: user.id,
@@ -217,7 +223,7 @@ const BarcodeScanner = () => {
   };
 
   const setField = (k: keyof Product, v: string) =>
-    setProduct((p) => (p ? { ...p, [k]: k === "nome" ? v : Number(v) || 0 } : p));
+    setProduct((p) => (p ? { ...p, [k]: k === "nome" ? v.slice(0, 200) : (parseNum(v) ?? 0) } : p));
 
   return (
     <div className="space-y-6">
