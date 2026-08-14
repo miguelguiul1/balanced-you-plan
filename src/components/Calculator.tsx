@@ -256,7 +256,7 @@ const Calculator = () => {
       case 0:
         return form.objetivo !== "";
       case 1:
-        return form.peso !== "" && form.altura !== "" && form.idade !== "";
+        return bodyDataError === null;
       case 2:
         return form.atividade !== "" && form.esportes.length > 0;
       case 3:
