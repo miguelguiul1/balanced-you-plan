@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { MEAL_TYPES, todayISO, useSyncModules } from "@/hooks/useNutrition";
+import { RANGES, checkRange, checkText, firstError, normalizeBarcode, parseNum } from "@/lib/validation";
 
 type Product = {
   code: string;
@@ -110,9 +111,13 @@ const BarcodeScanner = () => {
   };
 
   const lookup = async (value: string) => {
-    const clean = value.replace(/\D/g, "");
-    if (clean.length < 6) {
-      toast({ title: "Código inválido", description: "Digite um código de barras válido.", variant: "destructive" });
+    const clean = normalizeBarcode(value);
+    if (!clean) {
+      toast({
+        title: "Código inválido",
+        description: "Use um código de barras numérico com 8 a 14 dígitos.",
+        variant: "destructive",
+      });
       return;
     }
     setLoading(true);
@@ -157,11 +162,26 @@ const BarcodeScanner = () => {
   const factor = product ? portion / (product.porcao_base_g || 100) : 1;
   const sc = (v: number) => Math.round(v * factor * 10) / 10;
 
+  const validateProduct = (): string | null => {
+    if (!product) return "Produto não carregado";
+    return firstError([
+      checkText(product.nome, "o nome do produto", 200),
+      checkRange(portion, RANGES.porcao),
+      checkRange(product.calorias, RANGES.calorias),
+      checkRange(product.proteina, RANGES.macro),
+      checkRange(product.carboidratos, RANGES.macro),
+      checkRange(product.gorduras, RANGES.macro),
+      checkRange(product.fibras, RANGES.macro),
+      checkRange(product.sodio_mg, RANGES.sodio),
+    ]);
+  };
+
   const addToDiary = async () => {
     if (!product) return;
     if (!user) return navigate("/auth");
-    if (!product.nome.trim()) {
-      toast({ title: "Informe o nome do produto", variant: "destructive" });
+    const invalid = validateProduct();
+    if (invalid) {
+      toast({ title: invalid, variant: "destructive" });
       return;
     }
     setSaving(true);
@@ -188,6 +208,11 @@ const BarcodeScanner = () => {
 
   const saveFavorite = async () => {
     if (!product || !user) return user ? undefined : navigate("/auth");
+    const invalid = validateProduct();
+    if (invalid) {
+      toast({ title: invalid, variant: "destructive" });
+      return;
+    }
     const { error } = await supabase.from("food_favorites").upsert(
       {
         user_id: user.id,
@@ -212,7 +237,7 @@ const BarcodeScanner = () => {
   };
 
   const setField = (k: keyof Product, v: string) =>
-    setProduct((p) => (p ? { ...p, [k]: k === "nome" ? v : Number(v) || 0 } : p));
+    setProduct((p) => (p ? { ...p, [k]: k === "nome" ? v.slice(0, 200) : (parseNum(v) ?? 0) } : p));
 
   return (
     <div className="space-y-6">

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, ArrowLeft, Zap, Flame, Dumbbell, Leaf, Target, Plus, X, UtensilsCrossed, Trophy } from "lucide-react";
+import { RANGES, checkRange, firstError } from "@/lib/validation";
 
 type FormData = {
   peso: string;
@@ -251,12 +252,18 @@ const Calculator = () => {
     setStep(TOTAL_STEPS);
   };
 
+  const bodyDataError = firstError([
+    checkRange(form.peso, RANGES.peso),
+    checkRange(form.altura, RANGES.altura),
+    checkRange(form.idade, RANGES.idade),
+  ]);
+
   const canProceed = () => {
     switch (step) {
       case 0:
         return form.objetivo !== "";
       case 1:
-        return form.peso !== "" && form.altura !== "" && form.idade !== "";
+        return bodyDataError === null;
       case 2:
         return form.atividade !== "" && form.esportes.length > 0;
       case 3:
@@ -360,6 +367,7 @@ const Calculator = () => {
                     <input
                       type="number"
                       placeholder={field.placeholder}
+                      min={0}
                       value={form[field.key as keyof FormData]}
                       onChange={(e) =>
                         setForm({ ...form, [field.key]: e.target.value })
@@ -369,6 +377,9 @@ const Calculator = () => {
                   </div>
                 ))}
               </div>
+              {bodyDataError && form.peso !== "" && form.altura !== "" && form.idade !== "" && (
+                <p className="text-sm text-destructive -mt-3">{bodyDataError}</p>
+              )}
               <div>
                 <label className="block text-sm font-medium text-muted-foreground mb-3">
                   Sexo <span className="text-xs">(opcional)</span>
