@@ -367,6 +367,7 @@ const Calculator = () => {
                     <input
                       type="number"
                       placeholder={field.placeholder}
+                      min={0}
                       value={form[field.key as keyof FormData]}
                       onChange={(e) =>
                         setForm({ ...form, [field.key]: e.target.value })
@@ -376,6 +377,9 @@ const Calculator = () => {
                   </div>
                 ))}
               </div>
+              {bodyDataError && form.peso !== "" && form.altura !== "" && form.idade !== "" && (
+                <p className="text-sm text-destructive -mt-3">{bodyDataError}</p>
+              )}
               <div>
                 <label className="block text-sm font-medium text-muted-foreground mb-3">
                   Sexo <span className="text-xs">(opcional)</span>
