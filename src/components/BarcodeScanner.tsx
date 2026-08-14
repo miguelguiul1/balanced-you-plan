@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { MEAL_TYPES, todayISO, useSyncModules } from "@/hooks/useNutrition";
+import { RANGES, checkRange, checkText, firstError, normalizeBarcode, parseNum } from "@/lib/validation";
 
 type Product = {
   code: string;
@@ -110,9 +111,13 @@ const BarcodeScanner = () => {
   };
 
   const lookup = async (value: string) => {
-    const clean = value.replace(/\D/g, "");
-    if (clean.length < 6) {
-      toast({ title: "Código inválido", description: "Digite um código de barras válido.", variant: "destructive" });
+    const clean = normalizeBarcode(value);
+    if (!clean) {
+      toast({
+        title: "Código inválido",
+        description: "Use um código de barras numérico com 8 a 14 dígitos.",
+        variant: "destructive",
+      });
       return;
     }
     setLoading(true);
