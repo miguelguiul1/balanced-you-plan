@@ -252,6 +252,7 @@ const Calculator = () => {
   };
 
   const canProceed = () => {
+    // bodyDataError é calculado abaixo do estado do formulário
     switch (step) {
       case 0:
         return form.objetivo !== "";
