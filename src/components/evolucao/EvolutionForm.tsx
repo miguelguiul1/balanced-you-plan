@@ -8,6 +8,7 @@ import { Camera, Loader2, X } from "lucide-react";
 import { toast } from "sonner";
 import { PHOTO_TYPES, PhotoRow, WeightRow } from "./types";
 import { useSyncModules } from "@/hooks/useNutrition";
+import { RANGES, checkOptional, checkRange, firstError, parseNum } from "@/lib/validation";
 
 type Props = {
   open: boolean;
@@ -25,7 +26,7 @@ const empty = {
   thigh_cm: "", chest_cm: "", neck_cm: "", body_fat_pct: "",
 };
 
-const num = (v: string) => (v.trim() ? parseFloat(v.replace(",", ".")) : null);
+const num = (v: string) => (v.trim() ? parseNum(v) : null);
 const str = (v: number | null | undefined) => (v === null || v === undefined ? "" : String(v));
 
 const EvolutionForm = ({
