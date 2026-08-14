@@ -162,6 +162,20 @@ const BarcodeScanner = () => {
   const factor = product ? portion / (product.porcao_base_g || 100) : 1;
   const sc = (v: number) => Math.round(v * factor * 10) / 10;
 
+  const validateProduct = (): string | null => {
+    if (!product) return "Produto não carregado";
+    return firstError([
+      checkText(product.nome, "o nome do produto", 200),
+      checkRange(portion, RANGES.porcao),
+      checkRange(product.calorias, RANGES.calorias),
+      checkRange(product.proteina, RANGES.macro),
+      checkRange(product.carboidratos, RANGES.macro),
+      checkRange(product.gorduras, RANGES.macro),
+      checkRange(product.fibras, RANGES.macro),
+      checkRange(product.sodio_mg, RANGES.sodio),
+    ]);
+  };
+
   const addToDiary = async () => {
     if (!product) return;
     if (!user) return navigate("/auth");
