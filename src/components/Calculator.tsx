@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, ArrowLeft, Zap, Flame, Dumbbell, Leaf, Target, Plus, X, UtensilsCrossed, Trophy } from "lucide-react";
+import { RANGES, checkRange, firstError } from "@/lib/validation";
 
 type FormData = {
   peso: string;
