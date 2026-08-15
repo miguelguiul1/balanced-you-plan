@@ -14,6 +14,7 @@ import WaterTracker from "@/components/WaterTracker";
 import FoodCalendar from "@/components/diario/FoodCalendar";
 import WeeklySummary from "@/components/diario/WeeklySummary";
 import { exportBrandedPdf } from "@/lib/pdf";
+import { RANGES, checkRange, checkText, firstError, parseNum } from "@/lib/validation";
 import {
   FoodEntry, MEAL_TYPES, sumTotals, todayISO, toISODate,
   useFavorites, useFoodLog, useFoodLogRange, useGoals, useSyncModules,
@@ -32,6 +33,20 @@ interface DailyAnalysis {
 
 const mealIcons: Record<string, typeof Coffee> = {
   cafe: Coffee, almoco: Sun, lanche: Cookie, jantar: Moon, outro: Apple,
+};
+
+/**
+ * Valida a quantidade digitada ("150g", "2 unidades", "300 ml").
+ * Aceita unidades livres, mas quando há número ele precisa respeitar o intervalo do banco.
+ */
+const validateQuantity = (raw: string): string | null => {
+  const text = checkText(raw, "a quantidade", 60);
+  if (text) return text;
+  const numMatch = raw.trim().replace(",", ".").match(/-?\d+(\.\d+)?/);
+  if (!numMatch) return null;
+  const n = parseNum(numMatch[0]);
+  if (n === null) return "Informe uma quantidade válida";
+  return checkRange(n, RANGES.porcao);
 };
 
 const DiarioAlimentar = () => {
