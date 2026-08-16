@@ -139,7 +139,11 @@ const DiarioAlimentar = () => {
   };
 
   const addFood = async () => {
-    if (!foodName.trim() || !quantity.trim()) return;
+    const invalid = firstError([
+      checkText(foodName, "o nome do alimento", 200),
+      validateQuantity(quantity),
+    ]);
+    if (invalid) return toast.error("Verifique os dados", { description: invalid });
     setAdding(true);
     try {
       const { data: estimate, error: estError } = await supabase.functions.invoke("nutrition-tracker", {
@@ -184,6 +188,8 @@ const DiarioAlimentar = () => {
 
   const saveEdit = async () => {
     if (!editing) return;
+    const invalid = validateQuantity(editQty);
+    if (invalid) return toast.error("Quantidade inválida", { description: invalid });
     const oldQ = parseFloat(editing.quantity.replace(",", ".")) || 0;
     const newQ = parseFloat(editQty.replace(",", ".")) || 0;
     const f = oldQ > 0 && newQ > 0 ? newQ / oldQ : 1;
