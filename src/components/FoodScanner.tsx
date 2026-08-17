@@ -460,6 +460,11 @@ const FoodScanner = () => {
                 {selected.quantidade_estimada && (
                   <p className="text-xs text-muted-foreground mt-1">Estimado: {selected.quantidade_estimada}</p>
                 )}
+                {typeof selected.confianca === "number" && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Estimativa da IA · {selected.confianca}% de confiança
+                  </p>
+                )}
               </div>
             </div>
 
