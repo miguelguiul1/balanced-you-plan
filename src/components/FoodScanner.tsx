@@ -103,7 +103,17 @@ const FoodScanner = () => {
       toast({ title: "Formato não suportado", description: "Use JPG, PNG ou WEBP.", variant: "destructive" });
       return;
     }
-    const compressed = await compressImage(file);
+    if (file.size > 15_000_000) {
+      toast({ title: "Imagem muito grande", description: "Envie uma foto de até 15MB.", variant: "destructive" });
+      return;
+    }
+    let compressed: string;
+    try {
+      compressed = await compressImage(file);
+    } catch {
+      toast({ title: "Não consegui ler a imagem", description: "Arquivo corrompido ou inválido. Tente outra foto.", variant: "destructive" });
+      return;
+    }
     setImage(compressed);
     setFoods(null);
     setSelected(null);
