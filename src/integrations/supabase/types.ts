@@ -205,27 +205,45 @@ export type Database = {
       }
       profiles: {
         Row: {
+          activity_level: string | null
+          age: number | null
           created_at: string
           full_name: string | null
           height_cm: number | null
           id: string
           is_premium: boolean
+          onboarding_completed: boolean
+          onboarding_completed_at: string | null
+          sex: string | null
+          sports: string[]
           updated_at: string
         }
         Insert: {
+          activity_level?: string | null
+          age?: number | null
           created_at?: string
           full_name?: string | null
           height_cm?: number | null
           id: string
           is_premium?: boolean
+          onboarding_completed?: boolean
+          onboarding_completed_at?: string | null
+          sex?: string | null
+          sports?: string[]
           updated_at?: string
         }
         Update: {
+          activity_level?: string | null
+          age?: number | null
           created_at?: string
           full_name?: string | null
           height_cm?: number | null
           id?: string
           is_premium?: boolean
+          onboarding_completed?: boolean
+          onboarding_completed_at?: string | null
+          sex?: string | null
+          sports?: string[]
           updated_at?: string
         }
         Relationships: []
@@ -294,31 +312,43 @@ export type Database = {
       }
       user_goals: {
         Row: {
+          bmr: number | null
           calories_goal: number
+          carbs_goal: number | null
           created_at: string
+          fat_goal: number | null
           id: string
           protein_goal: number
           target_weight: number | null
+          tdee: number | null
           updated_at: string
           user_id: string
           water_goal_ml: number
         }
         Insert: {
+          bmr?: number | null
           calories_goal?: number
+          carbs_goal?: number | null
           created_at?: string
+          fat_goal?: number | null
           id?: string
           protein_goal?: number
           target_weight?: number | null
+          tdee?: number | null
           updated_at?: string
           user_id: string
           water_goal_ml?: number
         }
         Update: {
+          bmr?: number | null
           calories_goal?: number
+          carbs_goal?: number | null
           created_at?: string
+          fat_goal?: number | null
           id?: string
           protein_goal?: number
           target_weight?: number | null
+          tdee?: number | null
           updated_at?: string
           user_id?: string
           water_goal_ml?: number
