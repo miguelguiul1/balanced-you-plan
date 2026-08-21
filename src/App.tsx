@@ -32,6 +32,8 @@ const DesignSystem = lazy(() => import("./pages/DesignSystem"));
 const Favoritos = lazy(() => import("./pages/Favoritos"));
 const Configuracoes = lazy(() => import("./pages/Configuracoes"));
 const MemoriaIA = lazy(() => import("./pages/MemoriaIA"));
+const Onboarding = lazy(() => import("./pages/Onboarding"));
+
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000, refetchOnWindowFocus: true, retry: 1 } },
@@ -63,7 +65,9 @@ const App = () => (
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/" element={<Index />} />
             <Route path="/design-system" element={<DesignSystem />} />
+            <Route path="/onboarding" element={<P><Onboarding /></P>} />
             <Route path="/dashboard" element={<P><Dashboard /></P>} />
+
             <Route path="/preferencias" element={<P><Preferencias /></P>} />
             <Route path="/scanner" element={<P><Scanner /></P>} />
             <Route path="/receitas" element={<P><Receitas /></P>} />
