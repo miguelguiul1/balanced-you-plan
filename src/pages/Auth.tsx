@@ -33,12 +33,17 @@ const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const { user, loading: authLoading } = useAuth();
 
+  /** Somente rotas internas permitidas — nunca destinos externos. */
+  const nextPath = resolveNext(searchParams.get("next")) ?? "/dashboard";
+
   useEffect(() => {
-    if (!authLoading && user) navigate("/dashboard", { replace: true });
-  }, [user, authLoading, navigate]);
+    if (!authLoading && user) navigate(nextPath, { replace: true });
+  }, [user, authLoading, navigate, nextPath]);
+
 
   const dismissWelcome = () => {
     setIsLogin(false); // go straight to sign up
