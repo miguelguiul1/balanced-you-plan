@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { resolveNext } from "@/lib/safeNext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Mail, Lock, User, ArrowRight, Eye, EyeOff, Sparkles, Leaf, Heart } from "lucide-react";
+
 
 const traduzErro = (msg: string) => {
   const m = msg.toLowerCase();
@@ -31,12 +33,17 @@ const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const { user, loading: authLoading } = useAuth();
 
+  /** Somente rotas internas permitidas — nunca destinos externos. */
+  const nextPath = resolveNext(searchParams.get("next")) ?? "/dashboard";
+
   useEffect(() => {
-    if (!authLoading && user) navigate("/dashboard", { replace: true });
-  }, [user, authLoading, navigate]);
+    if (!authLoading && user) navigate(nextPath, { replace: true });
+  }, [user, authLoading, navigate, nextPath]);
+
 
   const dismissWelcome = () => {
     setIsLogin(false); // go straight to sign up
@@ -62,16 +69,17 @@ const Auth = () => {
         const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
         if (error) throw error;
         toast({ title: "Bem-vindo de volta! 🎉" });
-        navigate("/dashboard");
+        navigate(nextPath, { replace: true });
       } else {
         const { error } = await supabase.auth.signUp({
           email: email.trim(),
           password,
           options: {
             data: { full_name: fullName },
-            emailRedirectTo: window.location.origin,
+            emailRedirectTo: `${window.location.origin}/auth?next=${encodeURIComponent(nextPath)}`,
           },
         });
+
         if (error) throw error;
         toast({
           title: "Conta criada! 📧",
