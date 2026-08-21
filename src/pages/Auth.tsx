@@ -69,16 +69,17 @@ const Auth = () => {
         const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
         if (error) throw error;
         toast({ title: "Bem-vindo de volta! 🎉" });
-        navigate("/dashboard");
+        navigate(nextPath, { replace: true });
       } else {
         const { error } = await supabase.auth.signUp({
           email: email.trim(),
           password,
           options: {
             data: { full_name: fullName },
-            emailRedirectTo: window.location.origin,
+            emailRedirectTo: `${window.location.origin}/auth?next=${encodeURIComponent(nextPath)}`,
           },
         });
+
         if (error) throw error;
         toast({
           title: "Conta criada! 📧",
