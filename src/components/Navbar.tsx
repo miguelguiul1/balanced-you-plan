@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import GlobalSearch from "@/components/GlobalSearch";
 import NotificationCenter from "@/components/NotificationCenter";
-import logoImg from "@/assets/logo evolua plus.png";
+import BrandLogo from "@/components/BrandLogo";
 
 const appLinks = [
   { path: "/", label: "Início" },
