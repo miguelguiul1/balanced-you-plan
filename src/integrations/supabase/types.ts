@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.1"
+    PostgrestVersion: "14.17"
   }
   public: {
     Tables: {
@@ -103,66 +103,6 @@ export type Database = {
           created_at?: string
           id?: string
           role?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      global_favorites: {
-        Row: {
-          category: string
-          created_at: string
-          id: string
-          item_id: string
-          route: string | null
-          subtitle: string | null
-          title: string
-          user_id: string
-        }
-        Insert: {
-          category: string
-          created_at?: string
-          id?: string
-          item_id: string
-          route?: string | null
-          subtitle?: string | null
-          title: string
-          user_id: string
-        }
-        Update: {
-          category?: string
-          created_at?: string
-          id?: string
-          item_id?: string
-          route?: string | null
-          subtitle?: string | null
-          title?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      meal_plans: {
-        Row: {
-          created_at: string
-          goal: string | null
-          id: string
-          plan_data: Json
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          goal?: string | null
-          id?: string
-          plan_data: Json
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          goal?: string | null
-          id?: string
-          plan_data?: Json
-          updated_at?: string
           user_id?: string
         }
         Relationships: []
