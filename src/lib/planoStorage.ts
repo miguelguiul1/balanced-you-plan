@@ -98,7 +98,7 @@ export const saveStoredPlano = async (userId: string, data: StoredPlano): Promis
       [
         {
           user_id: userId,
-          plan_data: data.plano as unknown as Record<string, unknown>,
+          plan_data: data.plano as unknown as import("@/integrations/supabase/types").Json,
           goal: data.goal ?? null,
         },
       ],
