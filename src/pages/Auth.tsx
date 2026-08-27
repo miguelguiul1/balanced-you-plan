@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Mail, Lock, User, ArrowRight, Eye, EyeOff, Leaf, Heart } from "lucide-react";
+import { Mail, Lock, User, ArrowRight, Eye, EyeOff, Leaf, Heart, Sparkles } from "lucide-react";
 import BrandLogo from "@/components/BrandLogo";
 
 
