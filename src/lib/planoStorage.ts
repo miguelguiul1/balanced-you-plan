@@ -95,11 +95,13 @@ export const saveStoredPlano = async (userId: string, data: StoredPlano): Promis
   const { error } = await supabase
     .from("meal_plans")
     .upsert(
-      {
-        user_id: userId,
-        plan_data: data.plano as unknown as Record<string, unknown>,
-        goal: data.goal ?? null,
-      },
+      [
+        {
+          user_id: userId,
+          plan_data: data.plano as unknown as Record<string, unknown>,
+          goal: data.goal ?? null,
+        },
+      ],
       { onConflict: "user_id" }
     );
 
