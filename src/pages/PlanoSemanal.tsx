@@ -1,15 +1,17 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Calendar, ShoppingCart, Lightbulb, RefreshCw, ChevronDown, ChevronUp, Flame, FileDown, Plus, Shuffle } from "lucide-react";
+import { Calendar, Lightbulb, RefreshCw, ChevronDown, ChevronUp, FileDown, Plus, Shuffle, AlertTriangle, Target } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { FunctionsHttpError } from "@supabase/supabase-js";
 import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import MotivationalQuote from "@/components/MotivationalQuote";
 import SmartShoppingList from "@/components/plano/SmartShoppingList";
 import { exportBrandedPdf } from "@/lib/pdf";
-import { todayISO } from "@/hooks/useNutrition";
-import { useAiMemory, memoryToPrompt } from "@/hooks/useAiMemory";
+import { todayISO, usePreferences } from "@/hooks/useNutrition";
+import { normalizeObjective, objectiveOption } from "@/lib/objectives";
+import { loadStoredPlano, saveStoredPlano } from "@/lib/planoStorage";
 
 interface Refeicao {
   tipo: string;
@@ -35,81 +37,96 @@ interface PlanoSemanal {
   dicas: string[];
 }
 
+/** Estágios honestos de preparação — sem porcentagem simulada. */
+const GERACAO_STAGES = [
+  "Preparando seu plano...",
+  "Analisando suas preferências...",
+  "Montando suas refeições...",
+  "Finalizando seu plano...",
+];
+
+/** Extrai a mensagem amigável de erros das Edge Functions (nunca stack trace). */
+const extrairErro = async (e: unknown): Promise<string> => {
+  if (e instanceof FunctionsHttpError) {
+    try {
+      const payload = await e.context.json();
+      if (typeof payload?.error === "string") return payload.error;
+    } catch {
+      /* corpo vazio ou inválido — usa mensagem padrão */
+    }
+    return "Não conseguimos montar seu plano agora. Tente novamente.";
+  }
+  if (e instanceof Error && e.message) return e.message;
+  return "Não conseguimos montar seu plano agora. Tente novamente.";
+};
+
 const PlanoSemanal = () => {
   const [plano, setPlano] = useState<PlanoSemanal | null>(null);
+  const [notes, setNotes] = useState("");
   const [generating, setGenerating] = useState(false);
+  const [stageIndex, setStageIndex] = useState(0);
+  const [error, setError] = useState<string | null>(null);
   const [expandedDay, setExpandedDay] = useState<string | null>(null);
   const [expandedMeal, setExpandedMeal] = useState<string | null>(null);
-  const [showList, setShowList] = useState(false);
-  const [goal, setGoal] = useState("");
   const [swapping, setSwapping] = useState<string | null>(null);
   const { user } = useAuth();
   const { toast } = useToast();
-  const navigate = useNavigate();
-  const { data: memories } = useAiMemory();
+  const userId = user?.id ?? null;
 
-  const storageKey = user ? `evoluaPlano:${user.id}` : null;
+  // Fonte única do objetivo: banco do usuário (cache "prefs"), taxonomia de objectives.ts.
+  const { data: prefsData, isLoading: prefsLoading } = usePreferences();
+  const objective = normalizeObjective(prefsData?.objective);
+  const objectiveInfo = objectiveOption(objective);
 
-  // Restaura o último plano gerado (evita perder tudo ao recarregar a página).
+  // Restaura o último plano gerado do Supabase (com fallback para localStorage antigo).
   useEffect(() => {
-    if (!storageKey) return;
-    try {
-      const raw = localStorage.getItem(storageKey);
-      if (!raw) return;
-      const saved = JSON.parse(raw) as { plano: PlanoSemanal; goal?: string };
-      if (saved?.plano?.plano?.length) {
-        setPlano(saved.plano);
-        setGoal(saved.goal ?? "");
-        setExpandedDay(saved.plano.plano[0].dia);
-      }
-    } catch {
-      localStorage.removeItem(storageKey);
+    if (!userId) return;
+    let cancelled = false;
+    loadStoredPlano(userId).then((saved) => {
+      if (cancelled || !saved) return;
+      setPlano(saved.plano as unknown as PlanoSemanal);
+      setNotes(saved.goal ?? "");
+      setExpandedDay(saved.plano.plano[0].dia);
+    });
+    return () => { cancelled = true; };
+  }, [userId]);
+
+  // Persiste alterações no Supabase (inclusive trocas de refeição feitas pela IA).
+  useEffect(() => {
+    if (!userId || !plano) return;
+    saveStoredPlano(userId, { plano, goal: notes });
+  }, [plano, notes, userId]);
+
+  // Percorre os estágios enquanto a IA trabalha (indicador indeterminado).
+  useEffect(() => {
+    if (!generating) {
+      setStageIndex(0);
+      return;
     }
-  }, [storageKey]);
+    const timer = setInterval(
+      () => setStageIndex((i) => Math.min(i + 1, GERACAO_STAGES.length - 1)),
+      4500
+    );
+    return () => clearInterval(timer);
+  }, [generating]);
 
-  // Persiste alterações (inclusive trocas de refeição feitas pela IA).
-  useEffect(() => {
-    if (!storageKey) return;
-    if (plano) localStorage.setItem(storageKey, JSON.stringify({ plano, goal }));
-  }, [plano, goal, storageKey]);
-
+  /** Preferências ficam no servidor — enviamos apenas observação livre opcional. */
   const generatePlan = async () => {
     setGenerating(true);
+    setError(null);
     try {
-      // Load user preferences if logged in
-      let preferences = null;
-      if (user) {
-        const { data } = await supabase
-          .from("user_preferences")
-          .select("*")
-          .eq("user_id", user.id)
-          .maybeSingle();
-        if (data) {
-          preferences = {
-            objective: data.objective,
-            restrictions: data.restrictions,
-            liked_foods: data.liked_foods,
-            disliked_foods: data.disliked_foods,
-          };
-        }
-      }
-
-      const { data, error } = await supabase.functions.invoke("meal-plan", {
-        body: { preferences, goal: goal.trim() || undefined },
+      const { data, error: fnError } = await supabase.functions.invoke("meal-plan", {
+        body: { goal: notes.trim() || undefined },
       });
 
-      if (error) throw error;
+      if (fnError) throw fnError;
       if (data?.error) throw new Error(data.error);
+      if (!data?.plano?.length) throw new Error("O plano veio incompleto. Tente novamente.");
 
       setPlano(data as PlanoSemanal);
       if (data.plano?.length) setExpandedDay(data.plano[0].dia);
-    } catch (e: any) {
-      console.error("Erro ao gerar plano:", e);
-      toast({
-        title: "Erro ao gerar plano",
-        description: e.message || "Tente novamente.",
-        variant: "destructive",
-      });
+    } catch (e: unknown) {
+      setError(await extrairErro(e));
     } finally {
       setGenerating(false);
     }
@@ -117,31 +134,15 @@ const PlanoSemanal = () => {
 
   const mealKey = (dia: string, tipo: string) => `${dia}-${tipo}`;
 
-  const loadPreferences = async () => {
-    if (!user) return null;
-    const { data } = await supabase
-      .from("user_preferences")
-      .select("*")
-      .eq("user_id", user.id)
-      .maybeSingle();
-    if (!data) return null;
-    return {
-      objective: data.objective,
-      restrictions: data.restrictions,
-      liked_foods: data.liked_foods,
-      disliked_foods: data.disliked_foods,
-    };
-  };
-
   const swapMeal = async (dia: string, ref: Refeicao) => {
     const key = mealKey(dia, ref.tipo);
     setSwapping(key);
     try {
-      const preferences = await loadPreferences();
-      const { data, error } = await supabase.functions.invoke("meal-swap", {
-        body: { refeicao: ref, preferences, memoria: memoryToPrompt(memories) },
+      // Contexto (preferências, memória) é carregado pelo backend.
+      const { data, error: fnError } = await supabase.functions.invoke("meal-swap", {
+        body: { refeicao: ref },
       });
-      if (error) throw error;
+      if (fnError) throw fnError;
       if (data?.error) throw new Error(data.error);
 
       const nova = data as Refeicao & { motivo_troca?: string };
@@ -166,10 +167,11 @@ const PlanoSemanal = () => {
         title: "Refeição substituída",
         description: nova.motivo_troca || `${ref.nome} → ${nova.nome}`,
       });
-    } catch (e: any) {
+    } catch (e: unknown) {
+      const msg = await extrairErro(e);
       toast({
         title: "Não consegui trocar a refeição",
-        description: e.message || "Tente novamente.",
+        description: msg,
         variant: "destructive",
       });
     } finally {
@@ -230,8 +232,22 @@ const PlanoSemanal = () => {
     });
   };
 
+  const ErroCard = (
+    <div
+      role="alert"
+      className="bg-destructive/10 border border-destructive/30 rounded-2xl p-6 text-center space-y-3"
+    >
+      <AlertTriangle className="w-8 h-8 text-destructive mx-auto" />
+      <p className="font-display font-semibold text-foreground">Não conseguimos montar seu plano agora.</p>
+      <p className="text-sm text-muted-foreground">{error}</p>
+      <Button variant="hero" onClick={generatePlan} disabled={generating} className="gap-2">
+        <RefreshCw className="w-4 h-4" /> Tentar novamente
+      </Button>
+    </div>
+  );
+
   return (
-    <div className="min-h-screen bg-background pt-20 pb-24 md:pb-24 md:pb-16">
+    <div className="min-h-screen bg-background pt-20 pb-24 md:pb-16">
       <div className="container mx-auto px-6 max-w-3xl">
         <div className="text-center mb-10">
           <span className="inline-block mb-4 px-4 py-1.5 rounded-full bg-primary/10 text-primary font-display text-sm font-medium">
@@ -241,9 +257,12 @@ const PlanoSemanal = () => {
             Plano <span className="text-primary">Semanal</span>
           </h1>
           <p className="mt-3 text-muted-foreground max-w-lg mx-auto">
-            A IA gera um plano completo de refeições personalizado, econômico e saudável para sua semana
+            A IA gera um plano completo de refeições personalizado com o seu perfil, metas e preferências
           </p>
         </div>
+
+        {/* Erro da geração — estado na interface, não apenas toast */}
+        {error && !generating && <div className="mb-6">{ErroCard}</div>}
 
         {!plano && (
           <div className="bg-card rounded-2xl shadow-soft p-8 text-center space-y-5">
@@ -252,34 +271,45 @@ const PlanoSemanal = () => {
               Gere seu plano semanal
             </p>
             <p className="text-sm text-muted-foreground">
-              {user
-                ? "A IA vai considerar suas preferências e restrições alimentares"
-                : "Faça login para um plano personalizado com suas preferências"}
+              Vamos usar seu objetivo, restrições, alimentos preferidos e metas já salvos no seu perfil
             </p>
 
+            {/* Objetivo único — nunca perguntamos aqui o que já está definido */}
+            {objectiveInfo ? (
+              <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                <Target className="w-4 h-4 text-primary" />
+                <span>
+                  Objetivo: <strong className="text-foreground">{objectiveInfo.emoji} {objectiveInfo.label}</strong>
+                </span>
+                <Link to="/preferencias" className="text-primary font-medium underline">
+                  alterar
+                </Link>
+              </div>
+            ) : prefsLoading ? null : (
+              <div className="rounded-xl bg-accent/10 border border-accent/30 p-4 flex items-start gap-3 text-left">
+                <AlertTriangle className="w-5 h-5 text-accent shrink-0 mt-0.5" />
+                <p className="text-sm text-foreground">
+                  Seu objetivo ainda não está definido.{" "}
+                  <Link to="/preferencias" className="text-primary font-medium underline">
+                    Defina em Meu Perfil
+                  </Link>{" "}
+                  para receber um plano bem ajustado.
+                </p>
+              </div>
+            )}
+
             <div className="text-left max-w-md mx-auto">
-              <label className="block text-sm font-medium text-foreground mb-1.5">
-                🎯 Qual seu objetivo com a alimentação?
+              <label htmlFor="plan-notes" className="block text-sm font-medium text-foreground mb-1.5">
+                Alguma observação extra para a IA? <span className="text-muted-foreground font-normal">(opcional)</span>
               </label>
               <textarea
-                value={goal}
-                onChange={(e) => setGoal(e.target.value)}
-                placeholder="Ex: Quero ganhar massa muscular gastando pouco, com refeições práticas para levar ao trabalho..."
+                id="plan-notes"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Ex: prefiro refeições práticas para levar ao trabalho, com orçamento enxuto..."
                 className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-[80px] resize-none"
                 maxLength={500}
               />
-              <div className="flex flex-wrap gap-2 mt-2">
-                {["Ganhar massa", "Emagrecer", "Comer saudável", "Economizar", "Praticidade"].map((tag) => (
-                  <button
-                    key={tag}
-                    type="button"
-                    onClick={() => setGoal((prev) => prev ? `${prev}, ${tag.toLowerCase()}` : tag.toLowerCase())}
-                    className="px-3 py-1 rounded-full text-xs font-medium bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors"
-                  >
-                    {tag}
-                  </button>
-                ))}
-              </div>
             </div>
 
             <Button variant="hero" size="lg" onClick={generatePlan} disabled={generating} className="gap-2">
@@ -289,12 +319,14 @@ const PlanoSemanal = () => {
                 <><Calendar className="w-5 h-5" /> Gerar plano com IA</>
               )}
             </Button>
+
+            {/* Progresso indeterminado e honesto — nenhuma porcentagem simulada */}
             {generating && (
-              <div>
-                <div className="h-2 rounded-full bg-border overflow-hidden">
-                  <div className="h-full bg-primary rounded-full animate-pulse" style={{ width: "70%" }} />
+              <div aria-live="polite">
+                <div className="h-1.5 rounded-full bg-primary/15 overflow-hidden">
+                  <div className="h-full w-full bg-primary/60 rounded-full animate-pulse" />
                 </div>
-                <p className="text-sm text-muted-foreground mt-2">Criando refeições personalizadas para 7 dias...</p>
+                <p className="text-sm text-muted-foreground mt-2">{GERACAO_STAGES[stageIndex]}</p>
               </div>
             )}
           </div>
@@ -457,20 +489,13 @@ const PlanoSemanal = () => {
             )}
 
             {/* Regenerate */}
-            <div className="text-center space-y-3">
-              <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Button variant="hero" size="lg" onClick={generatePlan} disabled={generating} className="gap-2">
-                  {generating ? <><RefreshCw className="w-5 h-5 animate-spin" /> Regenerando...</> : <><RefreshCw className="w-5 h-5" /> Gerar novo plano</>}
-                </Button>
-                <Button variant="outline" size="lg" onClick={exportPdf} className="gap-2">
-                  <FileDown className="w-5 h-5" /> Exportar PDF
-                </Button>
-              </div>
-              {!user && (
-                <p className="text-xs text-muted-foreground">
-                  <button onClick={() => navigate("/auth")} className="text-primary font-semibold underline">Faça login</button> para planos personalizados
-                </p>
-              )}
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Button variant="hero" size="lg" onClick={generatePlan} disabled={generating} className="gap-2">
+                {generating ? <><RefreshCw className="w-5 h-5 animate-spin" /> Regenerando...</> : <><RefreshCw className="w-5 h-5" /> Gerar novo plano</>}
+              </Button>
+              <Button variant="outline" size="lg" onClick={exportPdf} className="gap-2">
+                <FileDown className="w-5 h-5" /> Exportar PDF
+              </Button>
             </div>
           </div>
         )}

@@ -39,7 +39,7 @@ Deno.serve(async (req) => {
     const tables = [
       'progress_photos', 'food_log', 'water_log', 'weight_log', 'scan_history',
       'chat_messages', 'ai_insights', 'ai_memory', 'food_favorites',
-      'user_preferences', 'user_goals',
+      'user_preferences', 'user_goals', 'meal_plans', 'global_favorites',
     ]
     for (const t of tables) {
       const { error } = await admin.from(t).delete().eq('user_id', userId)

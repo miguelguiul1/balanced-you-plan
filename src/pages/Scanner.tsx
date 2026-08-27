@@ -7,6 +7,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import FoodScanner from "@/components/FoodScanner";
 import BarcodeScanner from "@/components/BarcodeScanner";
+import PortionScanner from "@/components/PortionScanner";
+import { compressImage } from "@/lib/compressImage";
 
 interface Alimento {
   nome: string;
@@ -38,41 +40,32 @@ const Scanner = () => {
   const fileRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const { user } = useAuth();
-  const [tab, setTab] = useState<"alimento" | "codigo" | "geladeira">("alimento");
+  const [tab, setTab] = useState<"alimento" | "codigo" | "geladeira" | "porcao">("alimento");
 
-  const handleImage = (file: File) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setImage(e.target?.result as string);
+  const handleImage = async (file: File) => {
+    if (!/image\/(jpeg|jpg|png|webp)/i.test(file.type)) {
+      toast({ title: "Formato não suportado", description: "Use JPG, PNG ou WEBP.", variant: "destructive" });
+      return;
+    }
+    if (file.size > 15_000_000) {
+      toast({ title: "Imagem muito grande", description: "Envie uma foto de até 15MB.", variant: "destructive" });
+      return;
+    }
+    try {
+      const compressed = await compressImage(file);
+      setImage(compressed);
       setResult(null);
-    };
-    reader.readAsDataURL(file);
+    } catch {
+      toast({ title: "Não consegui ler a imagem", description: "Arquivo corrompido ou inválido. Tente outra foto.", variant: "destructive" });
+    }
   };
 
   const analyze = async () => {
     if (!image) return;
     setAnalyzing(true);
     try {
-      // Load preferences if logged in
-      let preferences = null;
-      if (user) {
-        const { data: prefs } = await supabase
-          .from("user_preferences")
-          .select("*")
-          .eq("user_id", user.id)
-          .maybeSingle();
-        if (prefs) {
-          preferences = {
-            objective: prefs.objective,
-            restrictions: prefs.restrictions,
-            liked_foods: prefs.liked_foods,
-            disliked_foods: prefs.disliked_foods,
-          };
-        }
-      }
-
       const { data, error } = await supabase.functions.invoke("analyze-fridge", {
-        body: { imageBase64: image, preferences },
+        body: { imageBase64: image },
       });
 
       if (error) throw error;
@@ -127,6 +120,7 @@ const Scanner = () => {
               ["alimento", "Alimento"],
               ["codigo", "Código de barras"],
               ["geladeira", "Geladeira"],
+              ["porcao", "Porção"],
             ] as const).map(([id, label]) => (
               <button
                 key={id}
@@ -144,6 +138,8 @@ const Scanner = () => {
         {tab === "alimento" && <FoodScanner />}
 
         {tab === "codigo" && <BarcodeScanner />}
+
+        {tab === "porcao" && <PortionScanner />}
 
         {/* Upload area */}
         {tab === "geladeira" && !image && (

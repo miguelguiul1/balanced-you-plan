@@ -14,47 +14,9 @@ import {
   Sparkles,
   BadgeCheck,
 } from "lucide-react";
+import { PLANS, PLAN_KEYS, formatPrice, currencySymbol, planPrice, type PlanKey } from "@/config/plans";
 
 const KIRVANO_CHECKOUT_URL = "#"; // Substituir pelo link real da Kirvano
-
-type PlanKey = "mensal" | "semestral" | "anual";
-
-const plans: Record<
-  PlanKey,
-  {
-    label: string;
-    price: string;
-    period: string;
-    priceNumber: number;
-    badge?: string;
-    highlight?: boolean;
-    savings?: string;
-  }
-> = {
-  mensal: {
-    label: "Mensal",
-    price: "29,90",
-    period: "por mês",
-    priceNumber: 29.9,
-  },
-  semestral: {
-    label: "Semestral",
-    price: "129,90",
-    period: "a cada 6 meses",
-    priceNumber: 129.9,
-    badge: "Mais popular",
-    highlight: true,
-    savings: "Economize 28%",
-  },
-  anual: {
-    label: "Anual",
-    price: "249,90",
-    period: "por ano",
-    priceNumber: 249.9,
-    badge: "Melhor custo-benefício",
-    savings: "Economize 30%",
-  },
-};
 
 const included = [
   "Cardápio semanal personalizado por IA",
@@ -69,11 +31,11 @@ const Checkout = () => {
   const [params] = useSearchParams();
   const initial = (params.get("plano") as PlanKey) || "semestral";
   const [selected, setSelected] = useState<PlanKey>(
-    plans[initial] ? initial : "semestral",
+    PLANS[initial] ? initial : "semestral",
   );
   const [form, setForm] = useState({ name: "", email: "", phone: "" });
 
-  const plan = plans[selected];
+  const plan = PLANS[selected];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -133,9 +95,10 @@ const Checkout = () => {
                   onValueChange={(v) => setSelected(v as PlanKey)}
                   className="grid gap-3"
                 >
-                  {(Object.keys(plans) as PlanKey[]).map((key) => {
-                    const p = plans[key];
+                  {PLAN_KEYS.map((key) => {
+                    const p = PLANS[key];
                     const active = selected === key;
+                    const priceStr = formatPrice(p.priceBRL, "pt");
                     return (
                       <label
                         key={key}
@@ -151,26 +114,26 @@ const Checkout = () => {
                           <div>
                             <div className="flex items-center gap-2">
                               <span className="font-display font-semibold text-foreground">
-                                {p.label}
+                                {p.label.pt}
                               </span>
-                              {p.badge && (
+                              {p.badge.pt && (
                                 <span className="text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full bg-accent/20 text-accent-foreground font-semibold">
-                                  {p.badge}
+                                  {p.badge.pt}
                                 </span>
                               )}
                             </div>
-                            {p.savings && (
+                            {p.savings?.pt && (
                               <span className="text-xs text-primary font-medium">
-                                {p.savings}
+                                {p.savings.pt}
                               </span>
                             )}
                           </div>
                           <div className="text-right">
                             <div className="font-display font-bold text-foreground">
-                              R$ {p.price}
+                              {currencySymbol("pt")} {priceStr}
                             </div>
                             <div className="text-xs text-muted-foreground">
-                              {p.period}
+                              {p.period.pt}
                             </div>
                           </div>
                         </div>
@@ -258,14 +221,14 @@ const Checkout = () => {
                 <div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">
-                      Evolua Plus {plan.label}
+                      Evolua Plus {plan.label.pt}
                     </span>
                     <span className="font-display font-semibold text-foreground">
-                      R$ {plan.price}
+                      {currencySymbol("pt")} {formatPrice(plan.priceBRL, "pt")}
                     </span>
                   </div>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Cobrado {plan.period}
+                    Cobrado {plan.period.pt}
                   </p>
                 </div>
 
@@ -276,7 +239,7 @@ const Checkout = () => {
                     </span>
                     <div className="text-right">
                       <div className="font-display text-2xl font-bold text-foreground">
-                        R$ {plan.price}
+                        {currencySymbol("pt")} {formatPrice(plan.priceBRL, "pt")}
                       </div>
                     </div>
                   </div>

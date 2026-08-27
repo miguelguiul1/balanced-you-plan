@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders, json, requireUser, rateLimit, readJson, isResponse } from "../_shared/guard.ts";
+import { loadUserContext } from "../_shared/userContext.ts";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -13,7 +14,7 @@ serve(async (req) => {
   try {
     const body = await readJson(req);
     if (isResponse(body)) return body;
-    const { messages, profile } = body as Record<string, unknown> as any;
+    const { messages } = body as Record<string, unknown> as any;
     if (!Array.isArray(messages) || messages.length === 0 || messages.length > 20) {
       return json({ error: "Conversa inválida." }, 400);
     }
@@ -26,27 +27,32 @@ serve(async (req) => {
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY não configurado");
 
     let ctx = "";
+
+    // Carrega preferências e metas do banco via JWT (fonte confiável).
+    const userCtx = await loadUserContext(req, auth.userId);
+    if (isResponse(userCtx)) return userCtx;
+
+    const p: string[] = [];
+    if (userCtx.preferences?.objective) p.push(`Objetivo: ${userCtx.preferences.objective}`);
+    if (userCtx.goals?.calories_goal) p.push(`Meta calórica: ${userCtx.goals.calories_goal} kcal/dia`);
+    if (userCtx.goals?.protein_goal) p.push(`Meta de proteína: ${userCtx.goals.protein_goal}g/dia`);
+    if (userCtx.preferences?.restrictions?.length) p.push(`Restrições: ${userCtx.preferences.restrictions.join(", ")}`);
+    if (userCtx.preferences?.disliked_foods?.length) p.push(`Não gosta de: ${userCtx.preferences.disliked_foods.join(", ")}`);
+    if (userCtx.preferences?.liked_foods?.length) p.push(`Gosta de: ${userCtx.preferences.liked_foods.join(", ")}`);
+
+    // Dados analíticos continuam vindo do frontend (computados a partir de food_log/weight_log).
+    const profile = (body as Record<string, unknown>).profile as Record<string, unknown> | undefined;
     if (profile) {
-      const p: string[] = [];
-      if (profile.objective) p.push(`Objetivo: ${profile.objective}`);
-      if (profile.calories_goal) p.push(`Meta calórica: ${profile.calories_goal} kcal/dia`);
-      if (profile.protein_goal) p.push(`Meta de proteína: ${profile.protein_goal}g/dia`);
-      if (profile.water_goal_ml) p.push(`Meta de água: ${profile.water_goal_ml}ml/dia`);
-      if (profile.target_weight) p.push(`Peso alvo: ${profile.target_weight}kg`);
-      if (profile.restrictions?.length) p.push(`Restrições: ${profile.restrictions.join(", ")}`);
-      if (profile.disliked_foods?.length) p.push(`Não gosta de: ${profile.disliked_foods.join(", ")}`);
-      if (profile.liked_foods?.length) p.push(`Gosta de: ${profile.liked_foods.join(", ")}`);
-      if (profile.memoria?.length) p.push(`Memória da IA (informações que a pessoa pediu para lembrar): ${profile.memoria.join(" | ")}`);
-
-      const h = profile.hoje;
+      if (profile.memoria && Array.isArray(profile.memoria)) p.push(`Memória da IA (informações que a pessoa pediu para lembrar): ${(profile.memoria as string[]).join(" | ")}`);
+      const h = profile.hoje as Record<string, unknown> | undefined;
       if (h) p.push(`Hoje: ${h.refeicoes} registro(s), ${h.calorias} kcal, ${h.proteina}g proteína, ${h.carboidratos}g carbo, ${h.gorduras}g gordura, ${h.fibras}g fibra`);
-      const s = profile.semana;
-      if (s) p.push(`Últimos 7 dias: ${s.dias_registrados} dias registrados, média ${s.media_calorias} kcal / ${s.media_proteina}g proteína / ${s.media_fibras}g fibra${s.alimentos_frequentes?.length ? `; alimentos frequentes: ${s.alimentos_frequentes.join(", ")}` : ""}`);
-      const e = profile.evolucao;
+      const s = profile.semana as Record<string, unknown> | undefined;
+      if (s) p.push(`Últimos 7 dias: ${s.dias_registrados} dias registrados, média ${s.media_calorias} kcal / ${s.media_proteina}g proteína / ${s.media_fibras}g fibra${Array.isArray(s.alimentos_frequentes) && s.alimentos_frequentes.length ? `; alimentos frequentes: ${(s.alimentos_frequentes as string[]).join(", ")}` : ""}`);
+      const e = profile.evolucao as Record<string, unknown> | undefined;
       if (e) p.push(`Evolução corporal: peso atual ${e.peso_atual}kg, variação ${e.variacao_kg}kg em ${e.registros} registros (último em ${e.ultimo_registro})`);
-
-      if (p.length) ctx = `\n\nCONTEXTO REAL DO USUÁRIO (use ativamente, sem repetir tudo):\n- ${p.join("\n- ")}`;
     }
+
+    if (p.length) ctx = `\n\nCONTEXTO REAL DO USUÁRIO (use ativamente, sem repetir tudo):\n- ${p.join("\n- ")}`;
 
     const systemPrompt = `Você é a "Evolua Plus AI", assistente virtual de nutrição, alimentação e hábitos saudáveis da plataforma Evolua Plus. Fale português brasileiro, de forma humana, próxima, acolhedora e objetiva.
 

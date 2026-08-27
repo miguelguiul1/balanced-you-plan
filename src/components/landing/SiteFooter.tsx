@@ -1,16 +1,14 @@
 import { Link } from "react-router-dom";
-import { Sparkles, Instagram, Linkedin, Github, Mail } from "lucide-react";
+import { Instagram, Linkedin, Github, Mail } from "lucide-react";
+import logoImg from "@/assets/logo evolua plus.png";
 
 const SiteFooter = () => (
   <footer className="border-t border-border bg-secondary/40 relative overflow-hidden">
     <div className="absolute inset-0 bg-mesh pointer-events-none opacity-60" aria-hidden />
     <div className="container mx-auto px-6 py-16 grid gap-10 md:grid-cols-5 relative">
       <div className="md:col-span-2">
-        <Link to="/" className="inline-flex items-center gap-2 font-display text-lg font-bold text-foreground">
-          <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-[hsl(var(--primary-glow))] text-primary-foreground">
-            <Sparkles className="h-4 w-4" />
-          </span>
-          Evolua <span className="text-primary">Plus</span>
+        <Link to="/" className="inline-flex items-center gap-2" aria-label="Evolua Plus — página inicial">
+          <img src={logoImg} alt="Evolua Plus" className="h-8 w-auto" />
         </Link>
         <p className="mt-4 text-sm text-muted-foreground max-w-sm leading-relaxed">
           Seu nutricionista inteligente 24h. Planejamento alimentar personalizado por IA,

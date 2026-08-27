@@ -58,6 +58,7 @@ const BarcodeScanner = () => {
   const [portion, setPortion] = useState(100);
   const [mealType, setMealType] = useState("outro");
   const [saving, setSaving] = useState(false);
+  const [rateLimited, setRateLimited] = useState(false);
 
   useEffect(() => {
     setSupported(typeof window !== "undefined" && "BarcodeDetector" in window);
@@ -123,10 +124,23 @@ const BarcodeScanner = () => {
     setLoading(true);
     setNotFound(false);
     setProduct(null);
+    setRateLimited(false);
     try {
       const res = await fetch(
         `https://world.openfoodfacts.org/api/v2/product/${clean}.json?fields=product_name,brands,nutriments,serving_quantity`
       );
+      if (res.status === 429) {
+        const retryAfter = res.headers.get("Retry-After");
+        setRateLimited(true);
+        toast({
+          title: "Limite temporário atingido",
+          description: retryAfter
+            ? `Muitas requisições. Aguarde ${retryAfter} segundos antes de tentar novamente.`
+            : "Muitas requisições. Aguarde alguns segundos antes de tentar novamente.",
+          variant: "destructive",
+        });
+        return;
+      }
       const json = await res.json();
       if (json?.status !== 1 || !json?.product) {
         setNotFound(true);
@@ -293,6 +307,15 @@ const BarcodeScanner = () => {
           <p className="text-sm text-muted-foreground">
             Não encontramos esse produto na base pública. Preencha os dados abaixo (valores por 100 g) para registrar
             no diário.
+          </p>
+        </div>
+      )}
+
+      {rateLimited && (
+        <div className="flex items-start gap-3 bg-orange-50 border border-orange-200 rounded-xl p-4">
+          <AlertTriangle className="w-5 h-5 text-orange-500 flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-muted-foreground">
+            O serviço de consulta atingiu o limite de requisições. Aguarde alguns segundos e tente novamente.
           </p>
         </div>
       )}

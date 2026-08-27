@@ -10,6 +10,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { MEAL_TYPES, todayISO, useSyncModules } from "@/hooks/useNutrition";
+import { compressImage } from "@/lib/compressImage";
+import { RANGES, checkRange, firstError } from "@/lib/validation";
 
 interface Macros {
   calorias: number; proteina: number; carboidratos: number; gorduras: number; fibras: number; acucares?: number;
@@ -43,30 +45,16 @@ const objetivos = [
 
 const stages = ["Analisando alimento...", "Identificando nutrientes...", "Preparando sua análise..."];
 
-const compressImage = (file: File): Promise<string> =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const img = new Image();
-      img.onload = () => {
-        const max = 1024;
-        const scale = Math.min(1, max / Math.max(img.width, img.height));
-        const canvas = document.createElement("canvas");
-        canvas.width = Math.round(img.width * scale);
-        canvas.height = Math.round(img.height * scale);
-        const ctx = canvas.getContext("2d");
-        if (!ctx) return resolve(reader.result as string);
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        resolve(canvas.toDataURL("image/jpeg", 0.8));
-      };
-      img.onerror = reject;
-      img.src = reader.result as string;
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-
 const round = (n: number) => Math.round((n || 0) * 10) / 10;
+
+const validateNutrition = (calories: number, protein: number, carbs: number, fat: number, fiber: number): string | null =>
+  firstError([
+    checkRange(calories, RANGES.calorias),
+    checkRange(protein, RANGES.macro),
+    checkRange(carbs, RANGES.macro),
+    checkRange(fat, RANGES.macro),
+    checkRange(fiber, RANGES.macro),
+  ]);
 
 const FoodScanner = () => {
   const { toast } = useToast();
@@ -175,6 +163,17 @@ const FoodScanner = () => {
       navigate("/auth");
       return;
     }
+    const invalid = validateNutrition(
+      scaled(selected.macros.calorias),
+      scaled(selected.macros.proteina),
+      scaled(selected.macros.carboidratos),
+      scaled(selected.macros.gorduras),
+      scaled(selected.macros.fibras),
+    );
+    if (invalid) {
+      toast({ title: "Dados nutricionais inválidos", description: invalid, variant: "destructive" });
+      return;
+    }
     setSaving(true);
     const { error } = await supabase.from("food_log").insert({
       user_id: user.id,
@@ -217,6 +216,12 @@ const FoodScanner = () => {
         fiber: round(f.macros.fibras),
       };
     });
+    const invalidRow = rows.find((r) => validateNutrition(r.calories, r.protein, r.carbs, r.fat, r.fiber));
+    if (invalidRow) {
+      setBulkSaving(false);
+      toast({ title: "Dados nutricionais inválidos", description: `Valores de "${invalidRow.food_name}" estão fora do intervalo aceitável.`, variant: "destructive" });
+      return;
+    }
     const { error } = await supabase.from("food_log").insert(rows);
     setBulkSaving(false);
     if (error) {

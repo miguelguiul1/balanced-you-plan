@@ -12,6 +12,7 @@ import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
+import { RouteErrorBoundary } from "./components/RouteErrorBoundary";
 
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Preferencias = lazy(() => import("./pages/Preferencias"));
@@ -28,7 +29,6 @@ const Guias = lazy(() => import("./pages/Guias"));
 const Insights = lazy(() => import("./pages/Insights"));
 const Vendas = lazy(() => import("./pages/Vendas"));
 const Checkout = lazy(() => import("./pages/Checkout"));
-const DesignSystem = lazy(() => import("./pages/DesignSystem"));
 const Favoritos = lazy(() => import("./pages/Favoritos"));
 const Configuracoes = lazy(() => import("./pages/Configuracoes"));
 const MemoriaIA = lazy(() => import("./pages/MemoriaIA"));
@@ -57,6 +57,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Navbar />
+          <RouteErrorBoundary>
           <Suspense fallback={<PageFallback />}>
           <Routes>
             <Route path="/vendas" element={<Vendas />} />
@@ -64,7 +65,6 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/" element={<Index />} />
-            <Route path="/design-system" element={<DesignSystem />} />
             <Route path="/onboarding" element={<P><Onboarding /></P>} />
             <Route path="/dashboard" element={<P><Dashboard /></P>} />
 
@@ -86,6 +86,7 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
           </Suspense>
+          </RouteErrorBoundary>
           <MobileTabBar />
         </BrowserRouter>
       </AuthProvider>

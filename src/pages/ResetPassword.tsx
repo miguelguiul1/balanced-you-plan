@@ -43,13 +43,19 @@ const ResetPassword = () => {
         finish(true);
         return;
       }
-      // Sessão de recuperação já estabelecida pelo cliente
+      // Sem token de recuperação na URL — verificar se há sessão de recuperação ativa
       const { data } = await supabase.auth.getSession();
-      finish(!!data.session);
+      if (data.session) {
+        // Sessão existe mas NÃO é de recuperação (acesso direto sem link). Redirecionar.
+        navigate("/dashboard", { replace: true });
+        return;
+      }
+      // Sem sessão e sem token: link inválido
+      finish(false);
     })();
 
     return () => sub.subscription.unsubscribe();
-  }, []);
+  }, [navigate]);
 
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();

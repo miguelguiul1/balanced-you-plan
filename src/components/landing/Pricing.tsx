@@ -1,63 +1,78 @@
 import { Check, X, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { PLANS, formatPrice, planPrice, currencySymbol } from "@/config/plans";
 
-const plans = [
-  {
-    name: "Gratuito",
-    price: "R$0",
-    period: "para sempre",
-    desc: "Comece agora e conheça o Evolua Plus.",
-    cta: "Criar conta grátis",
-    href: "/auth",
-    highlight: false,
-    badge: null as string | null,
-    features: [
-      { text: "Calculadora nutricional completa", on: true },
-      { text: "Diário alimentar básico", on: true },
-      { text: "Biblioteca de alimentos", on: true },
-      { text: "Plano semanal por IA", on: false },
-      { text: "Scanner de geladeira", on: false },
-      { text: "Assistente IA 24h", on: false },
-    ],
-  },
-  {
-    name: "Plus Mensal",
-    price: "R$29,90",
-    period: "por mês",
-    desc: "Acesso completo, cobrança mensal.",
-    cta: "Assinar Plus",
-    href: "/vendas",
-    highlight: false,
-    badge: null as string | null,
-    features: [
-      { text: "Tudo do Gratuito", on: true },
-      { text: "Plano alimentar semanal por IA", on: true },
-      { text: "Lista de compras inteligente", on: true },
-      { text: "Scanner de geladeira e porção", on: true },
-      { text: "Assistente IA 24h", on: true },
-      { text: "Evolução com gráficos", on: true },
-    ],
-  },
-  {
-    name: "Plus Anual",
-    price: "R$249,90",
-    period: "por ano",
-    desc: "Economize 30% no plano mais escolhido.",
-    cta: "Assinar anual",
-    href: "/vendas",
-    highlight: true,
-    badge: "Mais escolhido" as string | null,
-    features: [
-      { text: "Tudo do Plus Mensal", on: true },
-      { text: "Economia de R$108/ano", on: true },
-      { text: "Guias educacionais exclusivos", on: true },
-      { text: "Suporte prioritário", on: true },
-      { text: "Novos recursos em primeira mão", on: true },
-      { text: "Cancelamento a qualquer momento", on: true },
-    ],
-  },
-];
+interface PricingCard {
+  name: string;
+  price: string;
+  period: string;
+  desc: string;
+  cta: string;
+  href: string;
+  highlight: boolean;
+  badge: string | null;
+  features: { text: string; on: boolean }[];
+}
+
+const gratuito: PricingCard = {
+  name: "Gratuito",
+  price: "R$0",
+  period: "para sempre",
+  desc: "Comece agora e conheça o Evolua Plus.",
+  cta: "Criar conta grátis",
+  href: "/auth",
+  highlight: false,
+  badge: null,
+  features: [
+    { text: "Calculadora nutricional completa", on: true },
+    { text: "Diário alimentar básico", on: true },
+    { text: "Biblioteca de alimentos", on: true },
+    { text: "Plano semanal por IA", on: false },
+    { text: "Scanner de geladeira", on: false },
+    { text: "Assistente IA 24h", on: false },
+  ],
+};
+
+const mensal: PricingCard = {
+  name: "Plus Mensal",
+  price: `${currencySymbol("pt")}${formatPrice(PLANS.mensal.priceBRL, "pt")}`,
+  period: PLANS.mensal.period.pt,
+  desc: "Acesso completo, cobrança mensal.",
+  cta: "Assinar Plus",
+  href: "/vendas",
+  highlight: false,
+  badge: null,
+  features: [
+    { text: "Tudo do Gratuito", on: true },
+    { text: "Plano alimentar semanal por IA", on: true },
+    { text: "Lista de compras inteligente", on: true },
+    { text: "Scanner de geladeira e porção", on: true },
+    { text: "Assistente IA 24h", on: true },
+    { text: "Evolução com gráficos", on: true },
+  ],
+};
+
+const anual: PricingCard = {
+  name: "Plus Anual",
+  price: `${currencySymbol("pt")}${formatPrice(PLANS.anual.priceBRL, "pt")}`,
+  period: PLANS.anual.period.pt,
+  desc: "Economize 30% no plano mais escolhido.",
+  cta: "Assinar anual",
+  href: "/vendas",
+  highlight: true,
+  badge: "Mais escolhido",
+  features: [
+    { text: "Tudo do Plus Mensal", on: true },
+    { text: "Economia de R$108/ano", on: true },
+    { text: "Guias educacionais exclusivos", on: true },
+    { text: "Suporte prioritário", on: true },
+    { text: "Novos recursos em primeira mão", on: true },
+    { text: "Cancelamento a qualquer momento", on: true },
+  ],
+};
+
+const plans = [gratuito, mensal, anual];
 
 const Pricing = () => (
   <section id="planos" className="py-24 px-6 bg-secondary/40 relative overflow-hidden">
@@ -117,7 +132,7 @@ const Pricing = () => (
         ))}
       </div>
       <p className="text-center text-xs text-muted-foreground mt-6">
-        Também disponível: plano semestral R$129,90. Preparando: Família, Nutricionista, Personal Trainer.
+        Também disponível: plano semestral {currencySymbol("pt")}{formatPrice(PLANS.semestral.priceBRL, "pt")}. Preparando: Família, Nutricionista, Personal Trainer.
       </p>
     </div>
   </section>

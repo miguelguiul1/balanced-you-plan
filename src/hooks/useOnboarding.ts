@@ -23,6 +23,7 @@ export const useSetupStatus = () => {
     queryKey: ["setupStatus", user?.id],
     enabled: !!user,
     staleTime: 60_000,
+    retry: 1,
     queryFn: async () => {
       const [{ data: profile }, { data: prefs }, { data: weight }] = await Promise.all([
         supabase
@@ -81,21 +82,32 @@ export const usePersistOnboarding = () => {
     async (p: PersistPayload) => {
       if (!user) throw new Error("Sessão expirada. Entre novamente para salvar.");
 
-      const { error: profileError } = await supabase
+      const profileFields = {
+        height_cm: p.heightCm,
+        age: p.age,
+        sex: p.sex ? p.sex : null,
+        activity_level: p.activity || null,
+        sports: p.sports,
+        ...(p.complete
+          ? { onboarding_completed: true, onboarding_completed_at: new Date().toISOString() }
+          : {}),
+        updated_at: new Date().toISOString(),
+      };
+
+      // Tenta UPDATE primeiro. Se a linha não existe (trigger de signup falhou), faz INSERT.
+      const { data: updated, error: updateError } = await supabase
         .from("profiles")
-        .update({
-          height_cm: p.heightCm,
-          age: p.age,
-          sex: p.sex ? p.sex : null,
-          activity_level: p.activity || null,
-          sports: p.sports,
-          ...(p.complete
-            ? { onboarding_completed: true, onboarding_completed_at: new Date().toISOString() }
-            : {}),
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", user.id);
-      if (profileError) throw profileError;
+        .update(profileFields)
+        .eq("id", user.id)
+        .select("id");
+      if (updateError) throw updateError;
+
+      if (!updated || updated.length === 0) {
+        const { error: insertError } = await supabase
+          .from("profiles")
+          .insert({ id: user.id, ...profileFields });
+        if (insertError) throw insertError;
+      }
 
       const { error: goalsError } = await supabase.from("user_goals").upsert(
         {

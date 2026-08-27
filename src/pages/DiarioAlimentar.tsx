@@ -15,6 +15,7 @@ import FoodCalendar from "@/components/diario/FoodCalendar";
 import WeeklySummary from "@/components/diario/WeeklySummary";
 import { exportBrandedPdf } from "@/lib/pdf";
 import { RANGES, checkRange, checkText, firstError, parseNum } from "@/lib/validation";
+import { ConfirmDialog } from "@/components/ds/ConfirmDialog";
 import {
   FoodEntry, MEAL_TYPES, sumTotals, todayISO, toISODate,
   useFavorites, useFoodLog, useFoodLogRange, useGoals, useSyncModules,
@@ -217,8 +218,6 @@ const DiarioAlimentar = () => {
     if (entries.length === 0) return toast("Adicione alimentos primeiro");
     setAnalyzing(true);
     try {
-      const { data: prefs } = await supabase
-        .from("user_preferences").select("objective").eq("user_id", user!.id).maybeSingle();
       const { data, error } = await supabase.functions.invoke("nutrition-tracker", {
         body: {
           action: "analyze",
@@ -226,7 +225,6 @@ const DiarioAlimentar = () => {
             alimento: e.food_name, quantidade: e.quantity, refeicao: e.meal_type,
             calorias: e.calories, proteina: e.protein, carbs: e.carbs, gordura: e.fat, fibra: e.fiber,
           })),
-          preferences: prefs ? { objective: prefs.objective } : null,
         },
       });
       if (error) throw error;
@@ -464,13 +462,19 @@ const DiarioAlimentar = () => {
                           >
                             <Sparkles className="w-4 h-4" />
                           </button>
-                          <button
-                            onClick={() => deleteEntry(entry.id)}
-                            aria-label="Excluir refeição"
-                            className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                          <ConfirmDialog
+                            trigger={
+                              <button
+                                aria-label="Excluir refeição"
+                                className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            }
+                            title="Excluir refeição"
+                            description={`Deseja excluir "${entry.food_name}" do diário? Essa ação não pode ser desfeita.`}
+                            onConfirm={() => deleteEntry(entry.id)}
+                          />
                         </div>
                       ))}
                     </div>

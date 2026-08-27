@@ -15,6 +15,7 @@ import {
   Globe,
 } from "lucide-react";
 import { useState } from "react";
+import { PLANS, PLAN_KEYS, formatPrice, currencySymbol, planPrice } from "@/config/plans";
 
 const CHECKOUT_URL = "/checkout";
 
@@ -35,8 +36,6 @@ const content: Record<Lang, {
   pricingBadge: string;
   pricingTitle: string;
   pricingSub: string;
-  pricingOld: string;
-  pricingNote: string;
   pricingItems: string[];
   pricingCta: string;
   pricingGuarantee: string;
@@ -80,8 +79,6 @@ const content: Record<Lang, {
     pricingBadge: "Oferta Especial",
     pricingTitle: "Plano Nutricional Completo",
     pricingSub: "Acesso imediato a tudo que você precisa",
-    pricingOld: "De R$ 97,00",
-    pricingNote: "Pagamento único · Acesso vitalício",
     pricingItems: [
       "Cardápio semanal personalizado",
       "Lista de compras inteligente",
@@ -101,7 +98,7 @@ const content: Record<Lang, {
     ],
     finalTitle: "Pronto para transformar sua alimentação?",
     finalSub: "Comece agora e veja resultados em poucos dias. Sem riscos com nossa garantia de 7 dias.",
-    finalCta: "Começar agora por R$ 29,90",
+    finalCta: "Começar agora",
     footerRights: "Todos os direitos reservados",
     footerDisclaimer: "Este produto não substitui acompanhamento médico ou nutricional profissional.",
   },
@@ -137,8 +134,6 @@ const content: Record<Lang, {
     pricingBadge: "Special Offer",
     pricingTitle: "Complete Nutrition Plan",
     pricingSub: "Instant access to everything you need",
-    pricingOld: "Was $19.90",
-    pricingNote: "One-time payment · Lifetime access",
     pricingItems: [
       "Personalized weekly menu",
       "Smart shopping list",
@@ -158,7 +153,7 @@ const content: Record<Lang, {
     ],
     finalTitle: "Ready to transform your nutrition?",
     finalSub: "Start now and see results in just a few days. Risk-free with our 7-day guarantee.",
-    finalCta: "Start now for $5.90",
+    finalCta: "Start now",
     footerRights: "All rights reserved",
     footerDisclaimer: "This product does not replace professional medical or nutritional guidance.",
   },
@@ -332,42 +327,45 @@ const Vendas = () => {
             <p className="text-muted-foreground text-sm mt-2">{t.pricingSub}</p>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
-            {[
-              { key: "mensal", label: lang === "pt" ? "Mensal" : "Monthly", price: lang === "pt" ? "29,90" : "5.90", period: lang === "pt" ? "/mês" : "/month", highlight: false, badge: null },
-              { key: "semestral", label: lang === "pt" ? "Semestral" : "6 months", price: lang === "pt" ? "129,90" : "24.90", period: lang === "pt" ? "/6 meses" : "/6 months", highlight: true, badge: lang === "pt" ? "Mais popular" : "Best value" },
-              { key: "anual", label: lang === "pt" ? "Anual" : "Annual", price: lang === "pt" ? "249,90" : "49.90", period: lang === "pt" ? "/ano" : "/year", highlight: false, badge: lang === "pt" ? "Economize 30%" : "Save 30%" },
-            ].map((p) => (
-              <Card key={p.key} className={`relative border ${p.highlight ? "border-primary shadow-lg scale-105" : "border-border/60"} bg-background overflow-hidden`}>
-                {p.badge && (
-                  <div className={`absolute top-0 left-0 right-0 py-1.5 text-center text-xs font-semibold ${p.highlight ? "bg-primary text-primary-foreground" : "bg-accent/20 text-accent-foreground"}`}>
-                    {p.badge}
-                  </div>
-                )}
-                <CardContent className={`p-6 text-center ${p.badge ? "pt-10" : ""}`}>
-                  <h3 className="font-display font-semibold text-lg text-foreground">{p.label}</h3>
-                  <div className="flex items-baseline justify-center gap-1 mt-4">
-                    <span className="text-sm text-foreground font-medium">{lang === "pt" ? "R$" : "$"}</span>
-                    <span className="font-display text-4xl font-bold text-foreground">{p.price.split(lang === "pt" ? "," : ".")[0]}</span>
-                    <span className="text-sm text-foreground font-medium">{lang === "pt" ? "," : "."}{p.price.split(lang === "pt" ? "," : ".")[1]}</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground">{p.period}</p>
-                  <ul className="text-left space-y-2.5 my-6">
-                    {t.pricingItems.map((item) => (
-                      <li key={item} className="flex items-start gap-2 text-sm text-foreground">
-                        <Check className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                  <a href={`${CHECKOUT_URL}?plano=${p.key}`} className="block">
-                    <Button variant={p.highlight ? "hero" : "outline"} size="lg" className="w-full group">
-                      {t.pricingCta}
-                      <ArrowRight className="w-4 h-4 ml-1 transition-transform group-hover:translate-x-1" />
-                    </Button>
-                  </a>
-                </CardContent>
-              </Card>
-            ))}
+            {PLAN_KEYS.map((key) => {
+              const p = PLANS[key];
+              const price = planPrice(p, lang);
+              const priceStr = formatPrice(price, lang);
+              const [intPart, decPart] = priceStr.split(lang === "pt" ? "," : ".");
+              const badge = p.badge[lang];
+              return (
+                <Card key={p.key} className={`relative border ${p.highlight ? "border-primary shadow-lg scale-105" : "border-border/60"} bg-background overflow-hidden`}>
+                  {badge && (
+                    <div className={`absolute top-0 left-0 right-0 py-1.5 text-center text-xs font-semibold ${p.highlight ? "bg-primary text-primary-foreground" : "bg-accent/20 text-accent-foreground"}`}>
+                      {badge}
+                    </div>
+                  )}
+                  <CardContent className={`p-6 text-center ${badge ? "pt-10" : ""}`}>
+                    <h3 className="font-display font-semibold text-lg text-foreground">{p.label[lang]}</h3>
+                    <div className="flex items-baseline justify-center gap-1 mt-4">
+                      <span className="text-sm text-foreground font-medium">{currencySymbol(lang)}</span>
+                      <span className="font-display text-4xl font-bold text-foreground">{intPart}</span>
+                      <span className="text-sm text-foreground font-medium">{lang === "pt" ? "," : "."}{decPart}</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">{p.period[lang]}</p>
+                    <ul className="text-left space-y-2.5 my-6">
+                      {t.pricingItems.map((item) => (
+                        <li key={item} className="flex items-start gap-2 text-sm text-foreground">
+                          <Check className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                    <a href={`${CHECKOUT_URL}?plano=${p.key}`} className="block">
+                      <Button variant={p.highlight ? "hero" : "outline"} size="lg" className="w-full group">
+                        {t.pricingCta}
+                        <ArrowRight className="w-4 h-4 ml-1 transition-transform group-hover:translate-x-1" />
+                      </Button>
+                    </a>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
           <p className="mt-6 text-center text-xs text-muted-foreground flex items-center justify-center gap-1.5">
             <ShieldCheck className="w-3.5 h-3.5 text-primary" />

@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders, json, requireUser, rateLimit, readJson, isResponse, validateImage } from "../_shared/guard.ts";
+import { loadUserContext } from "../_shared/userContext.ts";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -8,6 +9,10 @@ serve(async (req) => {
   if (isResponse(auth)) return auth;
   const limited = rateLimit("food-scan:" + auth.userId, 12);
   if (limited) return limited;
+
+  // Valida que o usuário autenticado possui perfil acessível via RLS.
+  const userCtx = await loadUserContext(req, auth.userId);
+  if (isResponse(userCtx)) return userCtx;
 
 
   try {

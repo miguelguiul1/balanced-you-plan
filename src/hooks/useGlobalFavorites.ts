@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 export type FavCategory = "receita" | "alimento" | "artigo" | "ia" | "plano";
 
@@ -11,8 +13,6 @@ export type FavItem = {
   createdAt: string;
 };
 
-const KEY = "evoluaFavoritos";
-
 export const categoryLabels: Record<FavCategory, string> = {
   receita: "Receitas",
   alimento: "Alimentos",
@@ -21,35 +21,49 @@ export const categoryLabels: Record<FavCategory, string> = {
   plano: "Planos alimentares",
 };
 
-const read = (): FavItem[] => {
-  try {
-    return JSON.parse(localStorage.getItem(KEY) || "[]");
-  } catch {
-    return [];
-  }
-};
-
-const EVENT = "evolua-favoritos";
-
-/** Favoritos globais (receitas, alimentos, artigos, respostas da IA e planos). */
+/**
+ * Favoritos globais persistidos no Supabase.
+ * Interface mantida igual para compatibilidade com componentes existentes.
+ */
 export const useGlobalFavorites = () => {
-  const [items, setItems] = useState<FavItem[]>(read);
+  const { user } = useAuth();
+  const [items, setItems] = useState<FavItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
+  // Carrega favoritos do Supabase ao montar ou ao mudar o usuário.
   useEffect(() => {
-    const sync = () => setItems(read());
-    window.addEventListener(EVENT, sync);
-    window.addEventListener("storage", sync);
-    return () => {
-      window.removeEventListener(EVENT, sync);
-      window.removeEventListener("storage", sync);
-    };
-  }, []);
-
-  const persist = useCallback((next: FavItem[]) => {
-    localStorage.setItem(KEY, JSON.stringify(next));
-    setItems(next);
-    window.dispatchEvent(new Event(EVENT));
-  }, []);
+    if (!user) {
+      setItems([]);
+      setLoading(false);
+      return;
+    }
+    let cancelled = false;
+    supabase
+      .from("global_favorites")
+      .select("id, category, item_id, title, subtitle, route, created_at")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .then(({ data, error }) => {
+        if (cancelled) return;
+        if (error) {
+          console.error("Erro ao carregar favoritos:", error.message);
+          setItems([]);
+        } else {
+          setItems(
+            (data ?? []).map((r) => ({
+              id: r.item_id,
+              category: r.category as FavCategory,
+              title: r.title,
+              subtitle: r.subtitle ?? undefined,
+              to: r.route ?? undefined,
+              createdAt: r.created_at,
+            }))
+          );
+        }
+        setLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, [user]);
 
   const isFavorite = useCallback(
     (category: FavCategory, id: string) => items.some((i) => i.category === category && i.id === id),
@@ -57,23 +71,61 @@ export const useGlobalFavorites = () => {
   );
 
   const toggleFavorite = useCallback(
-    (item: Omit<FavItem, "createdAt">) => {
-      const current = read();
-      const exists = current.some((i) => i.category === item.category && i.id === item.id);
-      const next = exists
-        ? current.filter((i) => !(i.category === item.category && i.id === item.id))
-        : [{ ...item, createdAt: new Date().toISOString() }, ...current];
-      persist(next);
-      return !exists;
+    async (item: Omit<FavItem, "createdAt">): Promise<boolean> => {
+      if (!user) return false;
+      const exists = items.some((i) => i.category === item.category && i.id === item.id);
+
+      if (exists) {
+        const { error } = await supabase
+          .from("global_favorites")
+          .delete()
+          .eq("user_id", user.id)
+          .eq("category", item.category)
+          .eq("item_id", item.id);
+        if (error) {
+          console.error("Erro ao remover favorito:", error.message);
+          return false;
+        }
+        setItems((prev) => prev.filter((i) => !(i.category === item.category && i.id === item.id)));
+        return false;
+      }
+
+      const { error } = await supabase.from("global_favorites").insert({
+        user_id: user.id,
+        category: item.category,
+        item_id: item.id,
+        title: item.title,
+        subtitle: item.subtitle ?? null,
+        route: item.to ?? null,
+      });
+      if (error) {
+        console.error("Erro ao adicionar favorito:", error.message);
+        return false;
+      }
+      const now = new Date().toISOString();
+      setItems((prev) => [{ ...item, createdAt: now }, ...prev]);
+      return true;
     },
-    [persist]
+    [user, items]
   );
 
   const removeFavorite = useCallback(
-    (category: FavCategory, id: string) =>
-      persist(read().filter((i) => !(i.category === category && i.id === id))),
-    [persist]
+    async (category: FavCategory, id: string) => {
+      if (!user) return;
+      const { error } = await supabase
+        .from("global_favorites")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("category", category)
+        .eq("item_id", id);
+      if (error) {
+        console.error("Erro ao remover favorito:", error.message);
+        return;
+      }
+      setItems((prev) => prev.filter((i) => !(i.category === category && i.id === id)));
+    },
+    [user]
   );
 
-  return { items, isFavorite, toggleFavorite, removeFavorite };
+  return { items, isFavorite, toggleFavorite, removeFavorite, loading };
 };

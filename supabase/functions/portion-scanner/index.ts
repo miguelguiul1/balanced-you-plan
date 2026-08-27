@@ -59,8 +59,10 @@ Seja realista nas quantidades. Sem texto extra fora do JSON.`;
 
     const data = await response.json();
     let raw = data.choices?.[0]?.message?.content ?? "";
-    raw = raw.replace(/```json|```/g, "").trim();
-    const parsed = JSON.parse(raw);
+    raw = raw.replace(/```json/gi, "").replace(/```/g, "").trim();
+    const start = raw.indexOf("{");
+    const end = raw.lastIndexOf("}");
+    const parsed = JSON.parse(start >= 0 ? raw.slice(start, end + 1) : raw);
     return new Response(JSON.stringify(parsed), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

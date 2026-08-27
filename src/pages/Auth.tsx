@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Mail, Lock, User, ArrowRight, Eye, EyeOff, Sparkles, Leaf, Heart } from "lucide-react";
+import { Mail, Lock, User, ArrowRight, Eye, EyeOff, Leaf, Heart } from "lucide-react";
+import logoImg from "@/assets/logo evolua plus.png";
 
 
 const traduzErro = (msg: string) => {
@@ -114,10 +115,7 @@ const Auth = () => {
         {/* Content */}
         <div className="relative z-10 text-center px-6 max-w-lg">
           <div className="animate-fade-up">
-            <span className="inline-flex items-center gap-2 mb-6 px-4 py-1.5 rounded-full bg-primary/10 text-primary font-display text-sm font-medium">
-              <Sparkles className="w-4 h-4" />
-              Sua jornada começa aqui
-            </span>
+            <img src={logoImg} alt="Evolua Plus" className="mx-auto h-20 sm:h-24 w-auto mb-6" />
           </div>
 
           <h1

@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders, json, requireUser, rateLimit, readJson, isResponse, validateImage } from "../_shared/guard.ts";
+import { loadUserContext } from "../_shared/userContext.ts";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -13,19 +14,23 @@ serve(async (req) => {
   try {
     const body = await readJson(req);
     if (isResponse(body)) return body;
-    const { imageBase64, preferences } = body as Record<string, unknown> as any;
+    const { imageBase64 } = body as Record<string, unknown> as any;
     const badImage = validateImage(imageBase64);
     if (badImage) return badImage;
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
+    // Contexto do usuário vem SEMPRE do banco (RLS ativa via JWT).
+    const ctx = await loadUserContext(req, auth.userId);
+    if (isResponse(ctx)) return ctx;
+
     let preferencesContext = "";
-    if (preferences) {
+    if (ctx.preferences) {
       const parts: string[] = [];
-      if (preferences.objective) parts.push(`Objetivo do usuário: ${preferences.objective}`);
-      if (preferences.restrictions?.length) parts.push(`Restrições alimentares: ${preferences.restrictions.join(", ")}`);
-      if (preferences.disliked_foods?.length) parts.push(`Alimentos que NÃO gosta (NUNCA use nas receitas): ${preferences.disliked_foods.join(", ")}`);
-      if (preferences.liked_foods?.length) parts.push(`Alimentos preferidos (priorize nas receitas): ${preferences.liked_foods.join(", ")}`);
+      if (ctx.preferences.objective) parts.push(`Objetivo do usuário: ${ctx.preferences.objective}`);
+      if (ctx.preferences.restrictions?.length) parts.push(`Restrições alimentares: ${ctx.preferences.restrictions.join(", ")}`);
+      if (ctx.preferences.disliked_foods?.length) parts.push(`Alimentos que NÃO gosta (NUNCA use nas receitas): ${ctx.preferences.disliked_foods.join(", ")}`);
+      if (ctx.preferences.liked_foods?.length) parts.push(`Alimentos preferidos (priorize nas receitas): ${ctx.preferences.liked_foods.join(", ")}`);
       if (parts.length) preferencesContext = `\n\nPERFIL DO USUÁRIO:\n${parts.join("\n")}`;
     }
 

@@ -10,6 +10,7 @@ import ConfirmDialog from "@/components/ds/ConfirmDialog";
 import { useTheme, ThemeMode } from "@/hooks/useTheme";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { clearStoredPlano } from "@/lib/planoStorage";
 
 type Prefs = {
   peso: "kg" | "lb";
@@ -120,7 +121,7 @@ const Configuracoes = () => {
     } catch {
       return toast.error("Não foi possível excluir sua conta agora");
     }
-    localStorage.removeItem(`evoluaPlano:${user.id}`);
+    await clearStoredPlano(user.id);
     toast.success("Sua conta foi excluída");
     try {
       await signOut();

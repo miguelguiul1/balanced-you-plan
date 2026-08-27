@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, LogIn, LogOut, User, Sparkles } from "lucide-react";
+import { Menu, X, LogIn, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import GlobalSearch from "@/components/GlobalSearch";
 import NotificationCenter from "@/components/NotificationCenter";
+import logoImg from "@/assets/logo evolua plus.png";
 
 const appLinks = [
   { path: "/", label: "Início" },
@@ -55,11 +56,8 @@ const Navbar = () => {
   };
 
   const Logo = () => (
-    <Link to="/" className="group flex items-center gap-2 font-display text-lg font-bold text-foreground">
-      <span className="relative inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-[hsl(var(--primary-glow))] text-primary-foreground shadow-soft transition-transform group-hover:scale-105">
-        <Sparkles className="h-4 w-4" />
-      </span>
-      Evolua <span className="text-primary">Plus</span>
+    <Link to="/" className="group flex items-center gap-2" aria-label="Evolua Plus — página inicial">
+      <img src={logoImg} alt="Evolua Plus" className="h-8 w-auto transition-transform group-hover:scale-105" />
     </Link>
   );
 

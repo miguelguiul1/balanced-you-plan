@@ -6,39 +6,21 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { useSyncModules } from "@/hooks/useNutrition";
-
-const allFoods: Record<string, string[]> = {
-  "Proteínas": ["Frango", "Ovo", "Carne vermelha", "Peixe", "Atum", "Sardinha", "Tofu", "Feijão", "Lentilha", "Grão-de-bico", "Whey"],
-  "Carboidratos": ["Arroz", "Arroz integral", "Pão", "Pão integral", "Macarrão", "Batata", "Batata-doce", "Aveia", "Tapioca", "Mandioca", "Milho", "Quinoa"],
-  "Gorduras": ["Azeite", "Castanhas", "Abacate", "Manteiga", "Queijo", "Amendoim", "Linhaça", "Chia", "Coco"],
-  "Frutas": ["Banana", "Maçã", "Laranja", "Morango", "Uva", "Manga", "Mamão", "Melancia", "Abacaxi", "Limão"],
-  "Verduras/Legumes": ["Brócolis", "Espinafre", "Cenoura", "Tomate", "Alface", "Couve", "Abobrinha", "Chuchu", "Beterraba", "Pepino"],
-  "Laticínios": ["Leite", "Iogurte", "Queijo cottage", "Requeijão", "Leite de amêndoas"],
-};
-
-const restrictions = [
-  "Intolerância à lactose", "Alergia ao glúten", "Vegetariano", "Vegano",
-  "Alergia a frutos do mar", "Alergia a amendoim", "Diabetes", "Hipertensão",
-];
-
-const objectives = [
-  { id: "emagrecimento", label: "Emagrecimento", icon: "🔥", desc: "Perder gordura de forma saudável" },
-  { id: "massa", label: "Ganho de massa", icon: "💪", desc: "Construir músculos com nutrição certa" },
-  { id: "reeducacao", label: "Reeducação alimentar", icon: "🍃", desc: "Aprender a comer melhor" },
-  { id: "saudavel", label: "Comer saudável", icon: "🥗", desc: "Foco em saúde e bem-estar" },
-  { id: "economia", label: "Economizar dinheiro", icon: "💰", desc: "Comer bem gastando pouco" },
-  { id: "rapido", label: "Soluções rápidas", icon: "⚡", desc: "Refeições práticas para o dia a dia" },
-];
+import { ALL_FOODS, RESTRICTIONS } from "@/data/preferencias";
+import { OBJECTIVES, normalizeObjective, objectiveOption } from "@/lib/objectives";
 
 const Preferencias = () => {
   const sync = useSyncModules();
+  const qc = useQueryClient();
   const [liked, setLiked] = useState<string[]>([]);
   const [disliked, setDisliked] = useState<string[]>([]);
   const [selectedRestrictions, setSelectedRestrictions] = useState<string[]>([]);
   const [otherRestriction, setOtherRestriction] = useState("");
   const [selectedObjective, setSelectedObjective] = useState("");
   const [saving, setSaving] = useState(false);
+  const [objectiveError, setObjectiveError] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -53,13 +35,13 @@ const Preferencias = () => {
         .eq("user_id", user.id)
         .maybeSingle();
       if (data) {
-        setSelectedObjective(data.objective || "");
+        // Valores legados são normalizados para a taxonomia única de objectives.ts
+        setSelectedObjective(normalizeObjective(data.objective) ?? "");
         setLiked(data.liked_foods || []);
         setDisliked(data.disliked_foods || []);
         const all = data.restrictions || [];
-        const known = restrictions;
-        setSelectedRestrictions(all.filter((r: string) => known.includes(r)));
-        const other = all.find((r: string) => !known.includes(r));
+        setSelectedRestrictions(all.filter((r: string) => RESTRICTIONS.includes(r)));
+        const other = all.find((r: string) => !RESTRICTIONS.includes(r));
         if (other) setOtherRestriction(other);
       }
     };
@@ -86,6 +68,18 @@ const Preferencias = () => {
       navigate("/auth");
       return;
     }
+    // Validação antes de salvar — objetivo é obrigatório e vem da taxonomia única
+    if (!normalizeObjective(selectedObjective)) {
+      setObjectiveError(true);
+      toast({
+        title: "Escolha um objetivo",
+        description: "Selecione um objetivo acima para salvar suas preferências.",
+        variant: "destructive",
+      });
+      document.getElementById("objetivo-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+    setObjectiveError(false);
     setSaving(true);
     try {
       const allRestrictions = [...selectedRestrictions, otherRestriction.trim()].filter(Boolean);
@@ -93,7 +87,7 @@ const Preferencias = () => {
         .from("user_preferences")
         .upsert({
           user_id: user.id,
-          objective: selectedObjective,
+          objective: normalizeObjective(selectedObjective),
           liked_foods: liked,
           disliked_foods: disliked,
           restrictions: allRestrictions,
@@ -101,9 +95,15 @@ const Preferencias = () => {
         }, { onConflict: "user_id" });
       if (error) throw error;
       sync(["prefs"]);
-      toast({ title: "✓ Preferências salvas!" });
-    } catch (e: any) {
-      toast({ title: "Erro ao salvar", description: e.message, variant: "destructive" });
+      // O objetivo influencia o onboarding/setup status — mantém tudo consistente.
+      qc.invalidateQueries({ queryKey: ["setupStatus"] });
+      toast({
+        title: "Preferências salvas.",
+        description: "Seu plano e as sugestões da IA usarão essas preferências.",
+      });
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Não foi possível salvar agora. Tente novamente.";
+      toast({ title: "Erro ao salvar", description: msg, variant: "destructive" });
     } finally {
       setSaving(false);
     }
@@ -124,22 +124,32 @@ const Preferencias = () => {
         <MotivationalQuote />
 
         {/* Objective */}
-        <div className="mt-10">
-          <h2 className="font-display text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
+        <div className="mt-10" id="objetivo-section">
+          <h2 className="font-display text-xl font-semibold text-foreground mb-1 flex items-center gap-2">
             <Target className="w-5 h-5 text-primary" /> Qual seu objetivo?
           </h2>
+          <p className="text-sm text-muted-foreground mb-4">Obrigatório — orienta seu plano e suas metas.</p>
+          {objectiveError && !selectedObjective && (
+            <p role="alert" className="mb-3 text-sm text-destructive">
+              Escolha um objetivo antes de salvar.
+            </p>
+          )}
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {objectives.map((obj) => (
+            {OBJECTIVES.map((obj) => (
               <button
                 key={obj.id}
-                onClick={() => setSelectedObjective(obj.id)}
+                onClick={() => {
+                  setSelectedObjective(obj.id);
+                  if (objectiveError) setObjectiveError(false);
+                }}
+                aria-pressed={selectedObjective === obj.id}
                 className={`p-4 rounded-xl border-2 transition-all text-left ${
                   selectedObjective === obj.id
                     ? "border-primary bg-primary/5"
                     : "border-border hover:border-primary/30"
                 }`}
               >
-                <span className="text-2xl">{obj.icon}</span>
+                <span className="text-2xl">{obj.emoji}</span>
                 <p className="font-display font-semibold text-foreground text-sm mt-2">{obj.label}</p>
                 <p className="text-xs text-muted-foreground mt-1">{obj.desc}</p>
               </button>
@@ -153,7 +163,7 @@ const Preferencias = () => {
             <AlertTriangle className="w-5 h-5 text-accent" /> Restrições alimentares
           </h2>
           <div className="flex flex-wrap gap-2">
-            {restrictions.map((r) => (
+            {RESTRICTIONS.map((r) => (
               <button
                 key={r}
                 onClick={() => toggleRestriction(r)}
@@ -187,7 +197,7 @@ const Preferencias = () => {
             <ThumbsDown className="w-4 h-4 inline text-destructive" /> = não gosto
           </p>
 
-          {Object.entries(allFoods).map(([category, foods]) => (
+          {Object.entries(ALL_FOODS).map(([category, foods]) => (
             <div key={category} className="mb-8">
               <h3 className="font-display text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
                 {category}
@@ -235,7 +245,7 @@ const Preferencias = () => {
             <div>
               <p className="text-muted-foreground">Objetivo</p>
               <p className="font-medium text-foreground">
-                {objectives.find((o) => o.id === selectedObjective)?.label || "Não selecionado"}
+                {objectiveOption(selectedObjective)?.label || "Não selecionado"}
               </p>
             </div>
             <div>

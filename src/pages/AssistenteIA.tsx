@@ -137,7 +137,10 @@ const AssistenteIA = () => {
 
     try {
       const { data, error } = await supabase.functions.invoke("nutrition-chat", {
-        body: { messages: newMsgs.slice(-10), profile: context },
+        body: {
+          messages: newMsgs.slice(-10),
+          profile: { memoria: context.memoria, hoje: context.hoje, semana: context.semana, evolucao: context.evolucao },
+        },
       });
       if (error) throw error;
       const reply: Msg = { role: "assistant", content: data.reply };

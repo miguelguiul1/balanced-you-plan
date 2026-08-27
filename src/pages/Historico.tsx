@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Clock, Apple, Flame, ChevronDown, ChevronUp, Trash2, Search, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { ConfirmDialog } from "@/components/ds/ConfirmDialog";
 
 interface ScanRecord {
   id: string;
@@ -13,8 +14,14 @@ interface ScanRecord {
     alimentos?: { nome: string; quantidade: string; calorias: number }[];
     receitas?: { nome: string; ingredientes: string[]; tempo: string; calorias: number; proteina: number; carb: number; gordura: number }[];
     dicas?: string[];
+    itens?: { alimento: string; quantidade: string; calorias: number; proteina: number; carb: number; gordura: number }[];
+    prato?: string;
+    avaliacao?: string;
   };
 }
+
+const isPortionResult = (r: ScanRecord["result"]) =>
+  Array.isArray(r.itens) && r.itens.length > 0 && typeof r.prato === "string";
 
 const Historico = () => {
   const { user, loading } = useAuth();
@@ -76,7 +83,10 @@ const Historico = () => {
   }, [scans, search, periodo]);
 
   const stats = useMemo(() => {
-    const alimentos = filtered.flatMap((s) => s.result.alimentos ?? []);
+    const alimentos = [
+      ...filtered.flatMap((s) => s.result.alimentos ?? []),
+      ...filtered.filter((s) => isPortionResult(s.result)).flatMap((s) => (s.result.itens ?? []).map((i) => ({ nome: i.alimento, quantidade: i.quantidade, calorias: i.calorias }))),
+    ];
     const receitas = filtered.flatMap((s) => s.result.receitas ?? []);
     const cont: Record<string, number> = {};
     alimentos.forEach((a) => { cont[a.nome] = (cont[a.nome] || 0) + 1; });
@@ -197,7 +207,9 @@ const Historico = () => {
                 >
                   <div>
                     <p className="font-display font-semibold text-foreground text-sm">
-                      {scan.result.alimentos?.length || 0} alimentos · {scan.result.receitas?.length || 0} receitas
+                      {isPortionResult(scan.result)
+                        ? `${scan.result.itens!.length} ${scan.result.itens!.length === 1 ? "item" : "itens"} · ${scan.result.prato}`
+                        : `${scan.result.alimentos?.length || 0} alimentos · ${scan.result.receitas?.length || 0} receitas`}
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
                       <Clock className="w-3 h-3 inline mr-1" />
@@ -205,12 +217,18 @@ const Historico = () => {
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <button
-                      onClick={(e) => { e.stopPropagation(); deleteScan(scan.id); }}
-                      className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    <ConfirmDialog
+                      trigger={
+                        <button
+                          className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      }
+                      title="Excluir análise"
+                      description="Deseja excluir esta análise do histórico? Essa ação não pode ser desfeita."
+                      onConfirm={() => deleteScan(scan.id)}
+                    />
                     {expanded === scan.id ? <ChevronUp className="w-5 h-5 text-muted-foreground" /> : <ChevronDown className="w-5 h-5 text-muted-foreground" />}
                   </div>
                 </button>
@@ -254,6 +272,28 @@ const Historico = () => {
                           ))}
                         </div>
                       </div>
+                    )}
+
+                    {/* Portion items */}
+                    {isPortionResult(scan.result) && (
+                      <>
+                        <div>
+                          <h3 className="font-display text-sm font-semibold text-foreground mb-2 flex items-center gap-1">
+                            <Apple className="w-4 h-4 text-primary" /> {scan.result.prato}
+                          </h3>
+                          <div className="grid grid-cols-2 gap-2">
+                            {scan.result.itens!.map((item) => (
+                              <div key={item.alimento} className="flex items-center justify-between p-2 rounded-lg bg-secondary/50 text-xs">
+                                <span className="text-foreground font-medium">{item.alimento}</span>
+                                <span className="text-primary font-semibold">{Math.round(item.calorias)} cal</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        {scan.result.avaliacao && (
+                          <p className="text-xs text-muted-foreground italic">{scan.result.avaliacao}</p>
+                        )}
+                      </>
                     )}
                   </div>
                 )}

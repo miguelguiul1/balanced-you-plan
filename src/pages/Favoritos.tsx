@@ -10,8 +10,9 @@ import { ListSkeleton } from "@/components/ds/Skeletons";
 const order: FavCategory[] = ["receita", "alimento", "artigo", "ia", "plano"];
 
 const Favoritos = () => {
-  const { items, removeFavorite } = useGlobalFavorites();
-  const { data: foodFavs = [], isLoading } = useFavorites();
+  const { items, removeFavorite, loading: globalLoading } = useGlobalFavorites();
+  const { data: foodFavs = [], isLoading: foodLoading } = useFavorites();
+  const isLoading = foodLoading || globalLoading;
 
   const empty = items.length === 0 && foodFavs.length === 0;
 

@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders, json, requireUser, rateLimit, readJson, isResponse } from "../_shared/guard.ts";
+import { loadUserContext } from "../_shared/userContext.ts";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -13,7 +14,7 @@ serve(async (req) => {
   try {
     const body = await readJson(req);
     if (isResponse(body)) return body;
-    const { action, foodName: rawFood, quantity: rawQty, dailyLog, preferences } = body as Record<string, unknown> as any;
+    const { action, foodName: rawFood, quantity: rawQty, dailyLog } = body as Record<string, unknown> as any;
     if (action !== "estimate" && action !== "analyze") return json({ error: "Ação inválida." }, 400);
     const foodName = typeof rawFood === "string" ? rawFood.slice(0, 200) : "";
     const quantity = typeof rawQty === "string" ? rawQty.slice(0, 100) : "";
@@ -21,6 +22,14 @@ serve(async (req) => {
     if (action === "analyze" && !Array.isArray(dailyLog)) return json({ error: "Registro inválido." }, 400);
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+
+    // Contexto do usuário vem do banco para ações que precisam de preferências.
+    let prefContext = "";
+    if (action === "analyze") {
+      const ctx = await loadUserContext(req, auth.userId);
+      if (isResponse(ctx)) return ctx;
+      if (ctx.preferences?.objective) prefContext = `\nObjetivo do usuário: ${ctx.preferences.objective}`;
+    }
 
     let systemPrompt = "";
     let userPrompt = "";
@@ -33,9 +42,6 @@ Valores devem ser para a quantidade especificada. Seja preciso baseando-se em ta
       userPrompt = `Alimento: ${foodName}, Quantidade: ${quantity}`;
     } else if (action === "analyze") {
       // Analyze daily consumption
-      let prefContext = "";
-      if (preferences?.objective) prefContext = `\nObjetivo do usuário: ${preferences.objective}`;
-      
       systemPrompt = `Você é o Evolua Plus AI, assistente de nutrição baseado em IA (NÃO é nutricionista nem médico; não diagnostique nem prescreva). Analise o consumo alimentar diário e retorne APENAS JSON (sem markdown):
 {
   "resumo": {"calorias_total": number, "proteina_total": number, "carb_total": number, "gordura_total": number, "fibra_total": number},
