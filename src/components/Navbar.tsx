@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import GlobalSearch from "@/components/GlobalSearch";
 import NotificationCenter from "@/components/NotificationCenter";
-import logoImg from "@/assets/logo evolua plus.png";
+import BrandLogo from "@/components/BrandLogo";
 
 const appLinks = [
   { path: "/", label: "Início" },
@@ -57,7 +57,7 @@ const Navbar = () => {
 
   const Logo = () => (
     <Link to="/" className="group flex items-center gap-2" aria-label="Evolua Plus — página inicial">
-      <img src={logoImg} alt="Evolua Plus" className="h-8 w-auto transition-transform group-hover:scale-105" />
+      <BrandLogo size="sm" className="transition-transform group-hover:scale-105" />
     </Link>
   );
 
