@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Mail, Lock, User, ArrowRight, Eye, EyeOff, Leaf, Heart } from "lucide-react";
-import logoImg from "@/assets/logo evolua plus.png";
+import BrandLogo from "@/components/BrandLogo";
 
 
 const traduzErro = (msg: string) => {
@@ -115,7 +115,7 @@ const Auth = () => {
         {/* Content */}
         <div className="relative z-10 text-center px-6 max-w-lg">
           <div className="animate-fade-up">
-            <img src={logoImg} alt="Evolua Plus" className="mx-auto h-20 sm:h-24 w-auto mb-6" />
+            <BrandLogo size="lg" className="mx-auto mb-6 flex-col gap-3" />
           </div>
 
           <h1

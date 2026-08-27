@@ -57,7 +57,7 @@ const Navbar = () => {
 
   const Logo = () => (
     <Link to="/" className="group flex items-center gap-2" aria-label="Evolua Plus — página inicial">
-      <img src={logoImg} alt="Evolua Plus" className="h-8 w-auto transition-transform group-hover:scale-105" />
+      <BrandLogo size="sm" className="transition-transform group-hover:scale-105" />
     </Link>
   );
 
