@@ -110,6 +110,8 @@ const App = () => (
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/reset-password" element={<ResetPassword />} />
                   <Route path="/" element={<Index />} />
+                  <Route path="/index" element={<Navigate to="/" replace />} />
+                  <Route path="/home" element={<Navigate to="/" replace />} />
                   <Route path="/onboarding" element={<P><Onboarding /></P>} />
                   <Route path="/dashboard" element={<P><Dashboard /></P>} />
 
