@@ -20,20 +20,27 @@ const quotes = [
 ];
 
 const MotivationalQuote = () => {
-  const [index, setIndex] = useState(0);
+  const [index, setIndex] = useState(() => Math.floor(Math.random() * quotes.length));
+  const [paused, setPaused] = useState(false);
 
   useEffect(() => {
-    setIndex(Math.floor(Math.random() * quotes.length));
+    if (paused) return;
     const interval = setInterval(() => {
       setIndex((prev) => (prev + 1) % quotes.length);
     }, 10000);
     return () => clearInterval(interval);
-  }, []);
+  }, [paused]);
 
   return (
-    <div className="bg-primary/5 border border-primary/10 rounded-2xl p-6 text-center">
-      <Sparkles className="w-5 h-5 text-primary mx-auto mb-3" />
-      <p className="font-display text-lg sm:text-xl font-semibold text-foreground italic leading-relaxed">
+    <div
+      className="bg-primary/5 border border-primary/10 rounded-2xl p-6 text-center"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocus={() => setPaused(true)}
+      onBlur={() => setPaused(false)}
+    >
+      <Sparkles className="w-5 h-5 text-primary mx-auto mb-3" aria-hidden="true" />
+      <p aria-live="polite" className="font-display text-lg sm:text-xl font-semibold text-foreground italic leading-relaxed">
         "{quotes[index].text}"
       </p>
     </div>

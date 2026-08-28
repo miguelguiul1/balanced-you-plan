@@ -23,20 +23,33 @@ const WaterTracker = ({ compact = false }: Props) => {
   const [total, setTotal] = useState(0);
   const [goal, setGoal] = useState(2500);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [retryKey, setRetryKey] = useState(0);
   const today = todayISO();
 
   const load = async () => {
-    if (!user) return;
-    const [{ data: logs }, { data: goals }] = await Promise.all([
-      supabase.from("water_log").select("amount_ml").eq("user_id", user.id).eq("logged_at", today),
-      supabase.from("user_goals").select("water_goal_ml").eq("user_id", user.id).maybeSingle(),
-    ]);
-    setTotal((logs || []).reduce((s, r: any) => s + (r.amount_ml || 0), 0));
-    if (goals?.water_goal_ml) setGoal(goals.water_goal_ml);
-    setLoading(false);
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    setLoadError(false);
+    try {
+      const [{ data: logs, error: logsErr }, { data: goals, error: goalsErr }] = await Promise.all([
+        supabase.from("water_log").select("amount_ml").eq("user_id", user.id).eq("logged_at", today),
+        supabase.from("user_goals").select("water_goal_ml").eq("user_id", user.id).maybeSingle(),
+      ]);
+      if (logsErr || goalsErr) throw logsErr || goalsErr;
+      setTotal((logs || []).reduce((s, r: any) => s + (r.amount_ml || 0), 0));
+      if (goals?.water_goal_ml) setGoal(goals.water_goal_ml);
+    } catch {
+      setLoadError(true);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  useEffect(() => { load(); /* eslint-disable-next-line */ }, [user]);
+  useEffect(() => { load(); /* eslint-disable-next-line */ }, [user, retryKey]);
 
   const addWater = async (ml: number) => {
     if (!user) { toast.error("Faça login para registrar"); return; }
@@ -75,7 +88,7 @@ const WaterTracker = ({ compact = false }: Props) => {
           <div>
             <h3 className="font-display font-semibold text-foreground text-sm">Hidratação</h3>
             <p className="text-xs text-muted-foreground">
-              {loading ? "..." : `${(total / 1000).toFixed(2)}L de ${(goal / 1000).toFixed(1)}L`}
+              {loading ? "..." : loadError ? "indisponível" : `${(total / 1000).toFixed(2)}L de ${(goal / 1000).toFixed(1)}L`}
             </p>
           </div>
         </div>
@@ -88,7 +101,20 @@ const WaterTracker = ({ compact = false }: Props) => {
           style={{ width: `${pct}%` }}
         />
       </div>
-      <p className="text-xs text-muted-foreground mb-4 min-h-4">{motivational(pct)}</p>
+      {loadError ? (
+        <div className="mt-3 flex items-center justify-between gap-2 rounded-lg bg-destructive/10 border border-destructive/30 p-3">
+          <p className="text-xs text-destructive">Não foi possível carregar sua hidratação.</p>
+          <button
+            type="button"
+            onClick={() => setRetryKey((k) => k + 1)}
+            className="text-xs font-medium text-destructive underline"
+          >
+            Tentar novamente
+          </button>
+        </div>
+      ) : (
+        <p className="text-xs text-muted-foreground mb-4 min-h-4">{motivational(pct)}</p>
+      )}
 
       <div className={`grid ${compact ? "grid-cols-4" : "grid-cols-2 sm:grid-cols-4"} gap-2`}>
         {INCREMENTS.map((ml) => (

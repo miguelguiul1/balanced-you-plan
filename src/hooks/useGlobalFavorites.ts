@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -12,6 +12,8 @@ export type FavItem = {
   to?: string;
   createdAt: string;
 };
+
+export type ToggleFavoriteResult = { ok: boolean; added: boolean };
 
 export const categoryLabels: Record<FavCategory, string> = {
   receita: "Receitas",
@@ -29,10 +31,22 @@ export const useGlobalFavorites = () => {
   const { user } = useAuth();
   const [items, setItems] = useState<FavItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const itemsRef = useRef<FavItem[]>([]);
+
+  // Mantém o ref sincronizado imediatamente com cada atualização de estado,
+  // evitando toggles concorrentes lerem a lista desatualizada.
+  const commitItems = useCallback((updater: (prev: FavItem[]) => FavItem[]) => {
+    setItems((prev) => {
+      const next = updater(prev);
+      itemsRef.current = next;
+      return next;
+    });
+  }, []);
 
   // Carrega favoritos do Supabase ao montar ou ao mudar o usuário.
   useEffect(() => {
     if (!user) {
+      itemsRef.current = [];
       setItems([]);
       setLoading(false);
       return;
@@ -47,9 +61,9 @@ export const useGlobalFavorites = () => {
         if (cancelled) return;
         if (error) {
           console.error("Erro ao carregar favoritos:", error.message);
-          setItems([]);
+          commitItems(() => []);
         } else {
-          setItems(
+          commitItems(() =>
             (data ?? []).map((r) => ({
               id: r.item_id,
               category: r.category as FavCategory,
@@ -63,7 +77,7 @@ export const useGlobalFavorites = () => {
         setLoading(false);
       });
     return () => { cancelled = true; };
-  }, [user]);
+  }, [user, commitItems]);
 
   const isFavorite = useCallback(
     (category: FavCategory, id: string) => items.some((i) => i.category === category && i.id === id),
@@ -71,9 +85,9 @@ export const useGlobalFavorites = () => {
   );
 
   const toggleFavorite = useCallback(
-    async (item: Omit<FavItem, "createdAt">): Promise<boolean> => {
-      if (!user) return false;
-      const exists = items.some((i) => i.category === item.category && i.id === item.id);
+    async (item: Omit<FavItem, "createdAt">): Promise<ToggleFavoriteResult> => {
+      if (!user) return { ok: false, added: false };
+      const exists = itemsRef.current.some((i) => i.category === item.category && i.id === item.id);
 
       if (exists) {
         const { error } = await supabase
@@ -84,10 +98,10 @@ export const useGlobalFavorites = () => {
           .eq("item_id", item.id);
         if (error) {
           console.error("Erro ao remover favorito:", error.message);
-          return false;
+          return { ok: false, added: true };
         }
-        setItems((prev) => prev.filter((i) => !(i.category === item.category && i.id === item.id)));
-        return false;
+        commitItems((prev) => prev.filter((i) => !(i.category === item.category && i.id === item.id)));
+        return { ok: true, added: false };
       }
 
       const { error } = await supabase.from("global_favorites").insert({
@@ -100,18 +114,18 @@ export const useGlobalFavorites = () => {
       });
       if (error) {
         console.error("Erro ao adicionar favorito:", error.message);
-        return false;
+        return { ok: false, added: false };
       }
       const now = new Date().toISOString();
-      setItems((prev) => [{ ...item, createdAt: now }, ...prev]);
-      return true;
+      commitItems((prev) => [{ ...item, createdAt: now }, ...prev]);
+      return { ok: true, added: true };
     },
-    [user, items]
+    [user, commitItems]
   );
 
   const removeFavorite = useCallback(
-    async (category: FavCategory, id: string) => {
-      if (!user) return;
+    async (category: FavCategory, id: string): Promise<boolean> => {
+      if (!user) return false;
       const { error } = await supabase
         .from("global_favorites")
         .delete()
@@ -120,11 +134,12 @@ export const useGlobalFavorites = () => {
         .eq("item_id", id);
       if (error) {
         console.error("Erro ao remover favorito:", error.message);
-        return;
+        return false;
       }
-      setItems((prev) => prev.filter((i) => !(i.category === category && i.id === id)));
+      commitItems((prev) => prev.filter((i) => !(i.category === category && i.id === id)));
+      return true;
     },
-    [user]
+    [user, commitItems]
   );
 
   return { items, isFavorite, toggleFavorite, removeFavorite, loading };

@@ -15,8 +15,13 @@ const MobileTabBar = () => {
   const { pathname } = useLocation();
   const { user } = useAuth();
 
-  const hidden = ["/", "/auth", "/vendas", "/checkout", "/reset-password"];
-  if (!user || hidden.includes(pathname)) return null;
+  const hidden = ["/", "/auth", "/vendas", "/checkout", "/reset-password", "/onboarding"];
+  const knownRoutes = [
+    "/dashboard", "/diario", "/scanner", "/assistente", "/evolucao",
+    "/preferencias", "/receitas", "/educacao", "/biblioteca", "/historico",
+    "/plano-semanal", "/memoria-ia", "/guias", "/insights", "/favoritos", "/configuracoes",
+  ];
+  if (!user || hidden.includes(pathname) || !knownRoutes.includes(pathname)) return null;
 
   return (
     <nav className="md:hidden fixed bottom-0 inset-x-0 z-50 border-t border-border/60 bg-background/95 backdrop-blur-xl pb-[env(safe-area-inset-bottom)]">

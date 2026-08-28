@@ -86,8 +86,10 @@ const Favoritos = () => {
                           description={`"${f.title}" sairá da sua lista de favoritos.`}
                           confirmLabel="Remover"
                           onConfirm={() => {
-                            removeFavorite(f.category, f.id);
-                            toast.success("Removido dos favoritos");
+                            removeFavorite(f.category, f.id).then((removed) => {
+                              if (removed) toast.success("Removido dos favoritos");
+                              else toast.error("Não foi possível remover. Tente novamente.");
+                            });
                           }}
                           trigger={
                             <button

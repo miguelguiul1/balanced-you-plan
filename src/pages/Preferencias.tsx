@@ -20,6 +20,9 @@ const Preferencias = () => {
   const [otherRestriction, setOtherRestriction] = useState("");
   const [selectedObjective, setSelectedObjective] = useState("");
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState(false);
+  const [retryKey, setRetryKey] = useState(0);
   const [objectiveError, setObjectiveError] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -27,13 +30,26 @@ const Preferencias = () => {
 
   // Load preferences from DB
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      setLoading(false);
+      setLoadError(false);
+      return;
+    }
+    let cancelled = false;
+    setLoading(true);
+    setLoadError(false);
     const load = async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("user_preferences")
         .select("*")
         .eq("user_id", user.id)
         .maybeSingle();
+      if (cancelled) return;
+      if (error) {
+        setLoadError(true);
+        setLoading(false);
+        return;
+      }
       if (data) {
         // Valores legados são normalizados para a taxonomia única de objectives.ts
         setSelectedObjective(normalizeObjective(data.objective) ?? "");
@@ -44,9 +60,13 @@ const Preferencias = () => {
         const other = all.find((r: string) => !RESTRICTIONS.includes(r));
         if (other) setOtherRestriction(other);
       }
+      setLoading(false);
     };
     load();
-  }, [user]);
+    return () => { cancelled = true; };
+  }, [user, retryKey]);
+
+  const busy = saving || loading;
 
   const toggleLiked = (food: string) => {
     setDisliked((prev) => prev.filter((f) => f !== food));
@@ -123,6 +143,22 @@ const Preferencias = () => {
 
         <MotivationalQuote />
 
+        {loadError && (
+          <div role="alert" className="mt-6 bg-destructive/10 border border-destructive/30 rounded-xl p-4 flex items-center justify-between gap-3">
+            <p className="text-sm text-destructive">
+              Não foi possível carregar suas preferências salvas.
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setRetryKey((k) => k + 1)}
+              disabled={busy}
+            >
+              Tentar novamente
+            </Button>
+          </div>
+        )}
+
         {/* Objective */}
         <div className="mt-10" id="objetivo-section">
           <h2 className="font-display text-xl font-semibold text-foreground mb-1 flex items-center gap-2">
@@ -142,8 +178,9 @@ const Preferencias = () => {
                   setSelectedObjective(obj.id);
                   if (objectiveError) setObjectiveError(false);
                 }}
+                disabled={busy}
                 aria-pressed={selectedObjective === obj.id}
-                className={`p-4 rounded-xl border-2 transition-all text-left ${
+                className={`p-4 rounded-xl border-2 transition-all text-left disabled:opacity-60 ${
                   selectedObjective === obj.id
                     ? "border-primary bg-primary/5"
                     : "border-border hover:border-primary/30"
@@ -167,7 +204,9 @@ const Preferencias = () => {
               <button
                 key={r}
                 onClick={() => toggleRestriction(r)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                disabled={busy}
+                aria-pressed={selectedRestrictions.includes(r)}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all disabled:opacity-60 ${
                   selectedRestrictions.includes(r)
                     ? "bg-accent text-accent-foreground"
                     : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
@@ -181,6 +220,7 @@ const Preferencias = () => {
             type="text"
             value={otherRestriction}
             onChange={(e) => setOtherRestriction(e.target.value)}
+            aria-label="Outra restrição"
             placeholder="Outra restrição (ex: alergia a nozes, FODMAP...)"
             maxLength={100}
             className="mt-3 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -193,8 +233,8 @@ const Preferencias = () => {
             Selecione seus alimentos
           </h2>
           <p className="text-sm text-muted-foreground mb-6">
-            <Heart className="w-4 h-4 inline text-primary" /> = gosto &nbsp;
-            <ThumbsDown className="w-4 h-4 inline text-destructive" /> = não gosto
+            <Heart className="w-4 h-4 inline text-primary" aria-hidden="true" /> = gosto &nbsp;
+            <ThumbsDown className="w-4 h-4 inline text-destructive" aria-hidden="true" /> = não gosto
           </p>
 
           {Object.entries(ALL_FOODS).map(([category, foods]) => (
@@ -210,25 +250,30 @@ const Preferencias = () => {
                     <div key={food} className="flex items-center gap-0.5">
                       <button
                         onClick={() => toggleLiked(food)}
-                        className={`pl-3 pr-1 py-1.5 rounded-l-full text-sm font-medium transition-all border-2 border-r-0 ${
+                        disabled={busy}
+                        aria-pressed={isLiked}
+                        className={`pl-3 pr-1 py-1.5 rounded-l-full text-sm font-medium transition-all border-2 border-r-0 disabled:opacity-60 ${
                           isLiked
                             ? "bg-primary/10 border-primary text-primary"
                             : "bg-secondary border-border text-secondary-foreground hover:border-primary/30"
                         }`}
                       >
                         {food}
-                        {isLiked && <Check className="w-3 h-3 inline ml-1" />}
+                        {isLiked && <Check className="w-3 h-3 inline ml-1" aria-hidden="true" />}
                       </button>
                       <button
                         onClick={() => toggleDisliked(food)}
-                        className={`px-2 py-1.5 rounded-r-full text-sm transition-all border-2 border-l-0 ${
+                        disabled={busy}
+                        aria-label={`Não gosto de ${food}`}
+                        aria-pressed={isDisliked}
+                        className={`px-2 py-1.5 rounded-r-full text-sm transition-all border-2 border-l-0 disabled:opacity-60 ${
                           isDisliked
                             ? "bg-destructive/10 border-destructive text-destructive"
                             : "bg-secondary border-border text-muted-foreground hover:border-destructive/30"
                         }`}
                         title="Não gosto"
                       >
-                        <X className="w-3 h-3" />
+                        <X className="w-3 h-3" aria-hidden="true" />
                       </button>
                     </div>
                   );
@@ -263,8 +308,8 @@ const Preferencias = () => {
               <p className="font-medium text-destructive">{disliked.length} marcados</p>
             </div>
           </div>
-          <Button variant="hero" size="lg" className="w-full mt-6" onClick={handleSave} disabled={saving}>
-            {saving ? "Salvando..." : "Salvar preferências"}
+          <Button variant="hero" size="lg" className="w-full mt-6" onClick={handleSave} disabled={busy}>
+            {saving ? "Salvando..." : loading ? "Carregando..." : "Salvar preferências"}
           </Button>
           {!user && (
             <p className="text-xs text-muted-foreground text-center mt-3">

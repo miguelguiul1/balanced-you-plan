@@ -1,7 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Clock, DollarSign, Flame, Search, Heart, SlidersHorizontal } from "lucide-react";
+import { toast } from "sonner";
 import MotivationalQuote from "@/components/MotivationalQuote";
+import { useGlobalFavorites } from "@/hooks/useGlobalFavorites";
 
 import { Receita, receitas, allTags, tagLabels } from "@/data/receitas";
 
@@ -19,20 +21,28 @@ const Receitas = () => {
   const [minProteina, setMinProteina] = useState(0);
   const [sortBy, setSortBy] = useState<"padrao" | "calorias" | "proteina" | "tempo" | "custo">("padrao");
   const [onlyFavs, setOnlyFavs] = useState(false);
-  const [favs, setFavs] = useState<number[]>(() => {
+  const { items: globalFavs, isFavorite, toggleFavorite } = useGlobalFavorites();
+  const pendingFav = useRef<Set<number>>(new Set());
+  const favCount = globalFavs.filter((f) => f.category === "receita").length;
+
+  const handleToggleFav = async (r: Receita) => {
+    if (pendingFav.current.has(r.id)) return;
+    pendingFav.current.add(r.id);
     try {
-      return JSON.parse(localStorage.getItem("receitasFavoritas") || "[]");
-    } catch {
-      return [];
+      const res = await toggleFavorite({
+        id: String(r.id),
+        category: "receita",
+        title: r.nome,
+        subtitle: `${r.tempo} · ${r.calorias} kcal · ${r.proteina}g de proteína`,
+        to: "/receitas",
+      });
+      if (!res.ok) {
+        toast.error("Não foi possível salvar o favorito. Verifique sua conexão e tente de novo.");
+      }
+    } finally {
+      pendingFav.current.delete(r.id);
     }
-  });
-
-  useEffect(() => {
-    localStorage.setItem("receitasFavoritas", JSON.stringify(favs));
-  }, [favs]);
-
-  const toggleFav = (id: number) =>
-    setFavs((prev) => (prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id]));
+  };
 
   const filtered = useMemo(() => {
     const list = receitas.filter((r) => {
@@ -40,7 +50,7 @@ const Receitas = () => {
       const matchSearch =
         r.nome.toLowerCase().includes(q) || r.ingredientes.some((i) => i.toLowerCase().includes(q));
       const matchTag = !activeTag || r.tags.includes(activeTag);
-      const matchFav = !onlyFavs || favs.includes(r.id);
+      const matchFav = !onlyFavs || isFavorite("receita", String(r.id));
       const matchTempo = !maxTempo || minutos(r.tempo) <= maxTempo;
       const matchCusto = !maxCusto || reais(r.custo) <= maxCusto;
       const matchCal = !maxCalorias || r.calorias <= maxCalorias;
@@ -54,7 +64,7 @@ const Receitas = () => {
     if (sortBy === "tempo") sorted.sort((a, b) => minutos(a.tempo) - minutos(b.tempo));
     if (sortBy === "custo") sorted.sort((a, b) => reais(a.custo) - reais(b.custo));
     return sorted;
-  }, [search, activeTag, onlyFavs, favs, maxTempo, maxCusto, maxCalorias, minProteina, sortBy]);
+  }, [search, activeTag, onlyFavs, isFavorite, maxTempo, maxCusto, maxCalorias, minProteina, sortBy]);
 
   const limparFiltros = () => {
     setSearch(""); setActiveTag(""); setOnlyFavs(false);
@@ -81,6 +91,7 @@ const Receitas = () => {
           <input
             type="text"
             placeholder="Buscar por receita ou ingrediente..."
+            aria-label="Buscar por receita ou ingrediente"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full h-12 pl-12 pr-4 rounded-xl border-2 border-border bg-background text-foreground focus:border-primary focus:outline-none transition-colors"
@@ -114,7 +125,7 @@ const Receitas = () => {
               onlyFavs ? "bg-accent text-accent-foreground" : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
             }`}
           >
-            <Heart className={`w-3.5 h-3.5 ${onlyFavs ? "fill-current" : ""}`} /> Favoritas ({favs.length})
+            <Heart className={`w-3.5 h-3.5 ${onlyFavs ? "fill-current" : ""}`} /> Favoritas ({favCount})
           </button>
         </div>
 
@@ -171,41 +182,47 @@ const Receitas = () => {
               key={r.id}
               className="bg-card rounded-2xl shadow-soft overflow-hidden border border-border/50 hover:border-primary/20 transition-colors"
             >
-              <button
-                onClick={() => setExpanded(expanded === r.id ? null : r.id)}
-                className="w-full p-5 text-left"
-              >
-                <div className="flex items-center justify-between">
-                  <h3 className="font-display font-semibold text-foreground flex items-center gap-2">
-                    <span
-                      role="button"
-                      tabIndex={0}
-                      aria-label={favs.includes(r.id) ? "Remover dos favoritos" : "Adicionar aos favoritos"}
-                      onClick={(e) => { e.stopPropagation(); toggleFav(r.id); }}
-                      onKeyDown={(e) => { if (e.key === "Enter") { e.stopPropagation(); toggleFav(r.id); } }}
-                      className="text-muted-foreground hover:text-accent transition-colors"
-                    >
-                      <Heart className={`w-4 h-4 ${favs.includes(r.id) ? "fill-accent text-accent" : ""}`} />
-                    </span>
-                    {r.nome}
-                  </h3>
-                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                    <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{r.tempo}</span>
-                    <span className="flex items-center gap-1"><DollarSign className="w-3 h-3" />{r.custo}</span>
-                    <span className="flex items-center gap-1"><Flame className="w-3 h-3" />{r.calorias}cal</span>
-                  </div>
+              <div className="p-5">
+                <div className="flex items-start gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setExpanded(expanded === r.id ? null : r.id)}
+                    aria-expanded={expanded === r.id}
+                    aria-controls={`receita-detalhe-${r.id}`}
+                    className="flex-1 min-w-0 text-left"
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <h3 className="font-display font-semibold text-foreground">
+                        {r.nome}
+                      </h3>
+                      <div className="flex items-center gap-3 text-xs text-muted-foreground shrink-0">
+                        <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{r.tempo}</span>
+                        <span className="flex items-center gap-1"><DollarSign className="w-3 h-3" />{r.custo}</span>
+                        <span className="flex items-center gap-1"><Flame className="w-3 h-3" />{r.calorias}cal</span>
+                      </div>
+                    </div>
+                    <div className="flex gap-2 mt-2">
+                      {r.tags.map((t) => (
+                        <span key={t} className="text-xs px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground">
+                          {tagLabels[t]}
+                        </span>
+                      ))}
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleToggleFav(r)}
+                    aria-pressed={isFavorite("receita", String(r.id))}
+                    aria-label={isFavorite("receita", String(r.id)) ? `Remover ${r.nome} dos favoritos` : `Adicionar ${r.nome} aos favoritos`}
+                    className="shrink-0 mt-0.5 p-1.5 rounded-lg text-muted-foreground hover:text-accent hover:bg-secondary/60 transition-colors"
+                  >
+                    <Heart className={`w-4 h-4 ${isFavorite("receita", String(r.id)) ? "fill-accent text-accent" : ""}`} aria-hidden="true" />
+                  </button>
                 </div>
-                <div className="flex gap-2 mt-2">
-                  {r.tags.map((t) => (
-                    <span key={t} className="text-xs px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground">
-                      {tagLabels[t]}
-                    </span>
-                  ))}
-                </div>
-              </button>
+              </div>
 
               {expanded === r.id && (
-                <div className="px-5 pb-5 border-t border-border pt-4 animate-fade-in">
+                <div id={`receita-detalhe-${r.id}`} className="px-5 pb-5 border-t border-border pt-4 animate-fade-in">
                   <div className="grid grid-cols-4 gap-2 text-center mb-4">
                     <div className="bg-secondary/50 rounded-lg p-2">
                       <p className="font-display font-bold text-foreground text-sm">{r.calorias}</p>

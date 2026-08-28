@@ -76,7 +76,11 @@ const Configuracoes = () => {
     setSaving(true);
     const { error } = await supabase.from("profiles").update({ full_name: fullName }).eq("id", user.id);
     setSaving(false);
-    error ? toast.error("Não foi possível salvar") : toast.success("Perfil atualizado");
+    if (error) {
+      toast.error("Não foi possível salvar");
+    } else {
+      toast.success("Perfil atualizado");
+    }
   };
 
   const changePassword = async () => {
@@ -84,7 +88,11 @@ const Configuracoes = () => {
     const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
       redirectTo: `${window.location.origin}/reset-password`,
     });
-    error ? toast.error("Erro ao enviar e-mail") : toast.success("Enviamos um link de redefinição para seu e-mail");
+    if (error) {
+      toast.error("Erro ao enviar e-mail");
+    } else {
+      toast.success("Enviamos um link de redefinição para seu e-mail");
+    }
   };
 
   const exportData = async () => {

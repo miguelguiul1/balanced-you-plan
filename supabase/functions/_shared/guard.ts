@@ -13,7 +13,13 @@ export const json = (body: unknown, status = 200) =>
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 
-/** Valida o JWT e devolve o user id. Nunca confie em ids enviados pelo cliente. */
+/**
+ * Valida o JWT e devolve o user id. Nunca confie em ids enviados pelo cliente.
+ *
+ * getUser() verifica a assinatura/validade do token no servidor de autenticação —
+ * NÃO apenas decodifica claims como getClaims(). Isso garante que um JWT forjado
+ * ou expirado seja rejeitado mesmo se o gateway não tiver verificado (ex.: dev local).
+ */
 export async function requireUser(req: Request): Promise<{ userId: string } | Response> {
   const authHeader = req.headers.get("Authorization");
   if (!authHeader?.startsWith("Bearer ")) return json({ error: "Não autenticado" }, 401);
@@ -22,11 +28,11 @@ export async function requireUser(req: Request): Promise<{ userId: string } | Re
     const anon = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_ANON_KEY")!,
+      { auth: { persistSession: false, autoRefreshToken: false } },
     );
-    const { data, error } = await anon.auth.getClaims(token);
-    const sub = data?.claims?.sub as string | undefined;
-    if (error || !sub) return json({ error: "Sessão inválida ou expirada" }, 401);
-    return { userId: sub };
+    const { data, error } = await anon.auth.getUser(token);
+    if (error || !data?.user?.id) return json({ error: "Sessão inválida ou expirada" }, 401);
+    return { userId: data.user.id };
   } catch {
     return json({ error: "Sessão inválida ou expirada" }, 401);
   }

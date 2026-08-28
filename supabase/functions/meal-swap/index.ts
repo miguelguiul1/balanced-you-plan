@@ -23,10 +23,10 @@ const normalizeObjective = (raw?: string | null): string | null => {
 const sanitizeRefeicao = (r: Record<string, unknown>) => ({
   tipo: clampText(r?.tipo, 40),
   nome: clampText(r?.nome, 120),
-  calorias: clampText(r?.calorias, 10),
-  proteina: clampText(r?.proteina, 10),
-  carb: clampText(r?.carb, 10),
-  gordura: clampText(r?.gordura, 10),
+  calorias: clampText(String(r?.calorias ?? ""), 10),
+  proteina: clampText(String(r?.proteina ?? ""), 10),
+  carb: clampText(String(r?.carb ?? ""), 10),
+  gordura: clampText(String(r?.gordura ?? ""), 10),
 });
 
 serve(async (req) => {

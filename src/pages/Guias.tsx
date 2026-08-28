@@ -91,8 +91,8 @@ const Guias = () => {
   const [openIdx, setOpenIdx] = useState<number | null>(0);
 
   return (
-    <main className="min-h-screen pt-24 pb-12 bg-background">
-      <div className="container mx-auto px-4 max-w-3xl">
+    <div className="min-h-screen bg-background pt-20 pb-24 md:pb-16">
+      <div className="container mx-auto px-6 max-w-3xl">
         <div className="mb-8">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium mb-3">
             <BookOpen className="w-3 h-3" /> Guias práticos
@@ -110,6 +110,8 @@ const Guias = () => {
             <Card key={i} className="border-border/60 overflow-hidden">
               <button
                 onClick={() => setOpenIdx(openIdx === i ? null : i)}
+                aria-expanded={openIdx === i}
+                aria-controls={`guia-conteudo-${i}`}
                 className="w-full text-left"
               >
                 <CardContent className="p-5 flex items-center justify-between">
@@ -124,7 +126,7 @@ const Guias = () => {
                 </CardContent>
               </button>
               {openIdx === i && (
-                <div className="px-5 pb-5 border-t border-border pt-4">
+                <div id={`guia-conteudo-${i}`} className="px-5 pb-5 border-t border-border pt-4">
                   <div className="text-sm text-foreground leading-relaxed whitespace-pre-line">
                     {g.conteudo.split("**").map((chunk, idx) =>
                       idx % 2 === 1
@@ -138,7 +140,7 @@ const Guias = () => {
           ))}
         </div>
       </div>
-    </main>
+    </div>
   );
 };
 

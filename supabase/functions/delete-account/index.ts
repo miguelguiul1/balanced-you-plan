@@ -18,11 +18,12 @@ Deno.serve(async (req) => {
   const anon = createClient(SUPABASE_URL, Deno.env.get('SUPABASE_ANON_KEY')!)
   const token = authHeader.replace('Bearer ', '')
 
-  const { data: claimsData, error: claimsError } = await anon.auth.getClaims(token)
-  if (claimsError || !claimsData?.claims?.sub) return json({ error: 'Unauthorized' }, 401)
+  // getUser() verifica a assinatura do token no servidor de auth (não apenas decodifica).
+  const { data, error: userError } = await anon.auth.getUser(token)
+  if (userError || !data?.user?.id) return json({ error: 'Unauthorized' }, 401)
 
   // O ID vem SEMPRE do token verificado — nunca do corpo da requisição.
-  const userId = claimsData.claims.sub as string
+  const userId = data.user.id
 
   const admin = createClient(SUPABASE_URL, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, {
     auth: { autoRefreshToken: false, persistSession: false },
@@ -43,7 +44,8 @@ Deno.serve(async (req) => {
     ]
     for (const t of tables) {
       const { error } = await admin.from(t).delete().eq('user_id', userId)
-      if (error) throw new Error(`${t}: ${error.message}`)
+      // Tabela ainda não criada (migration não aplicada) não deve abortar a exclusão.
+      if (error && !/relation .* does not exist/i.test(error.message)) throw new Error(`${t}: ${error.message}`)
     }
     const { error: profileError } = await admin.from('profiles').delete().eq('id', userId)
     if (profileError) throw new Error(`profiles: ${profileError.message}`)

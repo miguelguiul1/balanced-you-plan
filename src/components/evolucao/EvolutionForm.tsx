@@ -181,7 +181,7 @@ const EvolutionForm = ({
                 return (
                   <label
                     key={t.key}
-                    className="relative aspect-[3/4] rounded-xl border border-dashed border-border bg-secondary/40 flex flex-col items-center justify-center gap-1 cursor-pointer overflow-hidden hover:border-primary/60 transition-colors"
+                    className="relative aspect-[3/4] rounded-xl border border-dashed border-border bg-secondary/40 flex flex-col items-center justify-center gap-1 cursor-pointer overflow-hidden hover:border-primary/60 focus-within:ring-2 focus-within:ring-ring focus-within:border-primary transition-colors"
                   >
                     {preview ? (
                       <img src={preview} alt={`Foto ${t.label}`} className="absolute inset-0 w-full h-full object-cover" />
@@ -195,7 +195,7 @@ const EvolutionForm = ({
                       <span className="absolute bottom-0 inset-x-0 bg-background/80 text-[11px] text-center py-0.5">{t.label}</span>
                     )}
                     <input
-                      type="file" accept="image/*" className="hidden"
+                      type="file" accept="image/*" className="sr-only"
                       onChange={(e) => setFiles((p) => ({ ...p, [t.key]: e.target.files?.[0] ?? null }))}
                     />
                   </label>

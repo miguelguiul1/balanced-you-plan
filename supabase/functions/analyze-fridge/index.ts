@@ -102,6 +102,16 @@ Regras:
       });
     }
 
+    // Shape esperado: JSON com alimentos, receitas e dicas como arrays.
+    const hasValidShape =
+      parsed && Array.isArray(parsed.alimentos) && Array.isArray(parsed.receitas) && Array.isArray(parsed.dicas);
+    if (!hasValidShape) {
+      console.error("Unexpected AI shape:", content.substring(0, 300));
+      return new Response(JSON.stringify({ error: "Erro ao interpretar a resposta da IA" }), {
+        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     return new Response(JSON.stringify(parsed), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

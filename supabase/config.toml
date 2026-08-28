@@ -1,13 +1,13 @@
 project_id = "icmyqmvcwzdfleuxyiux"
 
 [functions.analyze-fridge]
-verify_jwt = false
+verify_jwt = true
 
 [functions.meal-plan]
-verify_jwt = false
+verify_jwt = true
 
 [functions.nutrition-tracker]
-verify_jwt = false
+verify_jwt = true
 
 [functions.myth-checker]
-verify_jwt = false
+verify_jwt = true

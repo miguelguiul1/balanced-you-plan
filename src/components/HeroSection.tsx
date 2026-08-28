@@ -8,9 +8,19 @@ const HeroSection = () => {
   const [scrollY, setScrollY] = useState(0);
 
   useEffect(() => {
-    const onScroll = () => setScrollY(window.scrollY);
+    let raf = 0;
+    const onScroll = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        setScrollY(window.scrollY);
+      });
+    };
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      cancelAnimationFrame(raf);
+    };
   }, []);
 
   const scrollTo = (id: string) => () =>
@@ -90,14 +100,10 @@ const HeroSection = () => {
             className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-xl mx-auto lg:mx-0 animate-fade-up"
             style={{ animationDelay: "0.32s" }}
           >
-            <TrustItem
-              icon={<div className="flex gap-0.5">{Array.from({ length: 5 }).map((_, i) => (<Star key={i} className="w-3 h-3 fill-[hsl(38_92%_55%)] text-[hsl(38_92%_55%)]" />))}</div>}
-              label="4.9 de 5"
-              sub="satisfação"
-            />
-            <TrustItem icon={<Sparkles className="w-4 h-4 text-primary" />} label="+1.000" sub="planos gerados" />
-            <TrustItem icon={<Zap className="w-4 h-4 text-primary" />} label="< 5s" sub="resposta da IA" />
-            <TrustItem icon={<ShieldCheck className="w-4 h-4 text-primary" />} label="Seguro" sub="sem cartão" />
+            <TrustItem icon={<Sparkles className="w-4 h-4 text-primary" />} label="IA" sub="nutrição inteligente" />
+            <TrustItem icon={<Star className="w-4 h-4 text-[hsl(38_92%_55%)]" />} label="Personalizado" sub="para o seu objetivo" />
+            <TrustItem icon={<Zap className="w-4 h-4 text-primary" />} label="Segundos" sub="plano gerado" />
+            <TrustItem icon={<ShieldCheck className="w-4 h-4 text-primary" />} label="Beta grátis" sub="sem cartão" />
           </div>
         </div>
 

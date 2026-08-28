@@ -3,7 +3,7 @@ import { Flame } from "lucide-react";
 const StreakCard = ({ current, best }: { current: number; best: number }) => (
   <div className="bg-card rounded-2xl shadow-soft border border-border/50 p-5 flex items-center gap-4">
     <span className="w-12 h-12 rounded-xl bg-accent/10 text-accent flex items-center justify-center shrink-0">
-      <Flame className={`w-6 h-6 ${current > 0 ? "animate-pulse" : ""}`} />
+      <Flame className={`w-6 h-6 ${current > 0 ? "animate-pulse" : ""}`} aria-hidden="true" />
     </span>
     <div className="min-w-0">
       <p className="font-display font-semibold text-foreground">

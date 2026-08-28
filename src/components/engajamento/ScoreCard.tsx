@@ -16,7 +16,7 @@ const ScoreCard = ({ score, message, breakdown, compact }: Props) => {
     <div className="bg-card rounded-2xl shadow-soft border border-border/50 p-5">
       <div className="flex items-center gap-4">
         <div className="relative w-24 h-24 shrink-0">
-          <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
+          <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90" aria-hidden="true" focusable="false">
             <circle cx="50" cy="50" r={r} fill="none" strokeWidth="8" className="stroke-secondary" />
             <circle
               cx="50" cy="50" r={r} fill="none" strokeWidth="8" strokeLinecap="round"
@@ -32,7 +32,7 @@ const ScoreCard = ({ score, message, breakdown, compact }: Props) => {
         </div>
         <div className="min-w-0">
           <p className="font-display font-semibold text-foreground flex items-center gap-1.5">
-            <Sparkles className="w-4 h-4 text-accent" /> Score do dia
+            <Sparkles className="w-4 h-4 text-accent" aria-hidden="true" /> Score do dia
           </p>
           <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{message}</p>
         </div>

@@ -34,12 +34,32 @@ const Checkout = () => {
     PLANS[initial] ? initial : "semestral",
   );
   const [form, setForm] = useState({ name: "", email: "", phone: "" });
+  const [errors, setErrors] = useState<{ name?: string; email?: string; phone?: string }>({});
+  const [submitting, setSubmitting] = useState(false);
+  const [paymentUnavailable, setPaymentUnavailable] = useState(false);
 
   const plan = PLANS[selected];
 
+  const isPlaceholderCheckout = () =>
+    !KIRVANO_CHECKOUT_URL || KIRVANO_CHECKOUT_URL === "#" || !/^https?:\/\//.test(KIRVANO_CHECKOUT_URL);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const next: { name?: string; email?: string; phone?: string } = {};
+    if (!form.name.trim()) next.name = "Informe seu nome completo.";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) next.email = "Informe um e-mail válido.";
+    const digits = form.phone.replace(/\D/g, "");
+    if (digits.length < 10 || digits.length > 11) next.phone = "Informe um WhatsApp válido com DDD.";
+    setErrors(next);
+    if (Object.keys(next).length > 0) return;
+    if (isPlaceholderCheckout()) {
+      setPaymentUnavailable(true);
+      return;
+    }
+    setPaymentUnavailable(false);
+    setSubmitting(true);
     window.open(KIRVANO_CHECKOUT_URL, "_blank", "noopener,noreferrer");
+    setTimeout(() => setSubmitting(false), 1500);
   };
 
   return (
@@ -56,7 +76,7 @@ const Checkout = () => {
           </Link>
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <Lock className="w-3.5 h-3.5 text-primary" />
-            Pagamento 100% seguro
+            Assinatura Evolua Plus
           </div>
         </div>
       </div>
@@ -163,9 +183,18 @@ const Checkout = () => {
                       id="name"
                       required
                       value={form.name}
-                      onChange={(e) => setForm({ ...form, name: e.target.value })}
+                      onChange={(e) => {
+                        setForm({ ...form, name: e.target.value });
+                        if (errors.name) setErrors((prev) => ({ ...prev, name: undefined }));
+                        if (paymentUnavailable) setPaymentUnavailable(false);
+                      }}
                       placeholder="Seu nome"
+                      aria-invalid={!!errors.name || undefined}
+                      aria-describedby={errors.name ? "name-error" : undefined}
                     />
+                    {errors.name && (
+                      <p id="name-error" className="text-xs text-destructive">{errors.name}</p>
+                    )}
                   </div>
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div className="grid gap-2">
@@ -175,9 +204,18 @@ const Checkout = () => {
                         type="email"
                         required
                         value={form.email}
-                        onChange={(e) => setForm({ ...form, email: e.target.value })}
+                        onChange={(e) => {
+                          setForm({ ...form, email: e.target.value });
+                          if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }));
+                          if (paymentUnavailable) setPaymentUnavailable(false);
+                        }}
                         placeholder="voce@email.com"
+                        aria-invalid={!!errors.email || undefined}
+                        aria-describedby={errors.email ? "email-error" : undefined}
                       />
+                      {errors.email && (
+                        <p id="email-error" className="text-xs text-destructive">{errors.email}</p>
+                      )}
                     </div>
                     <div className="grid gap-2">
                       <Label htmlFor="phone">WhatsApp</Label>
@@ -185,20 +223,34 @@ const Checkout = () => {
                         id="phone"
                         required
                         value={form.phone}
-                        onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                        onChange={(e) => {
+                          setForm({ ...form, phone: e.target.value });
+                          if (errors.phone) setErrors((prev) => ({ ...prev, phone: undefined }));
+                          if (paymentUnavailable) setPaymentUnavailable(false);
+                        }}
                         placeholder="(11) 90000-0000"
+                        aria-invalid={!!errors.phone || undefined}
+                        aria-describedby={errors.phone ? "phone-error" : undefined}
                       />
+                      {errors.phone && (
+                        <p id="phone-error" className="text-xs text-destructive">{errors.phone}</p>
+                      )}
                     </div>
                   </div>
 
                   <div className="pt-2">
-                    <Button type="submit" variant="hero" size="xl" className="w-full">
+                    <Button type="submit" variant="hero" size="xl" className="w-full" disabled={submitting}>
                       <CreditCard className="w-5 h-5" />
-                      Ir para pagamento seguro
+                      {submitting ? "Abrindo..." : "Assinar agora"}
                     </Button>
+                    {paymentUnavailable && (
+                      <p role="alert" className="mt-3 text-sm text-destructive text-center">
+                        O pagamento ainda não está disponível neste ambiente. Você será avisado quando ativarmos a cobrança.
+                      </p>
+                    )}
                     <p className="text-xs text-muted-foreground text-center mt-3 flex items-center justify-center gap-1.5">
-                      <ShieldCheck className="w-3.5 h-3.5 text-primary" />
-                      Processado pela Kirvano · Pix, cartão ou boleto
+                      <CreditCard className="w-3.5 h-3.5 text-primary" />
+                      Em breve: pagamento por Pix, cartão ou boleto.
                     </p>
                   </div>
                 </form>
@@ -266,10 +318,6 @@ const Checkout = () => {
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <ShieldCheck className="w-4 h-4 text-primary shrink-0" />
                     Garantia incondicional de 7 dias
-                  </div>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Lock className="w-4 h-4 text-primary shrink-0" />
-                    Seus dados são criptografados
                   </div>
                 </div>
               </CardContent>

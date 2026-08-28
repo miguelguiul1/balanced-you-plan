@@ -15,6 +15,7 @@ import {
   Globe,
 } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { PLANS, PLAN_KEYS, formatPrice, currencySymbol, planPrice } from "@/config/plans";
 
 const CHECKOUT_URL = "/checkout";
@@ -69,8 +70,8 @@ const content: Record<Lang, {
       { title: "Resultados Rápidos", description: "Metas alcançáveis com acompanhamento inteligente." },
       { title: "Saúde em Primeiro Lugar", description: "Baseado em ciência nutricional atualizada." },
     ],
-    testimonialsTitle: "O que dizem nossos clientes",
-    testimonialsSub: "Resultados reais de pessoas reais.",
+    testimonialsTitle: "Depoimentos",
+    testimonialsSub: "Exemplos ilustrativos de uso do produto — ainda não há clientes reais.",
     testimonials: [
       { name: "Mariana S.", text: "Em 3 semanas já senti diferença na disposição e perdi 2kg sem passar fome. Super recomendo!", rating: 5 },
       { name: "Carlos R.", text: "Finalmente um plano que cabe no meu bolso e na minha rotina corrida. Melhor investimento que fiz.", rating: 5 },
@@ -124,8 +125,8 @@ const content: Record<Lang, {
       { title: "Fast Results", description: "Achievable goals with smart tracking." },
       { title: "Health First", description: "Based on up-to-date nutritional science." },
     ],
-    testimonialsTitle: "What our clients say",
-    testimonialsSub: "Real results from real people.",
+    testimonialsTitle: "Testimonials",
+    testimonialsSub: "Illustrative examples of product usage — no real customers yet.",
     testimonials: [
       { name: "Mariana S.", text: "In 3 weeks I already felt a difference in energy and lost 2kg without starving. Highly recommend!", rating: 5 },
       { name: "Carlos R.", text: "Finally a plan that fits my budget and my busy routine. Best investment I've made.", rating: 5 },
@@ -161,11 +162,13 @@ const content: Record<Lang, {
 
 const benefitIcons = [Target, Utensils, Clock, Leaf, Zap, Heart];
 
-const FAQItem = ({ q, a }: { q: string; a: string }) => {
+const FAQItem = ({ q, a, id }: { q: string; a: string; id: number }) => {
   const [open, setOpen] = useState(false);
   return (
     <button
       onClick={() => setOpen(!open)}
+      aria-expanded={open}
+      aria-controls={`faq-conteudo-${id}`}
       className="w-full text-left border border-border rounded-xl p-5 transition-all hover:border-primary/30"
     >
       <div className="flex items-center justify-between gap-4">
@@ -175,7 +178,7 @@ const FAQItem = ({ q, a }: { q: string; a: string }) => {
         />
       </div>
       {open && (
-        <p className="mt-3 text-muted-foreground text-sm leading-relaxed">{a}</p>
+        <p id={`faq-conteudo-${id}`} className="mt-3 text-muted-foreground text-sm leading-relaxed">{a}</p>
       )}
     </button>
   );
@@ -192,6 +195,7 @@ const Vendas = () => {
         <div className="flex items-center gap-1 bg-card border border-border rounded-full p-1 shadow-md">
           <button
             onClick={() => setLang("pt")}
+            aria-pressed={lang === "pt"}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-display font-semibold transition-all ${
               lang === "pt"
                 ? "bg-primary text-primary-foreground"
@@ -202,6 +206,7 @@ const Vendas = () => {
           </button>
           <button
             onClick={() => setLang("en")}
+            aria-pressed={lang === "en"}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-display font-semibold transition-all ${
               lang === "en"
                 ? "bg-primary text-primary-foreground"
@@ -230,12 +235,12 @@ const Vendas = () => {
           </p>
 
           <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <a href={CHECKOUT_URL}>
+            <Link to={CHECKOUT_URL}>
               <Button variant="hero" size="xl" className="group">
                 {t.ctaHero}
                 <ArrowRight className="w-5 h-5 ml-1 transition-transform group-hover:translate-x-1" />
               </Button>
-            </a>
+            </Link>
             <span className="text-sm text-muted-foreground flex items-center gap-1.5">
               <ShieldCheck className="w-4 h-4 text-primary" />
               {t.guarantee}
@@ -356,12 +361,12 @@ const Vendas = () => {
                         </li>
                       ))}
                     </ul>
-                    <a href={`${CHECKOUT_URL}?plano=${p.key}`} className="block">
+                    <Link to={`${CHECKOUT_URL}?plano=${p.key}`} className="block">
                       <Button variant={p.highlight ? "hero" : "outline"} size="lg" className="w-full group">
                         {t.pricingCta}
                         <ArrowRight className="w-4 h-4 ml-1 transition-transform group-hover:translate-x-1" />
                       </Button>
-                    </a>
+                    </Link>
                   </CardContent>
                 </Card>
               );
@@ -381,8 +386,8 @@ const Vendas = () => {
             {t.faqTitle}
           </h2>
           <div className="space-y-3">
-            {t.faqs.map((f) => (
-              <FAQItem key={f.q} q={f.q} a={f.a} />
+            {t.faqs.map((f, i) => (
+              <FAQItem key={i} q={f.q} a={f.a} id={i} />
             ))}
           </div>
         </div>
@@ -397,12 +402,12 @@ const Vendas = () => {
           <p className="text-muted-foreground mb-8 max-w-md mx-auto">
             {t.finalSub}
           </p>
-          <a href={CHECKOUT_URL}>
+          <Link to={CHECKOUT_URL}>
             <Button variant="hero" size="xl" className="group">
               {t.finalCta}
               <ArrowRight className="w-5 h-5 ml-1 transition-transform group-hover:translate-x-1" />
             </Button>
-          </a>
+          </Link>
         </div>
       </section>
 

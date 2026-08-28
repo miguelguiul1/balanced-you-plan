@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEngagement } from "@/hooks/useEngagement";
+import { toast } from "sonner";
 
 export type AiInsight = {
   key: string;
@@ -130,6 +131,10 @@ export const useAiInsights = () => {
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["ai_insights", user?.id] }),
+    onError: (e) => {
+      const msg = e instanceof Error ? e.message : "Tente novamente.";
+      toast.error("Não foi possível ignorar este insight agora.", { description: msg });
+    },
   });
 
   return {

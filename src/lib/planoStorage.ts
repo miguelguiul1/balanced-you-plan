@@ -5,6 +5,7 @@
  */
 
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 
 export type PlanoRefeicao = {
   tipo: string;
@@ -97,7 +98,7 @@ export const saveStoredPlano = async (userId: string, data: StoredPlano): Promis
     .upsert(
       {
         user_id: userId,
-        plan_data: data.plano as unknown as Record<string, unknown>,
+        plan_data: data.plano as unknown as Json,
         goal: data.goal ?? null,
       },
       { onConflict: "user_id" }

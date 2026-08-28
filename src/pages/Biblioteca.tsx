@@ -141,6 +141,7 @@ const Biblioteca = () => {
           <input
             type="text"
             placeholder="Buscar alimento..."
+            aria-label="Buscar alimento"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full h-12 pl-12 pr-4 rounded-xl border-2 border-border bg-background text-foreground focus:border-primary focus:outline-none transition-colors"
@@ -153,6 +154,7 @@ const Biblioteca = () => {
             <button
               key={cat}
               onClick={() => setCatFilter(cat)}
+              aria-pressed={catFilter === cat}
               className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
                 catFilter === cat ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
               }`}
@@ -171,6 +173,8 @@ const Biblioteca = () => {
             >
               <button
                 onClick={() => setExpanded(expanded === a.nome ? null : a.nome)}
+                aria-expanded={expanded === a.nome}
+                aria-controls={`alimento-detalhe-${a.nome}`}
                 className="w-full p-5 text-left"
               >
                 <div className="flex items-center justify-between">
@@ -186,7 +190,7 @@ const Biblioteca = () => {
               </button>
 
               {expanded === a.nome && (
-                <div className="px-5 pb-5 border-t border-border pt-4 animate-fade-in space-y-4">
+                <div id={`alimento-detalhe-${a.nome}`} className="px-5 pb-5 border-t border-border pt-4 animate-fade-in space-y-4">
                   {/* Benefits */}
                   <div>
                     <h4 className="flex items-center gap-2 font-display font-semibold text-foreground text-sm mb-2">

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Send, Loader2, CheckCircle, XCircle, AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { FunctionsHttpError } from "@supabase/supabase-js";
 
 type Result = {
   veredicto: string;
@@ -13,12 +13,13 @@ const MythChecker = () => {
   const [question, setQuestion] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const check = async () => {
     if (!question.trim() || loading) return;
 
     setLoading(true);
+    setError(null);
     setResult(null);
 
     try {
@@ -31,10 +32,25 @@ const MythChecker = () => {
 
       setResult(data);
     } catch (err: any) {
-      toast.error(err.message || "Erro ao verificar. Tente novamente.");
+      let msg = err?.message || "Erro ao verificar. Tente novamente.";
+      if (err instanceof FunctionsHttpError) {
+        try {
+          const body = await err.context.json();
+          if (body?.error) msg = body.error;
+          else if (body?.message) msg = body.message;
+        } catch {
+          /* corpo ilegível — mantém a mensagem padrão */
+        }
+      }
+      setError(msg);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    check();
   };
 
   const getIcon = (veredicto: string) => {
@@ -73,8 +89,21 @@ const MythChecker = () => {
         </button>
       </form>
 
+      {error && (
+        <div role="alert" className="mt-3 rounded-lg bg-destructive/10 border border-destructive/30 p-3 flex items-center justify-between gap-2">
+          <p className="text-sm text-destructive">{error}</p>
+          <button
+            type="button"
+            onClick={check}
+            className="shrink-0 text-xs font-medium text-destructive underline"
+          >
+            Tentar novamente
+          </button>
+        </div>
+      )}
+
       {result && (
-        <div className="mt-4 p-4 rounded-lg bg-muted/50 animate-fade-in space-y-2">
+        <div role="status" aria-live="polite" className="mt-4 p-4 rounded-lg bg-muted/50 animate-fade-in space-y-2">
           <div className="flex items-center gap-2">
             {getIcon(result.veredicto)}
             <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${getBadgeClass(result.veredicto)}`}>

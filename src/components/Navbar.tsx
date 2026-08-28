@@ -1,11 +1,18 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, LogIn, LogOut, User } from "lucide-react";
+import { Menu, X, LogIn, LogOut, User, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import GlobalSearch from "@/components/GlobalSearch";
-import NotificationCenter from "@/components/NotificationCenter";
-import logoImg from "@/assets/logo evolua plus.png";
+import logoImg from "@/assets/logo evolua plus.webp";
+
+const NotificationCenter = lazy(() => import("@/components/NotificationCenter"));
+
+const NotificationsFallback = () => (
+  <Button variant="ghost" size="icon" aria-label="Central de notificações" className="relative">
+    <Bell className="w-4 h-4" />
+  </Button>
+);
 
 const appLinks = [
   { path: "/", label: "Início" },
@@ -42,6 +49,7 @@ const Navbar = () => {
   const { user, signOut } = useAuth();
 
   const isLanding = location.pathname === "/";
+  const isPublicAuth = ["/auth", "/reset-password"].includes(location.pathname);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -57,7 +65,7 @@ const Navbar = () => {
 
   const Logo = () => (
     <Link to="/" className="group flex items-center gap-2" aria-label="Evolua Plus — página inicial">
-      <img src={logoImg} alt="Evolua Plus" className="h-8 w-auto transition-transform group-hover:scale-105" />
+      <img src={logoImg} alt="Evolua Plus" width="384" height="256" decoding="async" className="h-8 w-auto transition-transform group-hover:scale-105" />
     </Link>
   );
 
@@ -108,6 +116,7 @@ const Navbar = () => {
             size="icon"
             className="md:hidden"
             onClick={() => setOpen(!open)}
+            aria-expanded={open}
             aria-label={open ? "Fechar menu" : "Abrir menu"}
           >
             {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -150,6 +159,23 @@ const Navbar = () => {
     );
   }
 
+  // Auth/Redefinir senha — cabeçalho mínimo, sem navegação do app (funil público)
+  if (isPublicAuth) {
+    return (
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50">
+        <div className="container mx-auto px-6 h-16 flex items-center justify-between">
+          <Logo />
+          <Link
+            to="/"
+            className="hidden md:inline-flex text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Voltar ao início
+          </Link>
+        </div>
+      </nav>
+    );
+  }
+
   // App navbar — keeps existing internal navigation
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50">
@@ -161,6 +187,7 @@ const Navbar = () => {
             <Link
               key={link.path}
               to={link.path}
+              aria-current={location.pathname === link.path ? "page" : undefined}
               className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                 location.pathname === link.path
                   ? "bg-primary/10 text-primary"
@@ -174,7 +201,9 @@ const Navbar = () => {
           {user ? (
             <div className="flex items-center gap-2 ml-3">
               <GlobalSearch />
-              <NotificationCenter />
+              <Suspense fallback={<NotificationsFallback />}>
+                <NotificationCenter />
+              </Suspense>
               <span className="text-xs text-muted-foreground flex items-center gap-1">
                 <User className="w-3 h-3" />
                 {user.user_metadata?.full_name || user.email?.split("@")[0]}
@@ -192,7 +221,7 @@ const Navbar = () => {
           )}
         </div>
 
-        <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setOpen(!open)} aria-label={open ? "Fechar menu" : "Abrir menu"}>
+        <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setOpen(!open)} aria-expanded={open} aria-label={open ? "Fechar menu" : "Abrir menu"}>
           {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </Button>
       </div>
@@ -205,6 +234,7 @@ const Navbar = () => {
                 key={link.path}
                 to={link.path}
                 onClick={() => setOpen(false)}
+                aria-current={location.pathname === link.path ? "page" : undefined}
                 className={`px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
                   location.pathname === link.path
                     ? "bg-primary/10 text-primary"

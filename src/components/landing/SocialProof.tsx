@@ -60,16 +60,19 @@ const SocialProof = () => (
           </div>
         ))}
       </div>
+      <p className="text-center text-xs text-muted-foreground -mt-12 mb-12">
+        Números e depoimentos a seguir são ilustrativos (demonstração) — ainda não há clientes reais cadastrados.
+      </p>
 
       <div className="text-center max-w-2xl mx-auto mb-12">
         <span className="inline-block mb-3 px-3 py-1 rounded-full bg-primary/10 text-primary font-display text-xs font-semibold tracking-wide uppercase">
           Depoimentos
         </span>
         <h2 className="font-display text-3xl sm:text-5xl font-bold text-foreground">
-          Histórias reais de <span className="text-gradient-primary">quem evoluiu</span>
+          Depoimentos <span className="text-gradient-primary">ilustrativos</span>
         </h2>
         <p className="mt-4 text-muted-foreground text-lg">
-          Milhares de pessoas transformando a alimentação com o Evolua Plus.
+          Exemplos de uso do Evolua Plus para demonstrar o produto.
         </p>
       </div>
 
