@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Mail, Lock, User, ArrowRight, Eye, EyeOff, Leaf, Heart, Sparkles } from "lucide-react";
-import logoImg from "@/assets/logo evolua plus.webp";
+import BrandLogo from "@/components/BrandLogo";
 
 
 const traduzErro = (msg: string) => {
