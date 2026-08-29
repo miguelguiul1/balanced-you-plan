@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Instagram, Linkedin, Github, Mail } from "lucide-react";
-import logoImg from "@/assets/logo evolua plus.webp";
+import BrandLogo from "@/components/BrandLogo";
 
 const SiteFooter = () => (
   <footer className="border-t border-border bg-secondary/40 relative overflow-hidden">
@@ -8,7 +8,7 @@ const SiteFooter = () => (
     <div className="container mx-auto px-6 py-16 grid gap-10 md:grid-cols-5 relative">
       <div className="md:col-span-2">
         <Link to="/" className="inline-flex items-center gap-2" aria-label="Evolua Plus — página inicial">
-          <img src={logoImg} alt="Evolua Plus" width="384" height="256" loading="lazy" decoding="async" className="h-8 w-auto" />
+          <BrandLogo size="md" />
         </Link>
         <p className="mt-4 text-sm text-muted-foreground max-w-sm leading-relaxed">
           Seu nutricionista inteligente 24h. Planejamento alimentar personalizado por IA,
