@@ -4,7 +4,7 @@ import { Menu, X, LogIn, LogOut, User, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import GlobalSearch from "@/components/GlobalSearch";
-import logoImg from "@/assets/logo evolua plus.webp";
+import BrandLogo from "@/components/BrandLogo";
 
 const NotificationCenter = lazy(() => import("@/components/NotificationCenter"));
 
