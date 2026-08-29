@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Instagram, Linkedin, Github, Mail } from "lucide-react";
-import logoImg from "@/assets/logo evolua plus.webp";
+import BrandLogo from "@/components/BrandLogo";
 
 const SiteFooter = () => (
   <footer className="border-t border-border bg-secondary/40 relative overflow-hidden">
