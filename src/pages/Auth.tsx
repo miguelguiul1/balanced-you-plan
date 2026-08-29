@@ -114,8 +114,8 @@ const Auth = () => {
 
         {/* Content */}
         <div className="relative z-10 text-center px-6 max-w-lg">
-          <div className="animate-fade-up">
-            <img src={logoImg} alt="Evolua Plus" width="384" height="256" className="mx-auto h-20 sm:h-24 w-auto mb-6" />
+          <div className="animate-fade-up flex justify-center mb-6">
+            <BrandLogo size="lg" showWordmark={false} />
           </div>
 
           <h1
