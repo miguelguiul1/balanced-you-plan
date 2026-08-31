@@ -8,7 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import MotivationalQuote from "@/components/MotivationalQuote";
 import SmartShoppingList from "@/components/plano/SmartShoppingList";
-import { exportBrandedPdf } from "@/lib/pdf";
+import { exportPdfCompat } from "@/lib/pdfExport";
 import { todayISO, usePreferences } from "@/hooks/useNutrition";
 import { normalizeObjective, objectiveOption } from "@/lib/objectives";
 import { loadStoredPlano, saveStoredPlano } from "@/lib/planoStorage";
@@ -211,9 +211,9 @@ const PlanoSemanal = () => {
     toast({ title: "Adicionado ao diário", description: `${ref.nome} registrado hoje.` });
   };
 
-  const exportPdf = () => {
+  const exportPdf = async () => {
     if (!plano) return;
-    exportBrandedPdf({
+    await exportPdfCompat({
       title: "Plano alimentar semanal",
       subtitle: `Média diária: ${plano.resumo.calorias_media} kcal · ${plano.resumo.proteina_media}g proteína${plano.custo_estimado ? ` · Custo estimado: ${plano.custo_estimado}` : ""}`,
       sections: [

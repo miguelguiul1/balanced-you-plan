@@ -11,14 +11,15 @@ export type PdfSection = {
   lines: string[];
 };
 
-type Options = {
+export type Options = {
   title: string;
   subtitle?: string;
   sections: PdfSection[];
   fileName: string;
 };
 
-export const exportBrandedPdf = ({ title, subtitle, sections, fileName }: Options) => {
+/** Gera o documento jsPDF com a identidade Evolua Plus (sem salvar/baixar). */
+export const buildPdf = ({ title, subtitle, sections }: Omit<Options, "fileName">): jsPDF => {
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   const pageW = doc.internal.pageSize.getWidth();
   const pageH = doc.internal.pageSize.getHeight();
@@ -99,5 +100,11 @@ export const exportBrandedPdf = ({ title, subtitle, sections, fileName }: Option
   });
 
   footer();
+  return doc;
+};
+
+/** Salva o PDF disparando o download do navegador (comportamento web original). */
+export const exportBrandedPdf = ({ title, subtitle, sections, fileName }: Options) => {
+  const doc = buildPdf({ title, subtitle, sections });
   doc.save(fileName);
 };

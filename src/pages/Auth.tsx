@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { resolveNext } from "@/lib/safeNext";
+import { resolveAppUrl } from "@/lib/appUrl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -58,7 +59,7 @@ const Auth = () => {
     try {
       if (isForgot) {
         const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-          redirectTo: `${window.location.origin}/reset-password`,
+          redirectTo: `${resolveAppUrl()}/reset-password`,
         });
         if (error) throw error;
         setSent(true);
@@ -77,7 +78,7 @@ const Auth = () => {
           password,
           options: {
             data: { full_name: fullName },
-            emailRedirectTo: `${window.location.origin}/auth?next=${encodeURIComponent(nextPath)}`,
+            emailRedirectTo: `${resolveAppUrl()}/auth?next=${encodeURIComponent(nextPath)}`,
           },
         });
 

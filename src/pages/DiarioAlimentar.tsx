@@ -13,7 +13,7 @@ import MotivationalQuote from "@/components/MotivationalQuote";
 import WaterTracker from "@/components/WaterTracker";
 import FoodCalendar from "@/components/diario/FoodCalendar";
 import WeeklySummary from "@/components/diario/WeeklySummary";
-import { exportBrandedPdf } from "@/lib/pdf";
+import { exportPdfCompat } from "@/lib/pdfExport";
 import { RANGES, checkRange, checkText, firstError, parseNum } from "@/lib/validation";
 import { ConfirmDialog } from "@/components/ds/ConfirmDialog";
 import {
@@ -254,12 +254,12 @@ const DiarioAlimentar = () => {
     { label: "fibra", value: `${Math.round(totals.fiber)}g`, cls: "text-primary" },
   ];
 
-  const exportDayPdf = () => {
+  const exportDayPdf = async () => {
     const groups = entries.reduce<Record<string, typeof entries>>((acc, e) => {
       (acc[e.meal_type] ||= []).push(e);
       return acc;
     }, {});
-    exportBrandedPdf({
+    await exportPdfCompat({
       title: `Diário alimentar — ${new Date(`${selectedDate}T12:00:00`).toLocaleDateString("pt-BR")}`,
       subtitle: `${Math.round(totals.calories)} / ${caloriesGoal} kcal · P ${Math.round(totals.protein)}g · C ${Math.round(totals.carbs)}g · G ${Math.round(totals.fat)}g · Fibra ${Math.round(totals.fiber)}g`,
       sections: Object.entries(groups).map(([meal, rows]) => ({

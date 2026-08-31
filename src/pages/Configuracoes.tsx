@@ -11,6 +11,7 @@ import { useTheme, ThemeMode } from "@/hooks/useTheme";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { clearStoredPlano } from "@/lib/planoStorage";
+import { resolveAppUrl } from "@/lib/appUrl";
 
 type Prefs = {
   peso: "kg" | "lb";
@@ -86,7 +87,7 @@ const Configuracoes = () => {
   const changePassword = async () => {
     if (!user?.email) return;
     const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
-      redirectTo: `${window.location.origin}/reset-password`,
+      redirectTo: `${resolveAppUrl()}/reset-password`,
     });
     if (error) {
       toast.error("Erro ao enviar e-mail");

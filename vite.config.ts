@@ -22,6 +22,7 @@ export default defineConfig(({ mode }) => {
         overlay: false,
       },
     },
+    base: "./",
     plugins: [
       react(),
       mode === "development" && componentTagger(),

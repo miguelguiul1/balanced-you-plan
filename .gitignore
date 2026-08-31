@@ -27,3 +27,14 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Capacitor / nativos
+android/local.properties
+android/.gradle
+android/app/build
+android/build
+ios/App/build
+ios/App/App/public
+
+# TypeScript incremental build info
+*.tsbuildinfo
