@@ -12,10 +12,10 @@ dist
 dist-ssr
 *.local
 
-# Environment (nunca commitar credenciais)
-.env
-.env.*
-!.env.example
+# Environment: .env contém apenas chaves publicáveis do Lovable Cloud
+# e PRECISA ser versionado para o build publicado funcionar.
+.env.local
+.env.*.local
 
 # Editor directories and files
 .vscode/*

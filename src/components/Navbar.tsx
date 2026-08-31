@@ -4,7 +4,7 @@ import { Menu, X, LogIn, LogOut, User, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import GlobalSearch from "@/components/GlobalSearch";
-import logoImg from "@/assets/logo evolua plus.webp";
+import BrandLogo from "@/components/BrandLogo";
 
 const NotificationCenter = lazy(() => import("@/components/NotificationCenter"));
 
@@ -65,7 +65,7 @@ const Navbar = () => {
 
   const Logo = () => (
     <Link to="/" className="group flex items-center gap-2" aria-label="Evolua Plus — página inicial">
-      <img src={logoImg} alt="Evolua Plus" width="384" height="256" decoding="async" className="h-8 w-auto transition-transform group-hover:scale-105" />
+      <BrandLogo size="sm" className="transition-transform group-hover:scale-105" />
     </Link>
   );
 
