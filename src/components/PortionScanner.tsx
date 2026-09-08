@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { MEAL_TYPES, todayISO, useSyncModules } from "@/hooks/useNutrition";
 import { compressImage } from "@/lib/compressImage";
 import { RANGES, checkRange, firstError } from "@/lib/validation";
+import CameraCapture from "@/components/CameraCapture";
 
 interface PortionItem {
   alimento: string;
@@ -33,6 +34,7 @@ const PortionScanner = () => {
   const navigate = useNavigate();
   const sync = useSyncModules();
   const fileRef = useRef<HTMLInputElement>(null);
+  const [camOpen, setCamOpen] = useState(false);
 
   const [image, setImage] = useState<string | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
@@ -136,6 +138,7 @@ const PortionScanner = () => {
 
   return (
     <div className="space-y-6">
+      <CameraCapture open={camOpen} onClose={() => setCamOpen(false)} onCapture={pickFile} hint="Enquadre o prato inteiro" />
       {/* Upload */}
       {!image && (
         <div className="bg-card rounded-2xl shadow-soft p-6 sm:p-8 text-center">
@@ -146,7 +149,7 @@ const PortionScanner = () => {
             <p className="font-display font-semibold text-foreground mb-1">Fotografe seu prato</p>
             <p className="text-sm text-muted-foreground mb-6">A IA identifica os alimentos e estima as calorias</p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Button variant="hero" size="lg" className="gap-2" onClick={() => fileRef.current?.click()}>
+              <Button variant="hero" size="lg" className="gap-2" onClick={() => setCamOpen(true)}>
                 <Camera className="w-5 h-5" /> Tirar foto
               </Button>
               <Button variant="outline" size="lg" className="gap-2" onClick={() => fileRef.current?.click()}>
@@ -157,7 +160,6 @@ const PortionScanner = () => {
               ref={fileRef}
               type="file"
               accept="image/jpeg,image/png,image/webp"
-              capture="environment"
               className="hidden"
               onChange={(e) => e.target.files?.[0] && pickFile(e.target.files[0])}
             />
