@@ -84,6 +84,17 @@ const Configuracoes = () => {
     }
   };
 
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+    } catch {
+      await supabase.auth.signOut({ scope: "local" }).catch(() => {});
+    }
+    toast.success("Você saiu da sua conta");
+    navigate("/", { replace: true });
+  };
+
+
   const changePassword = async () => {
     if (!user?.email) return;
     const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
