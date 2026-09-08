@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Sun, Moon, Monitor, User, Bell, Ruler, Download, Trash2, KeyRound } from "lucide-react";
+import { Sun, Moon, Monitor, User, Bell, Ruler, Download, Trash2, KeyRound, LogOut } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -83,6 +83,17 @@ const Configuracoes = () => {
       toast.success("Perfil atualizado");
     }
   };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+    } catch {
+      await supabase.auth.signOut({ scope: "local" }).catch(() => {});
+    }
+    toast.success("Você saiu da sua conta");
+    navigate("/", { replace: true });
+  };
+
 
   const changePassword = async () => {
     if (!user?.email) return;
@@ -205,7 +216,13 @@ const Configuracoes = () => {
                   }
                 />
               </div>
+              <div className="pt-2 border-t border-border/60">
+                <Button variant="outline" onClick={handleSignOut} className="gap-2 w-full sm:w-auto">
+                  <LogOut className="w-4 h-4" /> Sair da conta
+                </Button>
+              </div>
             </div>
+
           </Section>
 
           <Section icon={Ruler} title="Preferências">
