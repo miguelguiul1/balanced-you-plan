@@ -115,7 +115,7 @@ const CameraCapture = ({ open, onClose, onCapture, hint }: CameraCaptureProps) =
         </div>
       </div>
 
-      <div className="flex-1 relative flex items-center justify-center overflow-hidden">
+      <div className="flex-1 min-h-0 relative flex items-center justify-center overflow-hidden">
         <video ref={videoRef} playsInline muted autoPlay className="max-h-full max-w-full object-contain" />
         {!ready && !error && (
           <p className="absolute text-white/80 text-sm">Abrindo a câmera…</p>
@@ -135,7 +135,7 @@ const CameraCapture = ({ open, onClose, onCapture, hint }: CameraCaptureProps) =
         )}
       </div>
 
-      <div className="pb-[calc(env(safe-area-inset-bottom)+1.5rem)] pt-4 flex justify-center">
+      <div className="shrink-0 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] pt-4 flex justify-center">
         <button
           onClick={shoot}
           disabled={!ready}
