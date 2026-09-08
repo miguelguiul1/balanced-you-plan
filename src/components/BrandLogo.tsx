@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import logoMark from "@/assets/logo-evolua-mark.png";
 import { cn } from "@/lib/utils";
 
@@ -21,8 +22,8 @@ interface BrandLogoProps {
   className?: string;
 }
 
-const BrandLogo = ({ size = "sm", showWordmark = true, className }: BrandLogoProps) => (
-  <span className={cn("inline-flex items-center gap-2", className)}>
+const BrandLogo = forwardRef<HTMLSpanElement, BrandLogoProps>(({ size = "sm", showWordmark = true, className }, ref) => (
+  <span ref={ref} className={cn("inline-flex items-center gap-2", className)}>
     <img
       src={logoMark}
       alt="Evolua Plus"
@@ -41,6 +42,7 @@ const BrandLogo = ({ size = "sm", showWordmark = true, className }: BrandLogoPro
       </span>
     )}
   </span>
-);
+));
+BrandLogo.displayName = "BrandLogo";
 
 export default BrandLogo;
