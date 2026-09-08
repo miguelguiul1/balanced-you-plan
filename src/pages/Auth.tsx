@@ -10,6 +10,8 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Mail, Lock, User, ArrowRight, Eye, EyeOff, Leaf, Heart, Sparkles } from "lucide-react";
 import BrandLogo from "@/components/BrandLogo";
+import { lovable } from "@/integrations/lovable/index";
+
 
 
 const traduzErro = (msg: string) => {
@@ -54,7 +56,31 @@ const Auth = () => {
     setShowWelcome(false);
   };
 
+  const handleGoogle = async () => {
+    setGoogleLoading(true);
+    try {
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: window.location.origin,
+      });
+      if (result.error) {
+        toast({
+          title: "Não foi possível entrar com Google",
+          description: "Tente novamente em instantes ou use seu e-mail.",
+          variant: "destructive",
+        });
+        return;
+      }
+      if (result.redirected) return;
+      navigate(nextPath, { replace: true });
+    } catch {
+      toast({ title: "Erro", description: "Falha ao conectar com o Google.", variant: "destructive" });
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
+
     e.preventDefault();
     setLoading(true);
 
