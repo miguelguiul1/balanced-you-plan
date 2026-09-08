@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
+import CameraCapture from "@/components/CameraCapture";
 import { Camera, Upload, Zap, Apple, Flame, Lightbulb, RefreshCw } from "lucide-react";
 import MotivationalQuote from "@/components/MotivationalQuote";
 import { supabase } from "@/integrations/supabase/client";
@@ -38,6 +39,7 @@ const Scanner = () => {
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [camOpen, setCamOpen] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
   const [tab, setTab] = useState<"alimento" | "codigo" | "geladeira" | "porcao">("alimento");
@@ -137,6 +139,8 @@ const Scanner = () => {
 
         {tab === "alimento" && <FoodScanner />}
 
+        <CameraCapture open={camOpen} onClose={() => setCamOpen(false)} onCapture={handleImage} hint="Enquadre a geladeira aberta" />
+
         {tab === "codigo" && <BarcodeScanner />}
 
         {tab === "porcao" && <PortionScanner />}
@@ -156,7 +160,7 @@ const Scanner = () => {
                 <Button
                   variant="hero"
                   size="lg"
-                  onClick={() => fileRef.current?.click()}
+                  onClick={() => setCamOpen(true)}
                   className="gap-2"
                 >
                   <Camera className="w-5 h-5" /> Tirar foto
@@ -174,7 +178,6 @@ const Scanner = () => {
                 ref={fileRef}
                 type="file"
                 accept="image/*"
-                capture="environment"
                 className="hidden"
                 onChange={(e) => e.target.files?.[0] && handleImage(e.target.files[0])}
               />
