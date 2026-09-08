@@ -140,7 +140,7 @@ const CameraCapture = ({ open, onClose, onCapture, hint }: CameraCaptureProps) =
           onClick={shoot}
           disabled={!ready}
           aria-label="Tirar foto"
-          className="h-18 w-18 h-[72px] w-[72px] rounded-full border-4 border-white/80 bg-white/20 disabled:opacity-40 flex items-center justify-center active:scale-95 transition-transform"
+          className="h-[72px] w-[72px] rounded-full border-4 border-white/80 bg-white/20 disabled:opacity-40 flex items-center justify-center active:scale-95 transition-transform"
         >
           <Camera className="w-7 h-7 text-white" />
         </button>
